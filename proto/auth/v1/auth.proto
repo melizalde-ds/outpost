@@ -1,0 +1,60 @@
+edition = "2024";
+
+package auth.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message RegisterRequest {
+  string username = 1;
+  string password = 2 [debug_redact = true];
+}
+
+message RegisterResponse {
+  string user_id = 1;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2 [debug_redact = true];
+}
+
+message LoginResponse {
+  string access_token = 1 [debug_redact = true];
+  google.protobuf.Timestamp access_token_expires_at = 2;
+  string refresh_token = 3 [debug_redact = true];
+  string user_id = 4;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1 [debug_redact = true];
+}
+
+message RefreshTokenResponse {
+  string access_token = 1 [debug_redact = true];
+  google.protobuf.Timestamp access_token_expires_at = 2;
+  string refresh_token = 3 [debug_redact = true];
+}
+
+message LogoutRequest {
+  string refresh_token = 1 [debug_redact = true];
+}
+
+message LogoutResponse {}
+
+message ValidateTokenRequest {
+  string access_token = 1 [debug_redact = true];
+}
+
+message ValidateTokenResponse {
+  string user_id = 1;
+  google.protobuf.Timestamp expires_at = 2;
+  repeated string roles = 3;
+}
