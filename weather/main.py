@@ -1,6 +1,4 @@
-def main():
-    print("Hello from weather!")
-
+from auth_client import run as auth_run
 
 if __name__ == "__main__":
-    main()
+    auth_run()

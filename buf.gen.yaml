@@ -1,11 +1,13 @@
 version: v2
-clean: true
 inputs:
   - directory: proto
 plugins:
   - remote: buf.build/protocolbuffers/python
-    out: weather/gen
+    out: weather
   - remote: buf.build/grpc/python
-    out: weather/gen
-  - remote: buf.build/protocolbuffers/pyi
-    out: weather/gen
+    out: weather
+  - local: protoc-gen-mypy
+    out: weather
+  - local: protoc-gen-mypy_grpc
+    out: weather
+    opt: sync_only
