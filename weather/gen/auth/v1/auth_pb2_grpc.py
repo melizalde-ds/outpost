@@ -14,11 +14,6 @@ class AuthServiceStub:
         Args:
             channel: A grpc.Channel.
         """
-        self.Register = channel.unary_unary(
-                '/auth.v1.AuthService/Register',
-                request_serializer=auth_dot_v1_dot_auth__pb2.RegisterRequest.SerializeToString,
-                response_deserializer=auth_dot_v1_dot_auth__pb2.RegisterResponse.FromString,
-                _registered_method=True)
         self.Login = channel.unary_unary(
                 '/auth.v1.AuthService/Login',
                 request_serializer=auth_dot_v1_dot_auth__pb2.LoginRequest.SerializeToString,
@@ -28,11 +23,6 @@ class AuthServiceStub:
                 '/auth.v1.AuthService/RefreshToken',
                 request_serializer=auth_dot_v1_dot_auth__pb2.RefreshTokenRequest.SerializeToString,
                 response_deserializer=auth_dot_v1_dot_auth__pb2.RefreshTokenResponse.FromString,
-                _registered_method=True)
-        self.Logout = channel.unary_unary(
-                '/auth.v1.AuthService/Logout',
-                request_serializer=auth_dot_v1_dot_auth__pb2.LogoutRequest.SerializeToString,
-                response_deserializer=auth_dot_v1_dot_auth__pb2.LogoutResponse.FromString,
                 _registered_method=True)
         self.ValidateToken = channel.unary_unary(
                 '/auth.v1.AuthService/ValidateToken',
@@ -44,12 +34,6 @@ class AuthServiceStub:
 class AuthServiceServicer:
     """Missing associated documentation comment in .proto file."""
 
-    def Register(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
     def Login(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -57,12 +41,6 @@ class AuthServiceServicer:
         raise NotImplementedError('Method not implemented!')
 
     def RefreshToken(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def Logout(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -77,11 +55,6 @@ class AuthServiceServicer:
 
 def add_AuthServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Register': grpc.unary_unary_rpc_method_handler(
-                    servicer.Register,
-                    request_deserializer=auth_dot_v1_dot_auth__pb2.RegisterRequest.FromString,
-                    response_serializer=auth_dot_v1_dot_auth__pb2.RegisterResponse.SerializeToString,
-            ),
             'Login': grpc.unary_unary_rpc_method_handler(
                     servicer.Login,
                     request_deserializer=auth_dot_v1_dot_auth__pb2.LoginRequest.FromString,
@@ -91,11 +64,6 @@ def add_AuthServiceServicer_to_server(servicer, server):
                     servicer.RefreshToken,
                     request_deserializer=auth_dot_v1_dot_auth__pb2.RefreshTokenRequest.FromString,
                     response_serializer=auth_dot_v1_dot_auth__pb2.RefreshTokenResponse.SerializeToString,
-            ),
-            'Logout': grpc.unary_unary_rpc_method_handler(
-                    servicer.Logout,
-                    request_deserializer=auth_dot_v1_dot_auth__pb2.LogoutRequest.FromString,
-                    response_serializer=auth_dot_v1_dot_auth__pb2.LogoutResponse.SerializeToString,
             ),
             'ValidateToken': grpc.unary_unary_rpc_method_handler(
                     servicer.ValidateToken,
@@ -112,33 +80,6 @@ def add_AuthServiceServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class AuthService:
     """Missing associated documentation comment in .proto file."""
-
-    @staticmethod
-    def Register(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/auth.v1.AuthService/Register',
-            auth_dot_v1_dot_auth__pb2.RegisterRequest.SerializeToString,
-            auth_dot_v1_dot_auth__pb2.RegisterResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
 
     @staticmethod
     def Login(request,
@@ -184,33 +125,6 @@ class AuthService:
             '/auth.v1.AuthService/RefreshToken',
             auth_dot_v1_dot_auth__pb2.RefreshTokenRequest.SerializeToString,
             auth_dot_v1_dot_auth__pb2.RefreshTokenResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def Logout(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/auth.v1.AuthService/Logout',
-            auth_dot_v1_dot_auth__pb2.LogoutRequest.SerializeToString,
-            auth_dot_v1_dot_auth__pb2.LogoutResponse.FromString,
             options,
             channel_credentials,
             insecure,

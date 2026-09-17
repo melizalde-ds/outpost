@@ -5,20 +5,9 @@ package auth.v1;
 import "google/protobuf/timestamp.proto";
 
 service AuthService {
-  rpc Register(RegisterRequest) returns (RegisterResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
-  rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
-}
-
-message RegisterRequest {
-  string username = 1;
-  string password = 2 [debug_redact = true];
-}
-
-message RegisterResponse {
-  string user_id = 1;
 }
 
 message LoginRequest {
@@ -42,12 +31,6 @@ message RefreshTokenResponse {
   google.protobuf.Timestamp access_token_expires_at = 2;
   string refresh_token = 3 [debug_redact = true];
 }
-
-message LogoutRequest {
-  string refresh_token = 1 [debug_redact = true];
-}
-
-message LogoutResponse {}
 
 message ValidateTokenRequest {
   string access_token = 1 [debug_redact = true];
