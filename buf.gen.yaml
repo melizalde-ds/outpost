@@ -1,0 +1,11 @@
+version: v2
+clean: true
+inputs:
+  - directory: proto
+plugins:
+  - remote: buf.build/protocolbuffers/python
+    out: weather/gen
+  - remote: buf.build/grpc/python
+    out: weather/gen
+  - remote: buf.build/protocolbuffers/pyi
+    out: weather/gen
