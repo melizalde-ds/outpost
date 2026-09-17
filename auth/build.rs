@@ -1,9 +1,9 @@
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> anyhow::Result<()> {
     println!("cargo:rerun-if-changed=../proto");
 
     tonic_prost_build::configure()
         .build_client(false)
-        .compile_protos(&["../proto/auth.proto"], &["../proto"])?;
+        .compile_protos(&["../proto/auth/v1/auth.proto"], &["../proto"])?;
 
     Ok(())
 }
