@@ -1,2 +1,9 @@
+from weatherstream import get_auth
+
 if __name__ == "__main__":
-    print("Weather module is running as the main program.")
+    username = "admin"
+    password = "secret_password"
+
+    client = get_auth()
+    response = client.login(username, password)
+    print(f"Login response: {response}")
