@@ -14,6 +14,11 @@ class AuthServiceStub:
         Args:
             channel: A grpc.Channel.
         """
+        self.Register = channel.unary_unary(
+                '/weatherstream.auth.v1.AuthService/Register',
+                request_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RegisterRequest.SerializeToString,
+                response_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RegisterResponse.FromString,
+                _registered_method=True)
         self.Login = channel.unary_unary(
                 '/weatherstream.auth.v1.AuthService/Login',
                 request_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.LoginRequest.SerializeToString,
@@ -24,15 +29,16 @@ class AuthServiceStub:
                 request_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenRequest.SerializeToString,
                 response_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenResponse.FromString,
                 _registered_method=True)
-        self.ValidateToken = channel.unary_unary(
-                '/weatherstream.auth.v1.AuthService/ValidateToken',
-                request_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.ValidateTokenRequest.SerializeToString,
-                response_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.ValidateTokenResponse.FromString,
-                _registered_method=True)
 
 
 class AuthServiceServicer:
     """Missing associated documentation comment in .proto file."""
+
+    def Register(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def Login(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -46,15 +52,14 @@ class AuthServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ValidateToken(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
 
 def add_AuthServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'Register': grpc.unary_unary_rpc_method_handler(
+                    servicer.Register,
+                    request_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RegisterRequest.FromString,
+                    response_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RegisterResponse.SerializeToString,
+            ),
             'Login': grpc.unary_unary_rpc_method_handler(
                     servicer.Login,
                     request_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.LoginRequest.FromString,
@@ -64,11 +69,6 @@ def add_AuthServiceServicer_to_server(servicer, server):
                     servicer.RefreshToken,
                     request_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenRequest.FromString,
                     response_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenResponse.SerializeToString,
-            ),
-            'ValidateToken': grpc.unary_unary_rpc_method_handler(
-                    servicer.ValidateToken,
-                    request_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.ValidateTokenRequest.FromString,
-                    response_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.ValidateTokenResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -80,6 +80,33 @@ def add_AuthServiceServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class AuthService:
     """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def Register(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/weatherstream.auth.v1.AuthService/Register',
+            weatherstream_dot_auth_dot_v1_dot_auth__pb2.RegisterRequest.SerializeToString,
+            weatherstream_dot_auth_dot_v1_dot_auth__pb2.RegisterResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
 
     @staticmethod
     def Login(request,
@@ -125,33 +152,6 @@ class AuthService:
             '/weatherstream.auth.v1.AuthService/RefreshToken',
             weatherstream_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenRequest.SerializeToString,
             weatherstream_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def ValidateToken(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/weatherstream.auth.v1.AuthService/ValidateToken',
-            weatherstream_dot_auth_dot_v1_dot_auth__pb2.ValidateTokenRequest.SerializeToString,
-            weatherstream_dot_auth_dot_v1_dot_auth__pb2.ValidateTokenResponse.FromString,
             options,
             channel_credentials,
             insecure,

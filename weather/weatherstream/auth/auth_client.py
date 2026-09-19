@@ -9,8 +9,11 @@ from pydantic import BaseModel, Field, HttpUrl, IPvAnyAddress
 
 from weatherstream.auth.v1.auth_pb2 import (
     LoginRequest,
+    LoginResponse,
     RefreshTokenRequest,
-    ValidateTokenRequest,
+    RefreshTokenResponse,
+    RegisterRequest,
+    RegisterResponse,
 )
 from weatherstream.auth.v1.auth_pb2_grpc import AuthServiceStub
 
@@ -69,22 +72,22 @@ class AuthClient:
                 channel.close()
             self._closed = True
 
-    def login(self, username: str, password: str):
+    def register(self, username: str, password: str) -> RegisterResponse:
+        stub = self._next()
+        request = RegisterRequest(username=username, password=password)
+        result: RegisterResponse = stub.Register(request)
+        return result
+
+    def login(self, username: str, password: str) -> LoginResponse:
         stub = self._next()
         request = LoginRequest(username=username, password=password)
-        result = stub.Login(request)
+        result: LoginResponse = stub.Login(request)
         return result
 
-    def validate_token(self, token: str):
-        stub = self._next()
-        request = ValidateTokenRequest(access_token=token)
-        result = stub.ValidateToken(request)
-        return result
-
-    def refresh_token(self, token: str):
+    def refresh_token(self, token: str) -> RefreshTokenResponse:
         stub = self._next()
         request = RefreshTokenRequest(refresh_token=token)
-        result = stub.RefreshToken(request)
+        result: RefreshTokenResponse = stub.RefreshToken(request)
         return result
 
 

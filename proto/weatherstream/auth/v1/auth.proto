@@ -8,7 +8,6 @@ service AuthService {
   rpc Register(RegisterRequest) returns (RegisterResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
-  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
 }
 
 message RegisterRequest {
@@ -18,6 +17,9 @@ message RegisterRequest {
 
 message RegisterResponse {
   string user_id = 1;
+  string access_token = 2 [debug_redact = true];
+  google.protobuf.Timestamp access_token_expires_at = 3;
+  string refresh_token = 4 [debug_redact = true];
 }
 
 message LoginRequest {
@@ -29,7 +31,6 @@ message LoginResponse {
   string access_token = 1 [debug_redact = true];
   google.protobuf.Timestamp access_token_expires_at = 2;
   string refresh_token = 3 [debug_redact = true];
-  string user_id = 4;
 }
 
 message RefreshTokenRequest {
@@ -40,14 +41,4 @@ message RefreshTokenResponse {
   string access_token = 1 [debug_redact = true];
   google.protobuf.Timestamp access_token_expires_at = 2;
   string refresh_token = 3 [debug_redact = true];
-}
-
-message ValidateTokenRequest {
-  string access_token = 1 [debug_redact = true];
-}
-
-message ValidateTokenResponse {
-  string user_id = 1;
-  google.protobuf.Timestamp expires_at = 2;
-  repeated string roles = 3;
 }

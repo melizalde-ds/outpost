@@ -3,11 +3,9 @@
 isort:skip_file
 """
 
-from collections import abc as _abc
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
-from google.protobuf.internal import containers as _containers
 import builtins as _builtins
 import sys
 import typing as _typing
@@ -18,6 +16,57 @@ else:
     from typing_extensions import TypeAlias as _TypeAlias, Never as _Never
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+@_typing.final
+class RegisterRequest(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    USERNAME_FIELD_NUMBER: _builtins.int
+    PASSWORD_FIELD_NUMBER: _builtins.int
+    username: _builtins.str
+    password: _builtins.str
+    def __init__(
+        self,
+        *,
+        username: _builtins.str = ...,
+        password: _builtins.str = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["password", b"password", "username", b"username"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___RegisterRequest: _TypeAlias = RegisterRequest  # noqa: Y015
+
+@_typing.final
+class RegisterResponse(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    USER_ID_FIELD_NUMBER: _builtins.int
+    ACCESS_TOKEN_FIELD_NUMBER: _builtins.int
+    ACCESS_TOKEN_EXPIRES_AT_FIELD_NUMBER: _builtins.int
+    REFRESH_TOKEN_FIELD_NUMBER: _builtins.int
+    user_id: _builtins.str
+    access_token: _builtins.str
+    refresh_token: _builtins.str
+    @_builtins.property
+    def access_token_expires_at(self) -> _timestamp_pb2.Timestamp: ...
+    def __init__(
+        self,
+        *,
+        user_id: _builtins.str = ...,
+        access_token: _builtins.str = ...,
+        access_token_expires_at: _timestamp_pb2.Timestamp | None = ...,
+        refresh_token: _builtins.str = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["access_token_expires_at", b"access_token_expires_at"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["access_token", b"access_token", "access_token_expires_at", b"access_token_expires_at", "refresh_token", b"refresh_token", "user_id", b"user_id"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___RegisterResponse: _TypeAlias = RegisterResponse  # noqa: Y015
 
 @_typing.final
 class LoginRequest(_message.Message):
@@ -48,10 +97,8 @@ class LoginResponse(_message.Message):
     ACCESS_TOKEN_FIELD_NUMBER: _builtins.int
     ACCESS_TOKEN_EXPIRES_AT_FIELD_NUMBER: _builtins.int
     REFRESH_TOKEN_FIELD_NUMBER: _builtins.int
-    USER_ID_FIELD_NUMBER: _builtins.int
     access_token: _builtins.str
     refresh_token: _builtins.str
-    user_id: _builtins.str
     @_builtins.property
     def access_token_expires_at(self) -> _timestamp_pb2.Timestamp: ...
     def __init__(
@@ -60,11 +107,10 @@ class LoginResponse(_message.Message):
         access_token: _builtins.str = ...,
         access_token_expires_at: _timestamp_pb2.Timestamp | None = ...,
         refresh_token: _builtins.str = ...,
-        user_id: _builtins.str = ...,
     ) -> None: ...
     _HasFieldArgType: _TypeAlias = _typing.Literal["access_token_expires_at", b"access_token_expires_at"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["access_token", b"access_token", "access_token_expires_at", b"access_token_expires_at", "refresh_token", b"refresh_token", "user_id", b"user_id"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["access_token", b"access_token", "access_token_expires_at", b"access_token_expires_at", "refresh_token", b"refresh_token"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -114,49 +160,3 @@ class RefreshTokenResponse(_message.Message):
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
 Global___RefreshTokenResponse: _TypeAlias = RefreshTokenResponse  # noqa: Y015
-
-@_typing.final
-class ValidateTokenRequest(_message.Message):
-    DESCRIPTOR: _descriptor.Descriptor
-
-    ACCESS_TOKEN_FIELD_NUMBER: _builtins.int
-    access_token: _builtins.str
-    def __init__(
-        self,
-        *,
-        access_token: _builtins.str = ...,
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["access_token", b"access_token"]  # noqa: Y015
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-    def WhichOneof(self, oneof_group: _Never) -> None: ...
-
-Global___ValidateTokenRequest: _TypeAlias = ValidateTokenRequest  # noqa: Y015
-
-@_typing.final
-class ValidateTokenResponse(_message.Message):
-    DESCRIPTOR: _descriptor.Descriptor
-
-    USER_ID_FIELD_NUMBER: _builtins.int
-    EXPIRES_AT_FIELD_NUMBER: _builtins.int
-    ROLES_FIELD_NUMBER: _builtins.int
-    user_id: _builtins.str
-    @_builtins.property
-    def expires_at(self) -> _timestamp_pb2.Timestamp: ...
-    @_builtins.property
-    def roles(self) -> _containers.RepeatedScalarFieldContainer[_builtins.str]: ...
-    def __init__(
-        self,
-        *,
-        user_id: _builtins.str = ...,
-        expires_at: _timestamp_pb2.Timestamp | None = ...,
-        roles: _abc.Iterable[_builtins.str] | None = ...,
-    ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["expires_at", b"expires_at"]  # noqa: Y015
-    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["expires_at", b"expires_at", "roles", b"roles", "user_id", b"user_id"]  # noqa: Y015
-    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
-    def WhichOneof(self, oneof_group: _Never) -> None: ...
-
-Global___ValidateTokenResponse: _TypeAlias = ValidateTokenResponse  # noqa: Y015
