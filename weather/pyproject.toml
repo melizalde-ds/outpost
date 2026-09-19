@@ -9,4 +9,5 @@ dependencies = [
     "grpcio-tools>=1.84.0",
     "mypy-protobuf>=5.1.0",
     "protobuf>=7.36.1",
+    "pydantic>=2.13.5",
 ]
