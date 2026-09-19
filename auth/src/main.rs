@@ -4,6 +4,7 @@ use crate::proto::auth::v1::auth_service_server::AuthServiceServer;
 
 mod proto;
 mod service;
+mod user;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
