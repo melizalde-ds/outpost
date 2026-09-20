@@ -3,7 +3,7 @@ RETURNS uuid
 LANGUAGE sql
 SET search_path = pg_catalog, public
 AS $$
-    INSERT INTO public.auth (username, password)
+    INSERT INTO public.auth (username, password_hash)
     VALUES (p_username, p_password_hash)
     RETURNING user_id;
 $$;
