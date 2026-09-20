@@ -3,12 +3,12 @@ use std::sync::Arc;
 use tonic::transport::Server;
 
 use crate::{
-    proto::auth::v1::auth_service_server::AuthServiceServer, user::repository::DbAuthRepository,
+    proto::auth::v1::auth_service_server::AuthServiceServer, repository::auth::DbAuthRepository,
 };
 
 mod proto;
+mod repository;
 mod service;
-mod user;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

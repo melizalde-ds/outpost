@@ -5,7 +5,7 @@ use crate::proto::auth::v1::{
     LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
     RegisterResponse,
 };
-use crate::user::repository::AuthRepository;
+use crate::repository::auth::AuthRepository;
 use tonic::{Request, Response, Status};
 
 #[derive(Debug)]

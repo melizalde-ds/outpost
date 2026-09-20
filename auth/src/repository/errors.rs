@@ -5,7 +5,7 @@ pub enum RepositoryError {
     #[error("unique constraint violated: {0}")]
     UniqueViolation(String),
     #[error("database error: {0}")]
-    Database(sqlx::Error),
+    Database(#[source] sqlx::Error),
 }
 
 impl From<sqlx::Error> for RepositoryError {
