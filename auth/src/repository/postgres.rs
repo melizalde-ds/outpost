@@ -1,36 +1,8 @@
-use std::fmt::Debug;
-
+use async_trait::async_trait;
 use sqlx::{PgPool, query_as, query_scalar};
 use uuid::Uuid;
 
-use crate::repository::errors::RepositoryError;
-
-#[derive(Debug, sqlx::Type)]
-#[sqlx(transparent)]
-pub struct UserId(pub Uuid);
-
-#[derive(Debug)]
-pub struct Credentials {
-    pub user_id: Uuid,
-    pub password_hash: String,
-    pub active: bool,
-}
-
-#[derive(Debug, sqlx::Type)]
-#[sqlx(transparent)]
-pub struct Active(pub bool);
-
-#[tonic::async_trait]
-pub trait AuthRepository: Debug + Send + Sync + 'static {
-    async fn insert_credentials(
-        &self,
-        username: &str,
-        password_hash: String,
-    ) -> Result<UserId, RepositoryError>;
-    async fn get_credentials(&self, username: &str)
-    -> Result<Option<Credentials>, RepositoryError>;
-    async fn verify(&self, user_id: &Uuid) -> Result<Option<Active>, RepositoryError>;
-}
+use crate::repository::{AuthRepository, Credentials, UserId, errors::RepositoryError};
 
 #[derive(Debug)]
 pub struct DbAuthRepository {
@@ -43,7 +15,7 @@ impl DbAuthRepository {
     }
 }
 
-#[tonic::async_trait]
+#[async_trait]
 impl AuthRepository for DbAuthRepository {
     async fn insert_credentials(
         &self,
@@ -76,12 +48,12 @@ impl AuthRepository for DbAuthRepository {
         Ok(query_result)
     }
 
-    async fn verify(&self, user_id: &Uuid) -> Result<Option<Active>, RepositoryError> {
+    async fn is_active(&self, user_id: &Uuid) -> Result<bool, RepositoryError> {
         let is_active = query_scalar!(
-            r#"SELECT public.verify(p_user_id => $1) AS "active!: Active""#,
+            r#"SELECT public.is_active(p_user_id => $1) AS "active!""#,
             user_id
         )
-        .fetch_optional(&self.db_pool)
+        .fetch_one(&self.db_pool)
         .await?;
 
         Ok(is_active)

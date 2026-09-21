@@ -1,3 +1,4 @@
+from google.protobuf import json_format
 from weatherstream import get_auth
 
 if __name__ == "__main__":
@@ -6,4 +7,8 @@ if __name__ == "__main__":
 
     client = get_auth()
     response = client.login(username, password)
-    print(f"Login response: {response}")
+
+    print("Login response:")
+    print(
+        json_format.MessageToJson(response, always_print_fields_with_no_presence=True)
+    )

@@ -4,12 +4,14 @@ use std::{net::SocketAddr, sync::Arc};
 use tonic::transport::Server;
 use tracing::info;
 
-use crate::password::engine::PasswordEngine;
 use crate::{
-    proto::auth::v1::auth_service_server::AuthServiceServer, repository::auth::DbAuthRepository,
-    service::auth::WeatherAuthService,
+    password::argon2::Argon2PasswordService,
+    proto::auth::v1::auth_service_server::AuthServiceServer,
+    repository::postgres::DbAuthRepository, service::auth::WeatherAuthService,
 };
 
+mod grpc;
+mod jwt;
 mod password;
 mod proto;
 mod repository;
@@ -21,17 +23,17 @@ async fn main() -> anyhow::Result<()> {
 
     info!("Starting WeatherStream Auth Service...");
     // Insecure - for demonstration purposes only. In production, use Hashicorp Vault or AWS Secrets Manager.
-    let append = env::var("AUTH_APPEND")?;
+    let pepper = env::var("AUTH_PEPPER")?;
 
     let addr: SocketAddr = "[::1]:50051".parse()?;
     let db_pool = sqlx::PgPool::connect("postgres://postgres:password@localhost/auth").await?;
     info!("Connected to database");
     let auth_repo = DbAuthRepository::new(db_pool);
-    let password_engine = PasswordEngine::new(append.into_bytes(), 10);
+    let passwords = Argon2PasswordService::new(pepper.into_bytes(), 10);
     info!("Auth repository initialized");
 
     info!("Auth service starting...");
-    let auth_service = WeatherAuthService::new(Arc::new(auth_repo), Arc::new(password_engine));
+    let auth_service = WeatherAuthService::new(Arc::new(auth_repo), Arc::new(passwords));
 
     info!("Auth service listening on {}", addr);
     Server::builder()

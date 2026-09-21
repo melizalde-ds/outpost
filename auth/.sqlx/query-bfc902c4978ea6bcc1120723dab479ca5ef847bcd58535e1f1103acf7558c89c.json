@@ -1,11 +1,11 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT public.verify(p_user_id => $1) AS \"active!: Active\"",
+  "query": "SELECT public.is_active(p_user_id => $1) AS \"active!\"",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "active!: Active",
+        "name": "active!",
         "type_info": "Bool",
         "origin": "Expression"
       }
@@ -19,5 +19,5 @@
       null
     ]
   },
-  "hash": "6ce5fce21e959405d506ba2a10fed6067b0e7669a4ad1458574fa718a6648048"
+  "hash": "bfc902c4978ea6bcc1120723dab479ca5ef847bcd58535e1f1103acf7558c89c"
 }

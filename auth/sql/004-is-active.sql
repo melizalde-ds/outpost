@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION public.verify(p_user_id uuid)
+CREATE OR REPLACE FUNCTION public.is_active(p_user_id uuid)
 RETURNS boolean
 LANGUAGE sql
 STABLE

@@ -9,14 +9,10 @@ pub enum PasswordError {
     ShutDown(#[from] AcquireError),
     #[error("Invalid argon2 configuration: {0}")]
     Config(#[from] argon2::Error),
-    #[error("Stored password hash is malformed or unsupported: {0}")]
-    CorruptHash(HashError),
-    #[error("Password hashing failed: {0}")]
-    Hash(HashError),
     #[error("Password hashing task did not complete: {0}")]
     Join(#[from] JoinError),
-    #[error("Unexpected error: {0}")]
-    Unexpected(#[from] HashError),
-    #[error("Password hashing failed due to error")]
-    HashingFailed(#[from] PhcError),
+    #[error("Password hashing failed: {0}")]
+    Hash(#[from] HashError),
+    #[error("Stored password hash is malformed or unsupported: {0}")]
+    CorruptHash(#[from] PhcError),
 }

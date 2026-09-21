@@ -1,39 +1,43 @@
 use std::sync::Arc;
 
-use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
 use crate::{
-    password::engine::PasswordService,
+    password::PasswordService,
     proto::auth::v1::{
         LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
-        RegisterResponse, auth_service_server::AuthService,
+        RegisterResponse,
     },
-    repository::{auth::AuthRepository, errors::RepositoryError},
+    repository::{AuthRepository, errors::RepositoryError},
     service::errors::AuthServiceError,
 };
 
 #[derive(Debug)]
 pub struct WeatherAuthService {
     repo: Arc<dyn AuthRepository>,
-    engine: Arc<dyn PasswordService>,
+    passwords: Arc<dyn PasswordService>,
 }
 
 impl WeatherAuthService {
-    pub fn new(repo: Arc<dyn AuthRepository>, engine: Arc<dyn PasswordService>) -> Self {
-        Self { repo, engine }
+    pub fn new(repo: Arc<dyn AuthRepository>, passwords: Arc<dyn PasswordService>) -> Self {
+        Self { repo, passwords }
     }
 
-    async fn register_inner(
+    pub(crate) async fn register(
         &self,
         req: RegisterRequest,
     ) -> Result<RegisterResponse, AuthServiceError> {
-        let repo = self.repo.clone();
-        let engine = self.engine.clone();
+        let password_hash = self.passwords.hash(req.password.into_bytes()).await?;
 
-        let password_hash = engine.hash(req.password.into_bytes()).await?;
-        match repo.insert_credentials(&req.username, password_hash).await {
-            Ok(_) => Ok(RegisterResponse::default()),
+        match self
+            .repo
+            .insert_credentials(&req.username, password_hash)
+            .await
+        {
+            Ok(user_id) => Ok(RegisterResponse {
+                user_id: user_id.0.to_string(),
+                ..Default::default()
+            }),
             Err(RepositoryError::UniqueViolation(_)) => {
                 Err(AuthServiceError::UserAlreadyExists(req.username))
             }
@@ -41,11 +45,8 @@ impl WeatherAuthService {
         }
     }
 
-    async fn login_inner(&self, req: LoginRequest) -> Result<LoginResponse, AuthServiceError> {
-        let repo = self.repo.clone();
-        let engine = self.engine.clone();
-
-        let Some(credentials) = repo.get_credentials(&req.username).await? else {
+    pub(crate) async fn login(&self, req: LoginRequest) -> Result<LoginResponse, AuthServiceError> {
+        let Some(credentials) = self.repo.get_credentials(&req.username).await? else {
             return Err(AuthServiceError::UserNotFound(req.username));
         };
 
@@ -53,58 +54,27 @@ impl WeatherAuthService {
             return Err(AuthServiceError::UserNotActive(credentials.user_id));
         }
 
-        let password_matches = engine
+        let password_matches = self
+            .passwords
             .verify(req.password.into_bytes(), &credentials.password_hash)
             .await?;
+
         match password_matches {
             true => Ok(LoginResponse::default()),
             false => Err(AuthServiceError::InvalidCredentials(req.username)),
         }
     }
 
-    async fn refresh_token_inner(
+    pub(crate) async fn refresh_token(
         &self,
         _req: RefreshTokenRequest,
     ) -> Result<RefreshTokenResponse, AuthServiceError> {
-        let repo = self.repo.clone();
         let user_id = Uuid::new_v4();
 
-        let Some(active) = repo.verify(&user_id).await? else {
-            return Err(AuthServiceError::UserNotFound(user_id.to_string()));
-        };
-
-        if !active.0 {
+        if !self.repo.is_active(&user_id).await? {
             return Err(AuthServiceError::UserNotActive(user_id));
         }
 
         Ok(RefreshTokenResponse::default())
-    }
-}
-
-#[tonic::async_trait]
-impl AuthService for WeatherAuthService {
-    async fn register(
-        &self,
-        request: Request<RegisterRequest>,
-    ) -> Result<Response<RegisterResponse>, Status> {
-        Ok(Response::new(
-            self.register_inner(request.into_inner()).await?,
-        ))
-    }
-
-    async fn login(
-        &self,
-        request: Request<LoginRequest>,
-    ) -> Result<Response<LoginResponse>, Status> {
-        Ok(Response::new(self.login_inner(request.into_inner()).await?))
-    }
-
-    async fn refresh_token(
-        &self,
-        request: Request<RefreshTokenRequest>,
-    ) -> Result<Response<RefreshTokenResponse>, Status> {
-        Ok(Response::new(
-            self.refresh_token_inner(request.into_inner()).await?,
-        ))
     }
 }
