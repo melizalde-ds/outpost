@@ -24,14 +24,12 @@ pub struct Active(pub bool);
 pub trait AuthRepository: Debug + Send + Sync + 'static {
     async fn insert_credentials(
         &self,
-        username: String,
+        username: &str,
         password_hash: String,
     ) -> Result<UserId, RepositoryError>;
-    async fn get_credentials(
-        &self,
-        username: String,
-    ) -> Result<Option<Credentials>, RepositoryError>;
-    async fn verify(&self, user_id: Uuid) -> Result<Option<Active>, RepositoryError>;
+    async fn get_credentials(&self, username: &str)
+    -> Result<Option<Credentials>, RepositoryError>;
+    async fn verify(&self, user_id: &Uuid) -> Result<Option<Active>, RepositoryError>;
 }
 
 #[derive(Debug)]
@@ -49,7 +47,7 @@ impl DbAuthRepository {
 impl AuthRepository for DbAuthRepository {
     async fn insert_credentials(
         &self,
-        username: String,
+        username: &str,
         password_hash: String,
     ) -> Result<UserId, RepositoryError> {
         let id: UserId = query_scalar!(
@@ -65,7 +63,7 @@ impl AuthRepository for DbAuthRepository {
 
     async fn get_credentials(
         &self,
-        username: String,
+        username: &str,
     ) -> Result<Option<Credentials>, RepositoryError> {
         let query_result = query_as!(
             Credentials,
@@ -78,9 +76,9 @@ impl AuthRepository for DbAuthRepository {
         Ok(query_result)
     }
 
-    async fn verify(&self, user_id: Uuid) -> Result<Option<Active>, RepositoryError> {
+    async fn verify(&self, user_id: &Uuid) -> Result<Option<Active>, RepositoryError> {
         let is_active = query_scalar!(
-            r#"SELECT active AS "active: Active" FROM public.auth WHERE user_id = $1"#,
+            r#"SELECT public.verify(p_user_id => $1) AS "active!: Active""#,
             user_id
         )
         .fetch_optional(&self.db_pool)

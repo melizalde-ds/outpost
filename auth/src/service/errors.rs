@@ -23,13 +23,18 @@ pub enum AuthServiceError {
 impl From<AuthServiceError> for Status {
     fn from(err: AuthServiceError) -> Self {
         match err {
-            AuthServiceError::InvalidCredentials(_) | AuthServiceError::UserNotActive(_) => {
+            e @ (AuthServiceError::InvalidCredentials(_) | AuthServiceError::UserNotActive(_)) => {
+                tracing::warn!(error = %e, "rejecting authentication");
                 Status::unauthenticated("invalid credentials")
             }
-            AuthServiceError::UserAlreadyExists(_) => {
+            e @ AuthServiceError::UserAlreadyExists(_) => {
+                tracing::trace!(error = %e, "username taken");
                 Status::already_exists("username unavailable")
             }
-            AuthServiceError::UserNotFound(_) => Status::not_found("user not found"),
+            e @ AuthServiceError::UserNotFound(_) => {
+                tracing::trace!(error = %e, "user not found");
+                Status::not_found("user not found")
+            }
             e @ (AuthServiceError::Repository(_) | AuthServiceError::UnexpectedError(_)) => {
                 tracing::error!(error = ?e, "internal failure");
                 Status::internal("internal error")
