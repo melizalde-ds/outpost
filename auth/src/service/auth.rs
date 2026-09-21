@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use argon2::password_hash;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
