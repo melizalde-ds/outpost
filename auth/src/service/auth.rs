@@ -1,12 +1,14 @@
 use std::sync::Arc;
 
-use crate::proto::auth::v1::auth_service_server::AuthService;
-use crate::proto::auth::v1::{
-    LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
-    RegisterResponse,
-};
-use crate::repository::auth::AuthRepository;
 use tonic::{Request, Response, Status};
+
+use crate::{
+    proto::auth::v1::{
+        LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
+        RegisterResponse, auth_service_server::AuthService,
+    },
+    repository::auth::AuthRepository,
+};
 
 #[derive(Debug)]
 pub struct WeatherAuthService {
