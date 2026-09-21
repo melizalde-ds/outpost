@@ -39,7 +39,7 @@ impl WeatherAuthService {
         let credentials = repo
             .get_credentials(&req.username)
             .await?
-            .ok_or(AuthServiceError::InvalidCredentials(req.username))?;
+            .ok_or(AuthServiceError::UserNotFound(req.username))?;
 
         if !credentials.active {
             return Err(AuthServiceError::UserNotActive(credentials.user_id));
@@ -58,7 +58,7 @@ impl WeatherAuthService {
         let active = repo
             .verify(&user_id)
             .await?
-            .ok_or(AuthServiceError::UserNotFound(user_id))?;
+            .ok_or(AuthServiceError::UserNotFound(user_id.to_string()))?;
 
         if !active.0 {
             return Err(AuthServiceError::UserNotActive(user_id));

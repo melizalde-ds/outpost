@@ -6,8 +6,8 @@ use crate::repository::errors::RepositoryError;
 
 #[derive(Error, Debug)]
 pub enum AuthServiceError {
-    #[error("User with ID {0} not found")]
-    UserNotFound(Uuid),
+    #[error("User {0} not found")]
+    UserNotFound(String),
     #[error("Invalid credentials provided for user {0}")]
     InvalidCredentials(String),
     #[error("User with ID {0} is not active")]
