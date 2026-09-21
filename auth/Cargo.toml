@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.104"
-argon2 = "0.6.0"
+argon2 = { version = "0.6.0", features = ["getrandom"] }
 chrono = { version = "0.4.45", features = ["serde"] }
 jsonwebtoken = "11.1.0"
 prost = "0.14.4"

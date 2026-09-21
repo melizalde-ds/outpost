@@ -1,9 +1,11 @@
 use std::sync::Arc;
 
+use argon2::password_hash;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
 use crate::{
+    password::engine::PasswordService,
     proto::auth::v1::{
         LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
         RegisterResponse, auth_service_server::AuthService,
@@ -14,17 +16,24 @@ use crate::{
 
 #[derive(Debug)]
 pub struct WeatherAuthService {
-    pub repo: Arc<dyn AuthRepository>,
+    repo: Arc<dyn AuthRepository>,
+    engine: Arc<dyn PasswordService>,
 }
 
 impl WeatherAuthService {
+    pub fn new(repo: Arc<dyn AuthRepository>, engine: Arc<dyn PasswordService>) -> Self {
+        Self { repo, engine }
+    }
+
     async fn register_inner(
         &self,
         req: RegisterRequest,
     ) -> Result<RegisterResponse, AuthServiceError> {
         let repo = self.repo.clone();
+        let engine = self.engine.clone();
 
-        match repo.insert_credentials(&req.username, req.password).await {
+        let password_hash = engine.hash(req.password.into_bytes()).await?;
+        match repo.insert_credentials(&req.username, password_hash).await {
             Ok(_) => Ok(RegisterResponse::default()),
             Err(RepositoryError::UniqueViolation(_)) => {
                 Err(AuthServiceError::UserAlreadyExists(req.username))
@@ -35,17 +44,23 @@ impl WeatherAuthService {
 
     async fn login_inner(&self, req: LoginRequest) -> Result<LoginResponse, AuthServiceError> {
         let repo = self.repo.clone();
+        let engine = self.engine.clone();
 
-        let credentials = repo
-            .get_credentials(&req.username)
-            .await?
-            .ok_or(AuthServiceError::UserNotFound(req.username))?;
+        let Some(credentials) = repo.get_credentials(&req.username).await? else {
+            return Err(AuthServiceError::UserNotFound(req.username));
+        };
 
         if !credentials.active {
             return Err(AuthServiceError::UserNotActive(credentials.user_id));
         }
 
-        Ok(LoginResponse::default())
+        let password_matches = engine
+            .verify(req.password.into_bytes(), &credentials.password_hash)
+            .await?;
+        match password_matches {
+            true => Ok(LoginResponse::default()),
+            false => Err(AuthServiceError::InvalidCredentials(req.username)),
+        }
     }
 
     async fn refresh_token_inner(
@@ -55,10 +70,9 @@ impl WeatherAuthService {
         let repo = self.repo.clone();
         let user_id = Uuid::new_v4();
 
-        let active = repo
-            .verify(&user_id)
-            .await?
-            .ok_or(AuthServiceError::UserNotFound(user_id.to_string()))?;
+        let Some(active) = repo.verify(&user_id).await? else {
+            return Err(AuthServiceError::UserNotFound(user_id.to_string()));
+        };
 
         if !active.0 {
             return Err(AuthServiceError::UserNotActive(user_id));

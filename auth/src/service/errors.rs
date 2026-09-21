@@ -1,9 +1,9 @@
 use thiserror::Error;
 use tonic::Status;
-use tracing::{error, info};
+use tracing::{error, info, warn};
 use uuid::Uuid;
 
-use crate::repository::errors::RepositoryError;
+use crate::{password::errors::PasswordError, repository::errors::RepositoryError};
 
 #[derive(Error, Debug)]
 pub enum AuthServiceError {
@@ -17,6 +17,8 @@ pub enum AuthServiceError {
     UserAlreadyExists(String),
     #[error("Repository error: {0}")]
     Repository(#[from] RepositoryError),
+    #[error("Password engine error: {0}")]
+    Password(#[from] PasswordError),
     #[error("Unexpected error occurred: {0}")]
     UnexpectedError(#[from] anyhow::Error),
 }
@@ -36,7 +38,13 @@ impl From<AuthServiceError> for Status {
                 info!(error = %e, "user not found");
                 Status::not_found("user not found")
             }
-            e @ (AuthServiceError::Repository(_) | AuthServiceError::UnexpectedError(_)) => {
+            e @ AuthServiceError::Password(PasswordError::ShutDown(_)) => {
+                warn!(error = %e, "password service shutting down");
+                Status::unavailable("service unavailable, retry later")
+            }
+            e @ (AuthServiceError::Repository(_)
+            | AuthServiceError::Password(_)
+            | AuthServiceError::UnexpectedError(_)) => {
                 error!(error = ?e, "internal failure");
                 Status::internal("internal error")
             }
