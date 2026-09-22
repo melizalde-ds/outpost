@@ -4,10 +4,27 @@ inputs:
 plugins:
   - remote: buf.build/protocolbuffers/python
     out: weather
+    types:
+      - weatherlab.auth.v1.AuthService
   - remote: buf.build/grpc/python
     out: weather
+    types:
+      - weatherlab.auth.v1.AuthService
   - local: protoc-gen-mypy
     out: weather
+    types:
+      - weatherlab.auth.v1.AuthService
   - local: protoc-gen-mypy_grpc
     out: weather
     opt: sync_only
+    types:
+      - weatherlab.auth.v1.AuthService
+  - remote: buf.build/protocolbuffers/csharp
+    out: key/Generated
+    types:
+      - weatherlab.key.v1.KeyService
+  - remote: buf.build/grpc/csharp
+    out: key/Generated
+    opt: no_client
+    types:
+      - weatherlab.key.v1.KeyService

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package weatherlab.key.v1;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+service KeyService {
+  rpc SignToken(SignTokenRequest) returns (SignTokenResponse);
+}
+
+message SignTokenRequest {
+  string subject = 1;
+  google.protobuf.Duration lifetime = 2;
+  map<string, string> claims = 3;
+}
+
+message SignTokenResponse {
+  string token = 1 [debug_redact = true];
+  google.protobuf.Timestamp expires_at = 2;
+  string key_id = 3;
+}
