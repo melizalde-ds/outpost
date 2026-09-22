@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package weatherstream.auth.v1;
+package weatherlab.auth.v1;
 
 import "google/protobuf/timestamp.proto";
 

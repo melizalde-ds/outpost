@@ -1,5 +1,5 @@
 from google.protobuf import json_format
-from weatherstream import get_auth
+from weatherlab import get_auth
 
 if __name__ == "__main__":
     username = "admin"

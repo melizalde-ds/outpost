@@ -5,7 +5,7 @@ fn main() -> anyhow::Result<()> {
     tonic_prost_build::configure()
         .build_client(false)
         .compile_protos(
-            &["../proto/weatherstream/auth/v1/auth.proto"],
+            &["../proto/weatherlab/auth/v1/auth.proto"],
             &["../proto"],
         )?;
 

@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from weatherstream.auth.v1 import auth_pb2 as weatherstream_dot_auth_dot_v1_dot_auth__pb2
+from weatherlab.auth.v1 import auth_pb2 as weatherlab_dot_auth_dot_v1_dot_auth__pb2
 
 
 class AuthServiceStub:
@@ -15,19 +15,19 @@ class AuthServiceStub:
             channel: A grpc.Channel.
         """
         self.Register = channel.unary_unary(
-                '/weatherstream.auth.v1.AuthService/Register',
-                request_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RegisterRequest.SerializeToString,
-                response_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RegisterResponse.FromString,
+                '/weatherlab.auth.v1.AuthService/Register',
+                request_serializer=weatherlab_dot_auth_dot_v1_dot_auth__pb2.RegisterRequest.SerializeToString,
+                response_deserializer=weatherlab_dot_auth_dot_v1_dot_auth__pb2.RegisterResponse.FromString,
                 _registered_method=True)
         self.Login = channel.unary_unary(
-                '/weatherstream.auth.v1.AuthService/Login',
-                request_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.LoginRequest.SerializeToString,
-                response_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.LoginResponse.FromString,
+                '/weatherlab.auth.v1.AuthService/Login',
+                request_serializer=weatherlab_dot_auth_dot_v1_dot_auth__pb2.LoginRequest.SerializeToString,
+                response_deserializer=weatherlab_dot_auth_dot_v1_dot_auth__pb2.LoginResponse.FromString,
                 _registered_method=True)
         self.RefreshToken = channel.unary_unary(
-                '/weatherstream.auth.v1.AuthService/RefreshToken',
-                request_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenRequest.SerializeToString,
-                response_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenResponse.FromString,
+                '/weatherlab.auth.v1.AuthService/RefreshToken',
+                request_serializer=weatherlab_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenRequest.SerializeToString,
+                response_deserializer=weatherlab_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenResponse.FromString,
                 _registered_method=True)
 
 
@@ -57,24 +57,24 @@ def add_AuthServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Register': grpc.unary_unary_rpc_method_handler(
                     servicer.Register,
-                    request_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RegisterRequest.FromString,
-                    response_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RegisterResponse.SerializeToString,
+                    request_deserializer=weatherlab_dot_auth_dot_v1_dot_auth__pb2.RegisterRequest.FromString,
+                    response_serializer=weatherlab_dot_auth_dot_v1_dot_auth__pb2.RegisterResponse.SerializeToString,
             ),
             'Login': grpc.unary_unary_rpc_method_handler(
                     servicer.Login,
-                    request_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.LoginRequest.FromString,
-                    response_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.LoginResponse.SerializeToString,
+                    request_deserializer=weatherlab_dot_auth_dot_v1_dot_auth__pb2.LoginRequest.FromString,
+                    response_serializer=weatherlab_dot_auth_dot_v1_dot_auth__pb2.LoginResponse.SerializeToString,
             ),
             'RefreshToken': grpc.unary_unary_rpc_method_handler(
                     servicer.RefreshToken,
-                    request_deserializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenRequest.FromString,
-                    response_serializer=weatherstream_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenResponse.SerializeToString,
+                    request_deserializer=weatherlab_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenRequest.FromString,
+                    response_serializer=weatherlab_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'weatherstream.auth.v1.AuthService', rpc_method_handlers)
+            'weatherlab.auth.v1.AuthService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('weatherstream.auth.v1.AuthService', rpc_method_handlers)
+    server.add_registered_method_handlers('weatherlab.auth.v1.AuthService', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
@@ -95,9 +95,9 @@ class AuthService:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/weatherstream.auth.v1.AuthService/Register',
-            weatherstream_dot_auth_dot_v1_dot_auth__pb2.RegisterRequest.SerializeToString,
-            weatherstream_dot_auth_dot_v1_dot_auth__pb2.RegisterResponse.FromString,
+            '/weatherlab.auth.v1.AuthService/Register',
+            weatherlab_dot_auth_dot_v1_dot_auth__pb2.RegisterRequest.SerializeToString,
+            weatherlab_dot_auth_dot_v1_dot_auth__pb2.RegisterResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -122,9 +122,9 @@ class AuthService:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/weatherstream.auth.v1.AuthService/Login',
-            weatherstream_dot_auth_dot_v1_dot_auth__pb2.LoginRequest.SerializeToString,
-            weatherstream_dot_auth_dot_v1_dot_auth__pb2.LoginResponse.FromString,
+            '/weatherlab.auth.v1.AuthService/Login',
+            weatherlab_dot_auth_dot_v1_dot_auth__pb2.LoginRequest.SerializeToString,
+            weatherlab_dot_auth_dot_v1_dot_auth__pb2.LoginResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -149,9 +149,9 @@ class AuthService:
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/weatherstream.auth.v1.AuthService/RefreshToken',
-            weatherstream_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenRequest.SerializeToString,
-            weatherstream_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenResponse.FromString,
+            '/weatherlab.auth.v1.AuthService/RefreshToken',
+            weatherlab_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenRequest.SerializeToString,
+            weatherlab_dot_auth_dot_v1_dot_auth__pb2.RefreshTokenResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -7,7 +7,7 @@ import grpc
 from grpc import Channel
 from pydantic import BaseModel, Field, HttpUrl, IPvAnyAddress
 
-from weatherstream.auth.v1.auth_pb2 import (
+from weatherlab.auth.v1.auth_pb2 import (
     LoginRequest,
     LoginResponse,
     RefreshTokenRequest,
@@ -15,7 +15,7 @@ from weatherstream.auth.v1.auth_pb2 import (
     RegisterRequest,
     RegisterResponse,
 )
-from weatherstream.auth.v1.auth_pb2_grpc import AuthServiceStub
+from weatherlab.auth.v1.auth_pb2_grpc import AuthServiceStub
 
 
 class AuthConfiguration(BaseModel):
