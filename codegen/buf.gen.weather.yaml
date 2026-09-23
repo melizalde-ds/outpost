@@ -1,0 +1,17 @@
+version: v2
+clean: true
+inputs:
+  - directory: proto
+    types:
+      - weatherlab.auth.v1.AuthService
+plugins:
+  - remote: buf.build/protocolbuffers/python
+    out: weather/gen
+  - remote: buf.build/grpc/python
+    out: weather/gen
+  - local: protoc-gen-mypy
+    out: weather/gen
+  - local: protoc-gen-mypy_grpc
+    out: weather/gen
+    opt:
+      - sync_only
