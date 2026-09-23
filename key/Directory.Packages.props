@@ -6,5 +6,6 @@
   <ItemGroup>
     <PackageVersion Include="Google.Protobuf" Version="3.36.2" />
     <PackageVersion Include="Grpc.AspNetCore.Server" Version="2.84.0" />
+    <PackageVersion Include="Portable.BouncyCastle" Version="1.9.0" />
   </ItemGroup>
 </Project>

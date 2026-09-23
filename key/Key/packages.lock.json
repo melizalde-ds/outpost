@@ -17,6 +17,12 @@
           "Grpc.Net.Common": "2.84.0"
         }
       },
+      "Portable.BouncyCastle": {
+        "type": "Direct",
+        "requested": "[1.9.0, )",
+        "resolved": "1.9.0",
+        "contentHash": "eZZBCABzVOek+id9Xy04HhmgykF0wZg9wpByzrWN7q8qEI0Qen9b7tfd7w8VA3dOeesumMG7C5ZPy0jk7PSRHw=="
+      },
       "Grpc.Core.Api": {
         "type": "Transitive",
         "resolved": "2.84.0",
