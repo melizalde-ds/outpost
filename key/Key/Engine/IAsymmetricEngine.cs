@@ -7,6 +7,4 @@ public interface IAsymmetricEngine<TPrivate, TPublic>
     where TPublic : AsymmetricKeyParameter
 {
     AsymmetricKeyPair<TPrivate, TPublic> GenerateKeyPair();
-
-    IEnumerable<TPublic> GetPublicKeys(TPrivate privateKey);
 }
