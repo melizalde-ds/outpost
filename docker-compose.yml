@@ -1,5 +1,5 @@
 include:
-  - ./auth/docker-compose.yml
+  - ./apps/auth/docker-compose.yml
 
 services:
     token_redis:

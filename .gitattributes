@@ -7,7 +7,7 @@
 *_pb2*.pyi          linguist-generated=true
 
 # Dotnet
-*/Generated/*.cs    linguist-generated=true
+**/Generated/*.cs   linguist-generated=true
 
 # Machine-written; collapse in diffs.
 Cargo.lock          linguist-generated=true

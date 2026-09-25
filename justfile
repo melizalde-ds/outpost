@@ -18,4 +18,4 @@ generate-weather:
     buf generate --template codegen/buf.gen.weather.yaml
 
 check-generated: generate
-    git diff --exit-code key/Key/Gen weather/gen
+    git diff --exit-code apps/key-provider/src/Generated apps/weather/gen
