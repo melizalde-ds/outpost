@@ -49,6 +49,10 @@ namespace KeyProvider.Grpc.V1 {
     static readonly grpc::Marshaller<global::KeyProvider.Grpc.V1.SignTokenRequest> __Marshaller_weatherlab_key_v1_SignTokenRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::KeyProvider.Grpc.V1.SignTokenRequest.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Marshaller<global::KeyProvider.Grpc.V1.SignTokenResponse> __Marshaller_weatherlab_key_v1_SignTokenResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::KeyProvider.Grpc.V1.SignTokenResponse.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::KeyProvider.Grpc.V1.GetVerificationKeysRequest> __Marshaller_weatherlab_key_v1_GetVerificationKeysRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::KeyProvider.Grpc.V1.GetVerificationKeysRequest.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::KeyProvider.Grpc.V1.GetVerificationKeysResponse> __Marshaller_weatherlab_key_v1_GetVerificationKeysResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::KeyProvider.Grpc.V1.GetVerificationKeysResponse.Parser));
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Method<global::KeyProvider.Grpc.V1.SignTokenRequest, global::KeyProvider.Grpc.V1.SignTokenResponse> __Method_SignToken = new grpc::Method<global::KeyProvider.Grpc.V1.SignTokenRequest, global::KeyProvider.Grpc.V1.SignTokenResponse>(
@@ -57,6 +61,14 @@ namespace KeyProvider.Grpc.V1 {
         "SignToken",
         __Marshaller_weatherlab_key_v1_SignTokenRequest,
         __Marshaller_weatherlab_key_v1_SignTokenResponse);
+
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Method<global::KeyProvider.Grpc.V1.GetVerificationKeysRequest, global::KeyProvider.Grpc.V1.GetVerificationKeysResponse> __Method_GetVerificationKeys = new grpc::Method<global::KeyProvider.Grpc.V1.GetVerificationKeysRequest, global::KeyProvider.Grpc.V1.GetVerificationKeysResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "GetVerificationKeys",
+        __Marshaller_weatherlab_key_v1_GetVerificationKeysRequest,
+        __Marshaller_weatherlab_key_v1_GetVerificationKeysResponse);
 
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor
@@ -74,6 +86,12 @@ namespace KeyProvider.Grpc.V1 {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::System.Threading.Tasks.Task<global::KeyProvider.Grpc.V1.GetVerificationKeysResponse> GetVerificationKeys(global::KeyProvider.Grpc.V1.GetVerificationKeysRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
     }
 
     /// <summary>Creates service definition that can be registered with a server</summary>
@@ -82,7 +100,8 @@ namespace KeyProvider.Grpc.V1 {
     public static grpc::ServerServiceDefinition BindService(KeyServiceBase serviceImpl)
     {
       return grpc::ServerServiceDefinition.CreateBuilder()
-          .AddMethod(__Method_SignToken, serviceImpl.SignToken).Build();
+          .AddMethod(__Method_SignToken, serviceImpl.SignToken)
+          .AddMethod(__Method_GetVerificationKeys, serviceImpl.GetVerificationKeys).Build();
     }
 
     /// <summary>Register service method with a service binder with or without implementation. Useful when customizing the service binding logic.
@@ -93,6 +112,7 @@ namespace KeyProvider.Grpc.V1 {
     public static void BindService(grpc::ServiceBinderBase serviceBinder, KeyServiceBase serviceImpl)
     {
       serviceBinder.AddMethod(__Method_SignToken, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::KeyProvider.Grpc.V1.SignTokenRequest, global::KeyProvider.Grpc.V1.SignTokenResponse>(serviceImpl.SignToken));
+      serviceBinder.AddMethod(__Method_GetVerificationKeys, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::KeyProvider.Grpc.V1.GetVerificationKeysRequest, global::KeyProvider.Grpc.V1.GetVerificationKeysResponse>(serviceImpl.GetVerificationKeys));
     }
 
   }

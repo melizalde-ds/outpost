@@ -9,6 +9,7 @@ option csharp_namespace = "KeyProvider.Grpc.V1";
 
 service KeyService {
   rpc SignToken(SignTokenRequest) returns (SignTokenResponse);
+  rpc GetVerificationKeys(GetVerificationKeysRequest) returns (GetVerificationKeysResponse);
 }
 
 message SignTokenRequest {
@@ -21,4 +22,16 @@ message SignTokenResponse {
   string token = 1 [debug_redact = true];
   google.protobuf.Timestamp expires_at = 2;
   string key_id = 3;
+}
+
+message GetVerificationKeysRequest {}
+
+message GetVerificationKeysResponse {
+  repeated VerificationKey keys = 1;
+}
+
+
+message VerificationKey {
+  string key_id = 1;
+  bytes public_key = 2;
 }
