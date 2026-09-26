@@ -4,10 +4,8 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Weatherlab.EntityFrameworkCore.AppendOnly;
 
-public sealed class AppendOnlyInterceptor(TimeProvider timeProvider) : SaveChangesInterceptor
+public sealed class AppendOnlyInterceptor : SaveChangesInterceptor
 {
-    private readonly TimeProvider _timeProvider = timeProvider;
-
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData,
         InterceptionResult<int> result)
     {
@@ -24,15 +22,14 @@ public sealed class AppendOnlyInterceptor(TimeProvider timeProvider) : SaveChang
         return ValueTask.FromResult(result);
     }
 
-    private void Apply(DbContext? context)
+    private static void Apply(DbContext? context)
     {
         if (context is null)
         {
             return;
         }
 
-        DateTimeOffset now = _timeProvider.GetUtcNow();
-        var violations = new List<string>();
+        List<string> violations = new();
 
         foreach (EntityEntry entry in context.ChangeTracker.Entries())
         {
@@ -41,17 +38,9 @@ public sealed class AppendOnlyInterceptor(TimeProvider timeProvider) : SaveChang
                 continue;
             }
 
-            switch (entry.State)
+            if (entry.State is EntityState.Modified or EntityState.Deleted)
             {
-                case EntityState.Added:
-                    var createdAtProperty = (string)entry.Metadata
-                        .FindAnnotation(AppendOnlyAttribute.CreatedAtAnnotationName)!.Value!;
-                    entry.Property(createdAtProperty).CurrentValue = now;
-                    break;
-
-                case EntityState.Modified or EntityState.Deleted:
-                    violations.Add($"{entry.Metadata.DisplayName()} ({entry.State})");
-                    break;
+                violations.Add($"{entry.Metadata.DisplayName()} ({entry.State})");
             }
         }
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using Weatherlab.EntityFrameworkCore.AppendOnly;
+using Weatherlab.EntityFrameworkCore.CreatedAt;
 
 namespace KeyProvider.Models;
 
@@ -12,5 +13,6 @@ internal sealed class KeyProviderDbContext(DbContextOptions<KeyProviderDbContext
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Conventions.Add(_ => new AppendOnlyConvention());
+        configurationBuilder.Conventions.Add(_ => new CreatedAtConvention());
     }
 }

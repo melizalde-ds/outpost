@@ -6,14 +6,14 @@
     <UserSecretsId>67994495-d2d1-4924-aeaa-c2540c485668</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BouncyCastle.Cryptography" />
-    <PackageReference Include="EFCore.NamingConventions" />
-    <PackageReference Include="Google.Protobuf" />
-    <PackageReference Include="Grpc.AspNetCore.Server" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="BouncyCastle.Cryptography"/>
+    <PackageReference Include="EFCore.NamingConventions"/>
+    <PackageReference Include="Google.Protobuf"/>
+    <PackageReference Include="Grpc.AspNetCore.Server"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all"/>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\libs\shared\efcore-extensions-dotnet\Weatherlab.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\libs\shared\efcore-extensions-dotnet\Weatherlab.EntityFrameworkCore.csproj"/>
   </ItemGroup>
 </Project>

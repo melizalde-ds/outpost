@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Weatherlab.EntityFrameworkCore.AppendOnly;
+using Weatherlab.EntityFrameworkCore.CreatedAt;
 
 namespace KeyProvider.Models;
 
@@ -14,8 +15,7 @@ internal sealed class KeyPairRecord
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public required Guid KeyPairId { get; init; }
 
-    [CreatedAt]
-    public DateTimeOffset CreatedAt { get; init; }
+    [CreatedAt] public DateTimeOffset CreatedAt { get; init; }
 
     public required string PublicKey { get; init; }
     public required string PrivateKey { get; init; }
