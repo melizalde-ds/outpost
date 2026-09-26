@@ -1,9 +1,11 @@
+using KeyProvider.Models;
+
 using Microsoft.EntityFrameworkCore;
 
 using Weatherlab.EntityFrameworkCore.AppendOnly;
 using Weatherlab.EntityFrameworkCore.CreatedAt;
 
-namespace KeyProvider.Models;
+namespace KeyProvider.Data;
 
 internal sealed class KeyProviderDbContext(DbContextOptions<KeyProviderDbContext> options) : DbContext(options)
 {

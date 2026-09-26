@@ -1,3 +1,3 @@
-namespace KeyProvider.Keys;
+namespace KeyProvider.CryptoKeys;
 
 public abstract record CryptoKey;

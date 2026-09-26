@@ -3,7 +3,7 @@ using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-namespace KeyProvider.Keys;
+namespace KeyProvider.CryptoKeys;
 
 internal sealed class
     Ed25519KeyGenerator : IAsymmetricKeyGenerator<Ed25519PrivateKeyParameters, Ed25519PublicKeyParameters>

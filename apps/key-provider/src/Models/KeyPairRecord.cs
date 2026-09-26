@@ -17,8 +17,8 @@ internal sealed class KeyPairRecord
 
     [CreatedAt] public DateTimeOffset CreatedAt { get; init; }
 
-    public required string PublicKey { get; init; }
-    public required string PrivateKey { get; init; }
+    public required byte[] PublicKey { get; init; }
+    public required byte[] PrivateKey { get; init; }
     public required DateTimeOffset ExpiresAt { get; init; }
 
     public required Guid KeyPairRotationJobId { get; init; }

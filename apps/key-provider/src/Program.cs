@@ -1,4 +1,4 @@
-using KeyProvider.Keys;
+using KeyProvider.CryptoKeys;
 using KeyProvider.Worker;
 
 using Weatherlab.EntityFrameworkCore.AppendOnly;

@@ -1,5 +1,5 @@
 using Org.BouncyCastle.Crypto.Parameters;
 
-namespace KeyProvider.Keys;
+namespace KeyProvider.CryptoKeys;
 
 public sealed record SymmetricKey(KeyParameter Key) : CryptoKey;

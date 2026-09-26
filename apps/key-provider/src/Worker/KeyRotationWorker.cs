@@ -1,4 +1,4 @@
-using KeyProvider.Keys;
+using KeyProvider.CryptoKeys;
 
 using Microsoft.Extensions.Options;
 
@@ -11,14 +11,12 @@ internal sealed class KeyRotationWorker(
     ILogger<KeyRotationWorker> logger,
     Ed25519KeyGenerator engine) : BackgroundService
 {
-    private readonly Ed25519KeyGenerator _engine = engine;
-    private readonly ILogger<KeyRotationWorker> _logger = logger;
     private readonly KeyRotationOptions _options = options.Value;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Worker started with interval {Interval}", _options.Interval);
-        AsymmetricKeyPair<Ed25519PrivateKeyParameters, Ed25519PublicKeyParameters> keyPair = _engine.GenerateKeyPair();
-        _logger.LogInformation("Keypair generated");
+        logger.LogInformation("Worker started with interval {Interval}", _options.Interval);
+        AsymmetricKeyPair<Ed25519PrivateKeyParameters, Ed25519PublicKeyParameters> keyPair = engine.GenerateKeyPair();
+        logger.LogInformation("Keypair generated");
     }
 }

@@ -1,6 +1,6 @@
 using Org.BouncyCastle.Crypto;
 
-namespace KeyProvider.Keys;
+namespace KeyProvider.CryptoKeys;
 
 public record AsymmetricKeyPair<TPrivate, TPublic>(TPrivate PrivateKey, TPublic PublicKey) : CryptoKey
     where TPrivate : AsymmetricKeyParameter
