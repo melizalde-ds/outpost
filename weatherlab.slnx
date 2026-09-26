@@ -1,3 +1,12 @@
 <Solution>
-  <Project Path="apps/key-provider/src/KeyProvider.csproj" />
+  <Folder Name="/apps/"/>
+  <Folder Name="/apps/key-provider/"/>
+  <Folder Name="/apps/key-provider/src/">
+    <Project Path="apps/key-provider/src/KeyProvider.csproj"/>
+  </Folder>
+  <Folder Name="/libs/"/>
+  <Folder Name="/libs/shared/"/>
+  <Folder Name="/libs/shared/efcore-extensions-dotnet/">
+    <Project Path="libs/shared/efcore-extensions-dotnet/Weatherlab.EntityFrameworkCore.csproj"/>
+  </Folder>
 </Solution>

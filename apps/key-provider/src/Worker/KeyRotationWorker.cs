@@ -2,18 +2,23 @@ using KeyProvider.Keys;
 
 using Microsoft.Extensions.Options;
 
+using Org.BouncyCastle.Crypto.Parameters;
+
 namespace KeyProvider.Worker;
 
-internal sealed class KeyRotationWorker(IOptions<KeyRotationOptions> options, ILogger<KeyRotationWorker> logger, Ed25519KeyGenerator engine) : BackgroundService
+internal sealed class KeyRotationWorker(
+    IOptions<KeyRotationOptions> options,
+    ILogger<KeyRotationWorker> logger,
+    Ed25519KeyGenerator engine) : BackgroundService
 {
-    private readonly KeyRotationOptions _options = options.Value;
     private readonly Ed25519KeyGenerator _engine = engine;
     private readonly ILogger<KeyRotationWorker> _logger = logger;
+    private readonly KeyRotationOptions _options = options.Value;
 
-    async protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        this._logger.LogInformation("Worker started with interval {Interval}", _options.Interval);
-        var keyPair = _engine.GenerateKeyPair();
-        this._logger.LogInformation("Keypair generated");
+        _logger.LogInformation("Worker started with interval {Interval}", _options.Interval);
+        AsymmetricKeyPair<Ed25519PrivateKeyParameters, Ed25519PublicKeyParameters> keyPair = _engine.GenerateKeyPair();
+        _logger.LogInformation("Keypair generated");
     }
 }
