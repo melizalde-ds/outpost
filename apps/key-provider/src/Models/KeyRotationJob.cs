@@ -21,4 +21,7 @@ internal sealed class KeyRotationJob
     [CreatedAt] public DateTimeOffset FinishedAt { get; init; }
 
     public required bool Success { get; init; }
+
+    [MaxLength(256)]
+    public string? ErrorMessage { get; init; }
 }
