@@ -11,6 +11,7 @@
     <PackageReference Include="EFCore.NamingConventions" />
     <PackageReference Include="Google.Protobuf" />
     <PackageReference Include="Grpc.AspNetCore.Server" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Polly.Core" />
