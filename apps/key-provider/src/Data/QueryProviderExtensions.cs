@@ -10,9 +10,13 @@ internal static class QueryProviderExtensions
     }
 
     internal static IQueryable<KeyPairRecord> Verifiable(this IQueryable<KeyPairRecord> query,
-        TimeProvider timeProvider, TimeSpan since)
+        TimeProvider timeProvider)
     {
-        DateTimeOffset target = timeProvider.GetUtcNow() - since;
-        return query.Where(r => r.ExpiresAt > target);
+        return query.Where(r => r.ExpiresAt > timeProvider.GetUtcNow());
+    }
+
+    internal static IQueryable<KeyRotationJob> NewestFirst(this IQueryable<KeyRotationJob> query)
+    {
+        return query.Where(k => k.Success == true).OrderByDescending(k => k.FinishedAt);
     }
 }

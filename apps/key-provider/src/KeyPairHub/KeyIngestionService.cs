@@ -1,14 +1,10 @@
 using KeyProvider.Data;
 using KeyProvider.Models;
 
-using Microsoft.Extensions.Options;
+namespace KeyProvider.KeyPairHub;
 
-namespace KeyProvider.KeyPairServices;
-
-internal sealed class KeyIngestionService(KeyProviderDbContext context, IOptions<KeyIngestionOptions> options)
+internal sealed class KeyIngestionService(KeyProviderDbContext context)
 {
-    private readonly KeyIngestionOptions _options = options.Value;
-
     internal async Task SaveRotationAsync(KeyPairRecord record, CancellationToken ct = default)
     {
         if (!record.RotationJob.Success)

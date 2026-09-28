@@ -8,6 +8,12 @@
         "resolved": "2.7.0",
         "contentHash": "U+12df8UEWHgBi04YVf/Lgi2dy3SItlIYvHjjEVa/BngCQIzDCDRBk50DDByCfDvSbe5pRNFr3b7UrVK2kMcLw=="
       },
+      "Cronos": {
+        "type": "Direct",
+        "requested": "[0.13.0, )",
+        "resolved": "0.13.0",
+        "contentHash": "Nkve+Yi0+ol3ntSBRHeW0ka9cJQ8vndSUvvkXqF9LVqwpoqWueyxu/HS275r98RDOmF7/mzRnZW5XXUBXob+TA=="
+      },
       "EFCore.NamingConventions": {
         "type": "Direct",
         "requested": "[10.0.1, )",
@@ -59,6 +65,21 @@
           "Microsoft.EntityFrameworkCore": "[10.0.4, 11.0.0)",
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.4, 11.0.0)",
           "Npgsql": "10.0.3"
+        }
+      },
+      "Polly.Core": {
+        "type": "Direct",
+        "requested": "[8.8.0, )",
+        "resolved": "8.8.0",
+        "contentHash": "TewV9uNFsoRFggoFbTAGFwsMYPuckA+wTIpQPyhLL9BANRPQRENz2S4bwATrB3HBOakN5oKLFIllPiDnVecmJg=="
+      },
+      "Polly.Extensions": {
+        "type": "Direct",
+        "requested": "[8.8.0, )",
+        "resolved": "8.8.0",
+        "contentHash": "Xfdb9l/IcEXoWzJAMTfiWM20Cp2+/Kn/BmIEkDXwhy+DdEmdEt778xEkQsmDqXFoR15cA7aKamSHjbDQvcdUXg==",
+        "dependencies": {
+          "Polly.Core": "8.8.0"
         }
       },
       "Grpc.Core.Api": {

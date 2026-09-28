@@ -1,25 +1,26 @@
+﻿using System.Data.Common;
+
 using KeyProvider.CryptoKeys;
-using KeyProvider.KeyPairServices;
+using KeyProvider.KeyPairHub;
 using KeyProvider.Models;
 
 using Microsoft.Extensions.Options;
 
 using Org.BouncyCastle.Crypto.Parameters;
 
-namespace KeyProvider.Worker;
+namespace KeyProvider.KeyRotation;
 
-internal sealed class KeyRotationWorker(
+internal sealed class KeyRotationService(
+    ILogger<KeyRotationService> logger,
     IOptions<KeyRotationOptions> options,
-    ILogger<KeyRotationWorker> logger,
     Ed25519KeyGenerator engine,
     IServiceScopeFactory scopeFactory,
-    TimeProvider timeProvider) : BackgroundService
+    TimeProvider timeProvider)
 {
     private const int MaxErrorMessageLength = 512;
-
     private readonly KeyRotationOptions _options = options.Value;
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    internal async Task<KeyRotationResult> KeyRotationAsync(CancellationToken cts = default)
     {
         DateTimeOffset startTime = timeProvider.GetUtcNow();
         Guid jobId = Guid.CreateVersion7(startTime);
@@ -47,25 +48,35 @@ internal sealed class KeyRotationWorker(
                 CreatedAt = startTime,
                 PublicKey = keyPair.PublicKey.GetEncoded(),
                 PrivateKey = keyPair.PrivateKey.GetEncoded(),
-                ExpiresAt = startTime + _options.Timeout,
+                ExpiresAt = startTime + _options.Lifespan,
                 KeyPairRotationJobId = job.KeyPairRotationJobId,
                 RotationJob = job
             };
 
-            await ingestion.SaveRotationAsync(record, stoppingToken);
+            await ingestion.SaveRotationAsync(record, cts);
+            return new KeyRotationSucceeded(startTime, timeProvider.GetUtcNow(), record.KeyPairId);
         }
-        catch (OperationCanceledException e) when (stoppingToken.IsCancellationRequested)
+        catch (OperationCanceledException e) when (cts.IsCancellationRequested)
         {
             logger.LogInformation(e, "Cancellation requested");
-            // stoppingToken is already cancelled, so the failure write can't use it.
             await TrySaveFailedRotationAsync(jobId, startTime, e, CancellationToken.None);
+            // Rethrow so the caller (and the resilience pipeline) stops instead of treating it as a retryable failure.
             throw;
         }
         catch (Exception e)
         {
             logger.LogError(e, "Unexpected error");
-            await TrySaveFailedRotationAsync(jobId, startTime, e, stoppingToken);
+            await TrySaveFailedRotationAsync(jobId, startTime, e, cts);
+            return new KeyRotationFailed(startTime, timeProvider.GetUtcNow(), $"{e.GetType().Name}: {e.Message}",
+                IsTransient(e), e);
         }
+    }
+
+    // EF wraps provider errors in DbUpdateException, so the inner exception is checked as well.
+    private static bool IsTransient(Exception e)
+    {
+        return e is TimeoutException or DbException { IsTransient: true }
+               || e.InnerException is TimeoutException or DbException { IsTransient: true };
     }
 
     private async Task TrySaveFailedRotationAsync(Guid jobId, DateTimeOffset startTime, Exception error,
@@ -94,5 +105,13 @@ internal sealed class KeyRotationWorker(
         {
             logger.LogError(e, "[{JobID}] - Failed to record failed rotation", jobId);
         }
+    }
+
+    internal async Task<KeyRotationJob?> GetLatestRotationAsync(CancellationToken ct)
+    {
+        await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
+        KeyRetrievalService retrieval = scope.ServiceProvider.GetRequiredService<KeyRetrievalService>();
+
+        return await retrieval.GetRotationJobAsync(ct);
     }
 }
