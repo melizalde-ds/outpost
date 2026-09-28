@@ -53,6 +53,10 @@ namespace KeyProvider.Grpc.V1 {
     static readonly grpc::Marshaller<global::KeyProvider.Grpc.V1.GetVerificationKeysRequest> __Marshaller_weatherlab_key_v1_GetVerificationKeysRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::KeyProvider.Grpc.V1.GetVerificationKeysRequest.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Marshaller<global::KeyProvider.Grpc.V1.GetVerificationKeysResponse> __Marshaller_weatherlab_key_v1_GetVerificationKeysResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::KeyProvider.Grpc.V1.GetVerificationKeysResponse.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::KeyProvider.Grpc.V1.NotifyKeyRotationRequest> __Marshaller_weatherlab_key_v1_NotifyKeyRotationRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::KeyProvider.Grpc.V1.NotifyKeyRotationRequest.Parser));
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Marshaller<global::KeyProvider.Grpc.V1.NotifyKeyRotationResponse> __Marshaller_weatherlab_key_v1_NotifyKeyRotationResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::KeyProvider.Grpc.V1.NotifyKeyRotationResponse.Parser));
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     static readonly grpc::Method<global::KeyProvider.Grpc.V1.SignTokenRequest, global::KeyProvider.Grpc.V1.SignTokenResponse> __Method_SignToken = new grpc::Method<global::KeyProvider.Grpc.V1.SignTokenRequest, global::KeyProvider.Grpc.V1.SignTokenResponse>(
@@ -69,6 +73,14 @@ namespace KeyProvider.Grpc.V1 {
         "GetVerificationKeys",
         __Marshaller_weatherlab_key_v1_GetVerificationKeysRequest,
         __Marshaller_weatherlab_key_v1_GetVerificationKeysResponse);
+
+    [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+    static readonly grpc::Method<global::KeyProvider.Grpc.V1.NotifyKeyRotationRequest, global::KeyProvider.Grpc.V1.NotifyKeyRotationResponse> __Method_NotifyKeyRotation = new grpc::Method<global::KeyProvider.Grpc.V1.NotifyKeyRotationRequest, global::KeyProvider.Grpc.V1.NotifyKeyRotationResponse>(
+        grpc::MethodType.Unary,
+        __ServiceName,
+        "NotifyKeyRotation",
+        __Marshaller_weatherlab_key_v1_NotifyKeyRotationRequest,
+        __Marshaller_weatherlab_key_v1_NotifyKeyRotationResponse);
 
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor
@@ -92,6 +104,12 @@ namespace KeyProvider.Grpc.V1 {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
+      [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
+      public virtual global::System.Threading.Tasks.Task<global::KeyProvider.Grpc.V1.NotifyKeyRotationResponse> NotifyKeyRotation(global::KeyProvider.Grpc.V1.NotifyKeyRotationRequest request, grpc::ServerCallContext context)
+      {
+        throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
+      }
+
     }
 
     /// <summary>Creates service definition that can be registered with a server</summary>
@@ -101,7 +119,8 @@ namespace KeyProvider.Grpc.V1 {
     {
       return grpc::ServerServiceDefinition.CreateBuilder()
           .AddMethod(__Method_SignToken, serviceImpl.SignToken)
-          .AddMethod(__Method_GetVerificationKeys, serviceImpl.GetVerificationKeys).Build();
+          .AddMethod(__Method_GetVerificationKeys, serviceImpl.GetVerificationKeys)
+          .AddMethod(__Method_NotifyKeyRotation, serviceImpl.NotifyKeyRotation).Build();
     }
 
     /// <summary>Register service method with a service binder with or without implementation. Useful when customizing the service binding logic.
@@ -113,6 +132,7 @@ namespace KeyProvider.Grpc.V1 {
     {
       serviceBinder.AddMethod(__Method_SignToken, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::KeyProvider.Grpc.V1.SignTokenRequest, global::KeyProvider.Grpc.V1.SignTokenResponse>(serviceImpl.SignToken));
       serviceBinder.AddMethod(__Method_GetVerificationKeys, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::KeyProvider.Grpc.V1.GetVerificationKeysRequest, global::KeyProvider.Grpc.V1.GetVerificationKeysResponse>(serviceImpl.GetVerificationKeys));
+      serviceBinder.AddMethod(__Method_NotifyKeyRotation, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::KeyProvider.Grpc.V1.NotifyKeyRotationRequest, global::KeyProvider.Grpc.V1.NotifyKeyRotationResponse>(serviceImpl.NotifyKeyRotation));
     }
 
   }
