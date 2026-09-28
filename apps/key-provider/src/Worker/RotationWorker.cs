@@ -21,10 +21,10 @@ internal sealed class RotationWorker(
 {
     private readonly WorkerOptions _options = options.Value;
 
-    private readonly CronExpression _schedule = CronExpression.Parse(options.Value.Expression);
-
     private readonly ResiliencePipeline<KeyRotationResult> _pipeline =
         pipelineProvider.GetPipeline<KeyRotationResult>(RotationRetryOptions.PipelineName);
+
+    private readonly CronExpression _schedule = CronExpression.Parse(options.Value.Expression);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

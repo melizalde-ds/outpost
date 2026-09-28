@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
 using Weatherlab.EntityFrameworkCore.AppendOnly;
@@ -19,6 +20,19 @@ internal static class DataServiceCollectionExtensions
                 sp.GetRequiredService<AppendOnlyInterceptor>(),
                 sp.GetRequiredService<CreatedAtInterceptor>()));
 
+        return services;
+    }
+
+    internal static IServiceCollection AddDataProtectionDbContext(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddDbContext<DataProtectionDbContext>(options =>
+        {
+            options.UseNpgsql(configuration.GetConnectionString("DataProtection"));
+        });
+
+        services.AddDataProtection().SetApplicationName("key-provider")
+            .PersistKeysToDbContext<DataProtectionDbContext>();
         return services;
     }
 }

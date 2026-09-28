@@ -15,6 +15,7 @@ WebApplicationBuilder build = WebApplication.CreateBuilder(args);
 build.Services.AddSingleton(TimeProvider.System);
 
 build.Services.AddKeyProviderDbContext(build.Configuration);
+build.Services.AddDataProtectionDbContext(build.Configuration);
 
 build.Services.AddSingleton<Ed25519KeyGenerator>();
 
