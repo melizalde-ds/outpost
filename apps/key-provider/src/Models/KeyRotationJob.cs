@@ -16,12 +16,10 @@ internal sealed class KeyRotationJob
     public required Guid KeyPairRotationJobId { get; init; }
 
     public required DateTimeOffset StartedAt { get; init; }
-    public required int Tries { get; init; }
 
     [CreatedAt] public DateTimeOffset FinishedAt { get; init; }
 
     public required bool Success { get; init; }
 
-    [MaxLength(256)]
-    public string? ErrorMessage { get; init; }
+    [MaxLength(512)] public string? ErrorMessage { get; init; }
 }

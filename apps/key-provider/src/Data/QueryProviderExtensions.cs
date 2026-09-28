@@ -1,4 +1,4 @@
-﻿using KeyProvider.Models;
+using KeyProvider.Models;
 
 namespace KeyProvider.Data;
 
@@ -9,8 +9,10 @@ internal static class QueryProviderExtensions
         return query.OrderByDescending(p => p.CreatedAt);
     }
 
-    internal static IQueryable<KeyPairRecord> CreatedSince(this IQueryable<KeyPairRecord> query, DateTimeOffset since)
+    internal static IQueryable<KeyPairRecord> Verifiable(this IQueryable<KeyPairRecord> query,
+        TimeProvider timeProvider, TimeSpan since)
     {
-        return query.OrderBy(p => p.CreatedAt).Where(k => k.CreatedAt > since);
+        DateTimeOffset target = timeProvider.GetUtcNow() - since;
+        return query.Where(r => r.ExpiresAt > target);
     }
 }

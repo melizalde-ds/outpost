@@ -1,18 +1,26 @@
 using KeyProvider.CryptoKeys;
+using KeyProvider.Data;
+using KeyProvider.KeyPairServices;
 using KeyProvider.Worker;
-
-using Weatherlab.EntityFrameworkCore.AppendOnly;
-using Weatherlab.EntityFrameworkCore.CreatedAt;
 
 WebApplicationBuilder build = WebApplication.CreateBuilder(args);
 
 build.Services.AddSingleton(TimeProvider.System);
-build.Services.AddSingleton<AppendOnlyInterceptor>();
-build.Services.AddSingleton<CreatedAtInterceptor>();
+
+build.Services.AddKeyProviderDbContext(build.Configuration);
 
 build.Services.AddSingleton<Ed25519KeyGenerator>();
 
-build.Services.Configure<KeyRotationOptions>(build.Configuration.GetSection("KeyRotation"));
+build.Services.AddOptionsWithValidateOnStart<KeyIngestionOptions>().BindConfiguration("KeyIngestion")
+    .ValidateDataAnnotations();
+build.Services.AddScoped<KeyIngestionService>();
+
+build.Services.AddOptionsWithValidateOnStart<KeyRetrievalOptions>().BindConfiguration("KeyRetrieval")
+    .ValidateDataAnnotations();
+build.Services.AddScoped<KeyRetrievalService>();
+
+build.Services.AddOptionsWithValidateOnStart<KeyRotationOptions>().BindConfiguration("KeyRotation")
+    .ValidateDataAnnotations();
 build.Services.AddHostedService<KeyRotationWorker>();
 
 WebApplication app = build.Build();
