@@ -22,7 +22,6 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     info!("Starting WeatherLab Auth Service...");
-    // Insecure - for demonstration purposes only. In production, use Hashicorp Vault or AWS Secrets Manager.
     let pepper = env::var("AUTH_PEPPER")?;
 
     let addr: SocketAddr = "[::1]:50051".parse()?;

@@ -8,7 +8,6 @@ lint:
 breaking:
     buf breaking --against '.git#branch=main'
 
-# auth (Rust) generates its own code via build.rs
 generate: generate-key generate-weather
 
 generate-key:
@@ -19,3 +18,14 @@ generate-weather:
 
 check-generated: generate
     git diff --exit-code apps/key-provider/src/Generated apps/weather/gen
+
+key_provider := "apps/key-provider/src"
+
+migrations-script:
+    dotnet ef migrations script --idempotent --project {{key_provider}} --context KeyProviderDbContext --output apps/key-provider/migrations/key_provider.sql
+    dotnet ef migrations script --idempotent --project {{key_provider}} --context DataProtectionDbContext --output apps/key-provider/migrations/data_protection.sql
+    sed -i '1s/^\xEF\xBB\xBF//' apps/key-provider/migrations/*.sql
+
+migrations-update:
+    dotnet ef database update --project {{key_provider}} --context KeyProviderDbContext --connection "$(dotnet user-secrets list --project {{key_provider}} | sed -n 's/^ConnectionStrings:KeyProviderMigration = //p')"
+    dotnet ef database update --project {{key_provider}} --context DataProtectionDbContext --connection "$(dotnet user-secrets list --project {{key_provider}} | sed -n 's/^ConnectionStrings:DataProtectionMigration = //p')"

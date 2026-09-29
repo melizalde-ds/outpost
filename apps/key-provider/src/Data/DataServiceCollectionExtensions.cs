@@ -16,6 +16,7 @@ internal static class DataServiceCollectionExtensions
 
         services.AddDbContextFactory<KeyProviderDbContext>((sp, options) => options
             .UseNpgsql(configuration.GetConnectionString("KeyProvider"))
+            .UseSnakeCaseNamingConvention()
             .AddInterceptors(
                 sp.GetRequiredService<AppendOnlyInterceptor>(),
                 sp.GetRequiredService<CreatedAtInterceptor>()));

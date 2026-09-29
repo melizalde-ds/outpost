@@ -1,12 +1,16 @@
 ﻿using System.Data.Common;
 
 using KeyProvider.CryptoKeys;
+using KeyProvider.Data;
 using KeyProvider.KeyPairHub;
 using KeyProvider.Models;
 
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 
 using Org.BouncyCastle.Crypto.Parameters;
+
+using Weatherlab.EntityFrameworkCore.AppendOnly;
 
 namespace KeyProvider.KeyRotation;
 
@@ -15,10 +19,14 @@ internal sealed class KeyRotationService(
     IOptions<KeyRotationOptions> options,
     Ed25519KeyGenerator engine,
     IServiceScopeFactory scopeFactory,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IDataProtectionProvider dataProtectionProvider)
 {
     private const int MaxErrorMessageLength = 512;
     private readonly KeyRotationOptions _options = options.Value;
+
+    private readonly IDataProtector _protector =
+        dataProtectionProvider.CreateProtector(KeyPairRecord.PrivateKeyProtectionPurpose);
 
     internal async Task<KeyRotationResult> KeyRotationAsync(CancellationToken cts = default)
     {
@@ -47,7 +55,7 @@ internal sealed class KeyRotationService(
                 KeyPairId = Guid.CreateVersion7(startTime),
                 CreatedAt = startTime,
                 PublicKey = keyPair.PublicKey.GetEncoded(),
-                PrivateKey = keyPair.PrivateKey.GetEncoded(),
+                PrivateKey = _protector.Protect(keyPair.PrivateKey.GetEncoded()),
                 ExpiresAt = startTime + _options.Lifespan,
                 KeyPairRotationJobId = job.KeyPairRotationJobId,
                 RotationJob = job
@@ -60,23 +68,45 @@ internal sealed class KeyRotationService(
         {
             logger.LogInformation(e, "Cancellation requested");
             await TrySaveFailedRotationAsync(jobId, startTime, e, CancellationToken.None);
-            // Rethrow so the caller (and the resilience pipeline) stops instead of treating it as a retryable failure.
             throw;
         }
         catch (Exception e)
         {
             logger.LogError(e, "Unexpected error");
             await TrySaveFailedRotationAsync(jobId, startTime, e, cts);
-            return new KeyRotationFailed(startTime, timeProvider.GetUtcNow(), $"{e.GetType().Name}: {e.Message}",
-                IsTransient(e), e);
+            return new KeyRotationFailed(startTime, timeProvider.GetUtcNow(), Describe(e), IsTransient(e), e);
         }
     }
 
-    // EF wraps provider errors in DbUpdateException, so the inner exception is checked as well.
     private static bool IsTransient(Exception e)
     {
+        if (e is AppendOnlyViolationException ||
+            FindDbException(e, KeyProviderSqlState.RotationJobNotSuccessful) is not null)
+        {
+            return false;
+        }
+
         return e is TimeoutException or DbException { IsTransient: true }
                || e.InnerException is TimeoutException or DbException { IsTransient: true };
+    }
+
+    private static string Describe(Exception e)
+    {
+        Exception cause = FindDbException(e, KeyProviderSqlState.RotationJobNotSuccessful) ?? e;
+        return $"{cause.GetType().Name}: {cause.Message}";
+    }
+
+    private static DbException? FindDbException(Exception e, string sqlState)
+    {
+        for (Exception? current = e; current is not null; current = current.InnerException)
+        {
+            if (current is DbException dbException && dbException.SqlState == sqlState)
+            {
+                return dbException;
+            }
+        }
+
+        return null;
     }
 
     private async Task TrySaveFailedRotationAsync(Guid jobId, DateTimeOffset startTime, Exception error,
@@ -87,7 +117,7 @@ internal sealed class KeyRotationService(
             await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
             KeyIngestionService ingestion = scope.ServiceProvider.GetRequiredService<KeyIngestionService>();
 
-            string errorMessage = $"{error.GetType().Name}: {error.Message}";
+            string errorMessage = Describe(error);
             KeyRotationJob job = new()
             {
                 KeyPairRotationJobId = jobId,
