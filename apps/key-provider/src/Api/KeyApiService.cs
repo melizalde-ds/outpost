@@ -17,17 +17,13 @@ internal sealed class KeyApiService(
     public override async Task<SignTokenResponse> SignToken(SignTokenRequest request, ServerCallContext context)
     {
         logger.LogInformation("Signing for user: {Subject}", request.Subject);
-        if (string.IsNullOrEmpty(request.Subject))
-        {
-            throw new ArgumentException("Subject cannot be null or empty");
-        }
-
         if (!Guid.TryParse(request.Subject, out Guid subId))
         {
-            throw new ArgumentException($"Sub {request.Subject} is not a valid GUID");
+            throw new InvalidSubjectException(request.Subject);
         }
 
-        (string token, PublicSigningKey? publicKey) = await service.GenerateTokenAsync(subId);
+        (string token, PublicSigningKey? publicKey) =
+            await service.GenerateTokenAsync(subId, context.CancellationToken);
 
         if (publicKey is not null)
         {
@@ -51,7 +47,7 @@ internal sealed class KeyApiService(
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         KeyPairStore retrieval = scope.ServiceProvider.GetRequiredService<KeyPairStore>();
 
-        PublicSigningKey[] sourceKeys = await retrieval.GetVerificationKeysAsync();
+        PublicSigningKey[] sourceKeys = await retrieval.GetVerificationKeysAsync(context.CancellationToken);
 
         List<VerificationKey> publicKeys = new();
 

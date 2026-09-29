@@ -1,7 +1,12 @@
+using System.Data.Common;
+using System.Security.Cryptography;
+
 using KeyProvider.Database;
 
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+
+using Org.BouncyCastle.Crypto.Parameters;
 
 namespace KeyProvider.SigningKeys;
 
@@ -28,20 +33,45 @@ internal sealed class KeyPairStore(
 
     internal async Task<SigningKeyPair?> GetLatestKeyPairAsync(CancellationToken ct = default)
     {
-        KeyPairRecord? record = await context.KeyPairRecords
-            .AsNoTracking()
-            .NewestFirst()
-            .FirstOrDefaultAsync(ct);
+        KeyPairRecord? record;
+        try
+        {
+            record = await context.KeyPairRecords
+                .AsNoTracking()
+                .NewestFirst()
+                .FirstOrDefaultAsync(ct);
+        }
+        catch (Exception e) when (IsTemporary(e))
+        {
+            throw new DatabaseUnavailableException(e);
+        }
 
         if (record is null)
         {
             return null;
         }
 
+        byte[] privateKeyBytes;
+        try
+        {
+            privateKeyBytes = _protector.Unprotect(record.PrivateKey);
+        }
+        catch (CryptographicException e)
+        {
+            throw new SigningKeyUndecryptableException(record.KeyPairId, e);
+        }
+
+        if (privateKeyBytes.Length != Ed25519PrivateKeyParameters.KeySize)
+        {
+            CryptographicOperations.ZeroMemory(privateKeyBytes);
+            throw new SigningKeyMalformedException(record.KeyPairId, privateKeyBytes.Length,
+                Ed25519PrivateKeyParameters.KeySize);
+        }
+
         PrivateSigningKey privateKey = new()
         {
             Id = record.KeyPairId,
-            PrivateKey = _protector.Unprotect(record.PrivateKey),
+            PrivateKey = privateKeyBytes,
             ExpirationTime = record.ExpiresAt
         };
 
@@ -53,15 +83,22 @@ internal sealed class KeyPairStore(
         return new SigningKeyPair(privateKey, publicKey);
     }
 
-    internal Task<PublicSigningKey[]> GetVerificationKeysAsync(CancellationToken ct = default)
+    internal async Task<PublicSigningKey[]> GetVerificationKeysAsync(CancellationToken ct = default)
     {
-        return context.KeyPairRecords
-            .AsNoTracking()
-            .Verifiable(timeProvider)
-            .NewestFirst()
-            .Select(x =>
-                new PublicSigningKey { Id = x.KeyPairId, PublicKey = x.PublicKey, ExpirationTime = x.ExpiresAt })
-            .ToArrayAsync(ct);
+        try
+        {
+            return await context.KeyPairRecords
+                .AsNoTracking()
+                .Verifiable(timeProvider)
+                .NewestFirst()
+                .Select(x =>
+                    new PublicSigningKey { Id = x.KeyPairId, PublicKey = x.PublicKey, ExpirationTime = x.ExpiresAt })
+                .ToArrayAsync(ct);
+        }
+        catch (Exception e) when (IsTemporary(e))
+        {
+            throw new DatabaseUnavailableException(e);
+        }
     }
 
     internal Task<PublicSigningKey?> GetVerificationKeyAsync(Guid id, CancellationToken ct = default)
@@ -73,5 +110,18 @@ internal sealed class KeyPairStore(
             .Select(x =>
                 new PublicSigningKey { Id = x.KeyPairId, PublicKey = x.PublicKey, ExpirationTime = x.ExpiresAt })
             .FirstOrDefaultAsync(ct);
+    }
+
+    private static bool IsTemporary(Exception e)
+    {
+        for (Exception? current = e; current is not null; current = current.InnerException)
+        {
+            if (current is TimeoutException or DbException { IsTransient: true })
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

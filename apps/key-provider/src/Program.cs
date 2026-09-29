@@ -1,3 +1,4 @@
+using KeyProvider.Api;
 using KeyProvider.Database;
 using KeyProvider.KeyGeneration;
 using KeyProvider.KeyRotation;
@@ -61,6 +62,10 @@ build.Services.AddSingleton<IValidateOptions<RotationScheduleOptions>, RotationS
 
 build.Services.AddHostedService<RotationWorker>();
 
+build.Services.AddGrpc(o => o.Interceptors.Add<ErrorInterceptor>());
+
 WebApplication app = build.Build();
+
+app.MapGrpcService<KeyApiService>();
 
 await app.RunAsync();
