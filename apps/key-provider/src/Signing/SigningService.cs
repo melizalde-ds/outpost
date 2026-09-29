@@ -3,8 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-using KeyProvider.Errors;
-using KeyProvider.KeyPairHub;
+using KeyProvider.SigningKeys;
 
 using Microsoft.Extensions.Options;
 
@@ -14,11 +13,11 @@ using Org.BouncyCastle.Crypto.Signers;
 namespace KeyProvider.Signing;
 
 internal sealed class SigningService(
-    IOptions<SigningServiceOptions> options,
+    IOptions<SigningOptions> options,
     IServiceScopeFactory scopeFactory,
     TimeProvider timeProvider) : IDisposable
 {
-    private readonly SigningServiceOptions _options = options.Value;
+    private readonly SigningOptions _options = options.Value;
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private volatile PrivateSigningKey? _activePrivateKey;
 
@@ -91,7 +90,7 @@ internal sealed class SigningService(
             }
 
             await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-            KeyRetrievalService retrieval = scope.ServiceProvider.GetRequiredService<KeyRetrievalService>();
+            KeyPairStore retrieval = scope.ServiceProvider.GetRequiredService<KeyPairStore>();
 
             PrivateSigningKey fresh = await retrieval.GetLatestPrivateKeyAsync(ct)
                                       ?? throw new SigningKeyNotFoundException();

@@ -1,9 +1,8 @@
 ﻿using System.Data.Common;
 
-using KeyProvider.CryptoKeys;
-using KeyProvider.Data;
-using KeyProvider.KeyPairHub;
-using KeyProvider.Models;
+using KeyProvider.Database;
+using KeyProvider.KeyGeneration;
+using KeyProvider.SigningKeys;
 
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
@@ -40,7 +39,7 @@ internal sealed class KeyRotationService(
             logger.LogInformation("[{JobID}] - Keypair generated", jobId);
 
             await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-            KeyIngestionService ingestion = scope.ServiceProvider.GetRequiredService<KeyIngestionService>();
+            KeyPairStore ingestion = scope.ServiceProvider.GetRequiredService<KeyPairStore>();
 
             KeyRotationJob job = new() { KeyPairRotationJobId = jobId, StartedAt = startTime, Success = true };
 
@@ -74,7 +73,7 @@ internal sealed class KeyRotationService(
     private static bool IsTransient(Exception e)
     {
         if (e is AppendOnlyViolationException ||
-            FindDbException(e, KeyProviderSqlState.RotationJobNotSuccessful) is not null)
+            FindDbException(e, DatabaseErrorCodes.RotationJobNotSuccessful) is not null)
         {
             return false;
         }
@@ -85,7 +84,7 @@ internal sealed class KeyRotationService(
 
     private static string Describe(Exception e)
     {
-        Exception cause = FindDbException(e, KeyProviderSqlState.RotationJobNotSuccessful) ?? e;
+        Exception cause = FindDbException(e, DatabaseErrorCodes.RotationJobNotSuccessful) ?? e;
         return $"{cause.GetType().Name}: {cause.Message}";
     }
 
@@ -108,7 +107,7 @@ internal sealed class KeyRotationService(
         try
         {
             await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-            KeyIngestionService ingestion = scope.ServiceProvider.GetRequiredService<KeyIngestionService>();
+            RotationJobStore ingestion = scope.ServiceProvider.GetRequiredService<RotationJobStore>();
 
             string errorMessage = Describe(error);
             KeyRotationJob job = new()
@@ -132,7 +131,7 @@ internal sealed class KeyRotationService(
     internal async Task<KeyRotationJob?> GetLatestRotationAsync(CancellationToken ct)
     {
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-        KeyRetrievalService retrieval = scope.ServiceProvider.GetRequiredService<KeyRetrievalService>();
+        RotationJobStore retrieval = scope.ServiceProvider.GetRequiredService<RotationJobStore>();
 
         return await retrieval.GetRotationJobAsync(ct);
     }

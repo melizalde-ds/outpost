@@ -1,9 +1,8 @@
-using KeyProvider.CryptoKeys;
-using KeyProvider.Data;
-using KeyProvider.KeyPairHub;
+using KeyProvider.Database;
+using KeyProvider.KeyGeneration;
 using KeyProvider.KeyRotation;
 using KeyProvider.Signing;
-using KeyProvider.Worker;
+using KeyProvider.SigningKeys;
 
 using Microsoft.Extensions.Options;
 
@@ -20,10 +19,10 @@ build.Services.AddDataProtectionDbContext(build.Configuration);
 
 build.Services.AddSingleton<Ed25519KeyGenerator>();
 
-build.Services.AddScoped<KeyIngestionService>();
-build.Services.AddScoped<KeyRetrievalService>();
+build.Services.AddScoped<KeyPairStore>();
+build.Services.AddScoped<RotationJobStore>();
 
-build.Services.AddOptionsWithValidateOnStart<SigningServiceOptions>().BindConfiguration("Signing")
+build.Services.AddOptionsWithValidateOnStart<SigningOptions>().BindConfiguration("Signing")
     .ValidateDataAnnotations();
 build.Services.AddSingleton<SigningService>();
 
@@ -31,7 +30,7 @@ build.Services.AddOptionsWithValidateOnStart<KeyRotationOptions>().BindConfigura
     .ValidateDataAnnotations();
 build.Services.AddSingleton<KeyRotationService>();
 
-build.Services.AddOptionsWithValidateOnStart<RotationRetryOptions>().BindConfiguration("RotationRetry")
+build.Services.AddOptionsWithValidateOnStart<RotationRetryOptions>().BindConfiguration("KeyRotation:Retry")
     .ValidateDataAnnotations();
 build.Services.AddResiliencePipeline<string, KeyRotationResult>(RotationRetryOptions.PipelineName,
     (builder, context) =>
@@ -56,9 +55,9 @@ build.Services.AddResiliencePipeline<string, KeyRotationResult>(RotationRetryOpt
             .AddTimeout(retry.AttemptTimeout);
     });
 
-build.Services.AddOptionsWithValidateOnStart<WorkerOptions>().BindConfiguration("Worker")
+build.Services.AddOptionsWithValidateOnStart<RotationScheduleOptions>().BindConfiguration("KeyRotation:Schedule")
     .ValidateDataAnnotations();
-build.Services.AddSingleton<IValidateOptions<WorkerOptions>, WorkerOptionsValidator>();
+build.Services.AddSingleton<IValidateOptions<RotationScheduleOptions>, RotationScheduleValidator>();
 
 build.Services.AddHostedService<RotationWorker>();
 
