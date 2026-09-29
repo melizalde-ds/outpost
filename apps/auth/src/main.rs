@@ -23,9 +23,10 @@ async fn main() -> anyhow::Result<()> {
 
     info!("Starting WeatherLab Auth Service...");
     let pepper = env::var("AUTH_PEPPER")?;
+    let database_url = env::var("AUTH_DATABASE_URL")?;
 
     let addr: SocketAddr = "[::1]:50051".parse()?;
-    let db_pool = sqlx::PgPool::connect("postgres://postgres:password@localhost/auth").await?;
+    let db_pool = sqlx::PgPool::connect(&database_url).await?;
     info!("Connected to database");
     let auth_repo = PostgresAuthRepository::new(db_pool);
     let passwords = Argon2PasswordHasher::new(pepper.into_bytes(), 10);

@@ -5,7 +5,7 @@
 
 **/Generated/*.cs                  linguist-generated=true
 **/Migrations/**/*.cs              linguist-generated=true
-apps/key-provider/migrations/*.sql linguist-generated=true
+apps/*/db/scripts/**               linguist-generated=true
 
 Cargo.lock                         linguist-generated=true
 uv.lock                            linguist-generated=true
