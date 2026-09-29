@@ -16,7 +16,6 @@ service KeyService {
 message SignTokenRequest {
   string subject = 1;
   google.protobuf.Duration lifetime = 2;
-  map<string, string> claims = 3;
 }
 
 message SignTokenResponse {

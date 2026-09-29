@@ -42,18 +42,11 @@ internal sealed class KeyRotationService(
             await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
             KeyIngestionService ingestion = scope.ServiceProvider.GetRequiredService<KeyIngestionService>();
 
-            KeyRotationJob job = new()
-            {
-                KeyPairRotationJobId = jobId,
-                StartedAt = startTime,
-                Success = true,
-                FinishedAt = timeProvider.GetUtcNow()
-            };
+            KeyRotationJob job = new() { KeyPairRotationJobId = jobId, StartedAt = startTime, Success = true };
 
             KeyPairRecord record = new()
             {
                 KeyPairId = Guid.CreateVersion7(startTime),
-                CreatedAt = startTime,
                 PublicKey = keyPair.PublicKey.GetEncoded(),
                 PrivateKey = _protector.Protect(keyPair.PrivateKey.GetEncoded()),
                 ExpiresAt = startTime + _options.Lifespan,
@@ -123,7 +116,6 @@ internal sealed class KeyRotationService(
                 KeyPairRotationJobId = jobId,
                 StartedAt = startTime,
                 Success = false,
-                FinishedAt = timeProvider.GetUtcNow(),
                 ErrorMessage = errorMessage.Length > MaxErrorMessageLength
                     ? errorMessage[..MaxErrorMessageLength]
                     : errorMessage

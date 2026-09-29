@@ -4,7 +4,7 @@ using KeyProvider.Grpc.V1;
 
 namespace KeyProvider.Grpc;
 
-public class KeyServiceGrpc(
+internal sealed class KeyServiceGrpc(
     ILogger<KeyServiceGrpc> logger,
     IServiceScopeFactory scopeFactory) : KeyService.KeyServiceBase
 {

@@ -26,36 +26,33 @@ namespace KeyProvider.Grpc.V1 {
           string.Concat(
             "Cht3ZWF0aGVybGFiL2tleS92MS9rZXkucHJvdG8SEXdlYXRoZXJsYWIua2V5",
             "LnYxGh5nb29nbGUvcHJvdG9idWYvZHVyYXRpb24ucHJvdG8aH2dvb2dsZS9w",
-            "cm90b2J1Zi90aW1lc3RhbXAucHJvdG8i5wEKEFNpZ25Ub2tlblJlcXVlc3QS",
-            "GAoHc3ViamVjdBgBIAEoCVIHc3ViamVjdBI1CghsaWZldGltZRgCIAEoCzIZ",
-            "Lmdvb2dsZS5wcm90b2J1Zi5EdXJhdGlvblIIbGlmZXRpbWUSRwoGY2xhaW1z",
-            "GAMgAygLMi8ud2VhdGhlcmxhYi5rZXkudjEuU2lnblRva2VuUmVxdWVzdC5D",
-            "bGFpbXNFbnRyeVIGY2xhaW1zGjkKC0NsYWltc0VudHJ5EhAKA2tleRgBIAEo",
-            "CVIDa2V5EhQKBXZhbHVlGAIgASgJUgV2YWx1ZToCOAEigAEKEVNpZ25Ub2tl",
-            "blJlc3BvbnNlEhkKBXRva2VuGAEgASgJQgOAAQFSBXRva2VuEjkKCmV4cGly",
-            "ZXNfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUglleHBp",
-            "cmVzQXQSFQoGa2V5X2lkGAMgASgJUgVrZXlJZCIcChpHZXRWZXJpZmljYXRp",
-            "b25LZXlzUmVxdWVzdCJVChtHZXRWZXJpZmljYXRpb25LZXlzUmVzcG9uc2US",
-            "NgoEa2V5cxgBIAMoCzIiLndlYXRoZXJsYWIua2V5LnYxLlZlcmlmaWNhdGlv",
-            "bktleVIEa2V5cyKCAQoPVmVyaWZpY2F0aW9uS2V5EhUKBmtleV9pZBgBIAEo",
-            "CVIFa2V5SWQSHQoKcHVibGljX2tleRgCIAEoDFIJcHVibGljS2V5EjkKCmV4",
-            "cGlyZXNfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgll",
-            "eHBpcmVzQXQiMgoZR2V0VmVyaWZpY2F0aW9uS2V5UmVxdWVzdBIVCgZrZXlf",
-            "aWQYASABKAlSBWtleUlkIlIKGkdldFZlcmlmaWNhdGlvbktleVJlc3BvbnNl",
-            "EjQKA2tleRgBIAEoCzIiLndlYXRoZXJsYWIua2V5LnYxLlZlcmlmaWNhdGlv",
-            "bktleVIDa2V5Ms0CCgpLZXlTZXJ2aWNlElYKCVNpZ25Ub2tlbhIjLndlYXRo",
-            "ZXJsYWIua2V5LnYxLlNpZ25Ub2tlblJlcXVlc3QaJC53ZWF0aGVybGFiLmtl",
-            "eS52MS5TaWduVG9rZW5SZXNwb25zZRJ0ChNHZXRWZXJpZmljYXRpb25LZXlz",
-            "Ei0ud2VhdGhlcmxhYi5rZXkudjEuR2V0VmVyaWZpY2F0aW9uS2V5c1JlcXVl",
-            "c3QaLi53ZWF0aGVybGFiLmtleS52MS5HZXRWZXJpZmljYXRpb25LZXlzUmVz",
-            "cG9uc2UScQoSR2V0VmVyaWZpY2F0aW9uS2V5Eiwud2VhdGhlcmxhYi5rZXku",
-            "djEuR2V0VmVyaWZpY2F0aW9uS2V5UmVxdWVzdBotLndlYXRoZXJsYWIua2V5",
-            "LnYxLkdldFZlcmlmaWNhdGlvbktleVJlc3BvbnNlQhaqAhNLZXlQcm92aWRl",
-            "ci5HcnBjLlYxYgZwcm90bzM="));
+            "cm90b2J1Zi90aW1lc3RhbXAucHJvdG8iYwoQU2lnblRva2VuUmVxdWVzdBIY",
+            "CgdzdWJqZWN0GAEgASgJUgdzdWJqZWN0EjUKCGxpZmV0aW1lGAIgASgLMhku",
+            "Z29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uUghsaWZldGltZSKAAQoRU2lnblRv",
+            "a2VuUmVzcG9uc2USGQoFdG9rZW4YASABKAlCA4ABAVIFdG9rZW4SOQoKZXhw",
+            "aXJlc19hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCWV4",
+            "cGlyZXNBdBIVCgZrZXlfaWQYAyABKAlSBWtleUlkIhwKGkdldFZlcmlmaWNh",
+            "dGlvbktleXNSZXF1ZXN0IlUKG0dldFZlcmlmaWNhdGlvbktleXNSZXNwb25z",
+            "ZRI2CgRrZXlzGAEgAygLMiIud2VhdGhlcmxhYi5rZXkudjEuVmVyaWZpY2F0",
+            "aW9uS2V5UgRrZXlzIoIBCg9WZXJpZmljYXRpb25LZXkSFQoGa2V5X2lkGAEg",
+            "ASgJUgVrZXlJZBIdCgpwdWJsaWNfa2V5GAIgASgMUglwdWJsaWNLZXkSOQoK",
+            "ZXhwaXJlc19hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBS",
+            "CWV4cGlyZXNBdCIyChlHZXRWZXJpZmljYXRpb25LZXlSZXF1ZXN0EhUKBmtl",
+            "eV9pZBgBIAEoCVIFa2V5SWQiUgoaR2V0VmVyaWZpY2F0aW9uS2V5UmVzcG9u",
+            "c2USNAoDa2V5GAEgASgLMiIud2VhdGhlcmxhYi5rZXkudjEuVmVyaWZpY2F0",
+            "aW9uS2V5UgNrZXkyzQIKCktleVNlcnZpY2USVgoJU2lnblRva2VuEiMud2Vh",
+            "dGhlcmxhYi5rZXkudjEuU2lnblRva2VuUmVxdWVzdBokLndlYXRoZXJsYWIu",
+            "a2V5LnYxLlNpZ25Ub2tlblJlc3BvbnNlEnQKE0dldFZlcmlmaWNhdGlvbktl",
+            "eXMSLS53ZWF0aGVybGFiLmtleS52MS5HZXRWZXJpZmljYXRpb25LZXlzUmVx",
+            "dWVzdBouLndlYXRoZXJsYWIua2V5LnYxLkdldFZlcmlmaWNhdGlvbktleXNS",
+            "ZXNwb25zZRJxChJHZXRWZXJpZmljYXRpb25LZXkSLC53ZWF0aGVybGFiLmtl",
+            "eS52MS5HZXRWZXJpZmljYXRpb25LZXlSZXF1ZXN0Gi0ud2VhdGhlcmxhYi5r",
+            "ZXkudjEuR2V0VmVyaWZpY2F0aW9uS2V5UmVzcG9uc2VCFqoCE0tleVByb3Zp",
+            "ZGVyLkdycGMuVjFiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Grpc.V1.SignTokenRequest), global::KeyProvider.Grpc.V1.SignTokenRequest.Parser, new[]{ "Subject", "Lifetime", "Claims" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Grpc.V1.SignTokenRequest), global::KeyProvider.Grpc.V1.SignTokenRequest.Parser, new[]{ "Subject", "Lifetime" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Grpc.V1.SignTokenResponse), global::KeyProvider.Grpc.V1.SignTokenResponse.Parser, new[]{ "Token", "ExpiresAt", "KeyId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Grpc.V1.GetVerificationKeysRequest), global::KeyProvider.Grpc.V1.GetVerificationKeysRequest.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Grpc.V1.GetVerificationKeysResponse), global::KeyProvider.Grpc.V1.GetVerificationKeysResponse.Parser, new[]{ "Keys" }, null, null, null, null),
@@ -105,7 +102,6 @@ namespace KeyProvider.Grpc.V1 {
     public SignTokenRequest(SignTokenRequest other) : this() {
       subject_ = other.subject_;
       lifetime_ = other.lifetime_ != null ? other.lifetime_.Clone() : null;
-      claims_ = other.claims_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -139,17 +135,6 @@ namespace KeyProvider.Grpc.V1 {
       }
     }
 
-    /// <summary>Field number for the "claims" field.</summary>
-    public const int ClaimsFieldNumber = 3;
-    private static readonly pbc::MapField<string, string>.Codec _map_claims_codec
-        = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10, ""), pb::FieldCodec.ForString(18, ""), 26);
-    private readonly pbc::MapField<string, string> claims_ = new pbc::MapField<string, string>();
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::MapField<string, string> Claims {
-      get { return claims_; }
-    }
-
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -167,7 +152,6 @@ namespace KeyProvider.Grpc.V1 {
       }
       if (Subject != other.Subject) return false;
       if (!object.Equals(Lifetime, other.Lifetime)) return false;
-      if (!Claims.Equals(other.Claims)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -177,7 +161,6 @@ namespace KeyProvider.Grpc.V1 {
       int hash = 1;
       if (Subject.Length != 0) hash ^= Subject.GetHashCode();
       if (lifetime_ != null) hash ^= Lifetime.GetHashCode();
-      hash ^= Claims.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -204,7 +187,6 @@ namespace KeyProvider.Grpc.V1 {
         output.WriteRawTag(18);
         output.WriteMessage(Lifetime);
       }
-      claims_.WriteTo(output, _map_claims_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -223,7 +205,6 @@ namespace KeyProvider.Grpc.V1 {
         output.WriteRawTag(18);
         output.WriteMessage(Lifetime);
       }
-      claims_.WriteTo(ref output, _map_claims_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -240,7 +221,6 @@ namespace KeyProvider.Grpc.V1 {
       if (lifetime_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Lifetime);
       }
-      size += claims_.CalculateSize(_map_claims_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -262,7 +242,6 @@ namespace KeyProvider.Grpc.V1 {
         }
         Lifetime.MergeFrom(other.Lifetime);
       }
-      claims_.MergeFrom(other.claims_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -293,10 +272,6 @@ namespace KeyProvider.Grpc.V1 {
             input.ReadMessage(Lifetime);
             break;
           }
-          case 26: {
-            claims_.AddEntriesFrom(input, _map_claims_codec);
-            break;
-          }
         }
       }
     #endif
@@ -325,10 +300,6 @@ namespace KeyProvider.Grpc.V1 {
               Lifetime = new global::Google.Protobuf.WellKnownTypes.Duration();
             }
             input.ReadMessage(Lifetime);
-            break;
-          }
-          case 26: {
-            claims_.AddEntriesFrom(ref input, _map_claims_codec);
             break;
           }
         }

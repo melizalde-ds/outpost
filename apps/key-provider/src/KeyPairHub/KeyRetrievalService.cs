@@ -14,24 +14,53 @@ internal sealed class KeyRetrievalService(
     private readonly IDataProtector _protector =
         dataProtectionProvider.CreateProtector(KeyPairRecord.PrivateKeyProtectionPurpose);
 
-    internal Task<KeyPairRecord?> GetKeysAsync(CancellationToken ct = default)
+    internal async Task<PrivateSigningKey?> GetLatestPrivateKeyAsync(CancellationToken ct = default)
     {
-        return context.KeyPairRecords.AsNoTracking().NewestFirst().FirstOrDefaultAsync(ct);
+        KeyPairRecord? record = await context.KeyPairRecords
+            .AsNoTracking()
+            .NewestFirst()
+            .FirstOrDefaultAsync(ct);
+
+        if (record is null)
+        {
+            return null;
+        }
+
+        return new PrivateSigningKey
+        {
+            Id = record.KeyPairId,
+            PrivateKey = _protector.Unprotect(record.PrivateKey),
+            ExpirationTime = record.ExpiresAt
+        };
     }
 
-    internal Task<KeyPairRecord[]> GetVerificationKeysAsync(CancellationToken ct = default)
+    internal Task<PublicSigningKey[]> GetVerificationKeysAsync(CancellationToken ct = default)
     {
-        return context.KeyPairRecords.AsNoTracking().Verifiable(timeProvider).NewestFirst()
+        return context.KeyPairRecords
+            .AsNoTracking()
+            .Verifiable(timeProvider)
+            .NewestFirst()
+            .Select(x =>
+                new PublicSigningKey { Id = x.KeyPairId, PublicKey = x.PublicKey, ExpirationTime = x.ExpiresAt })
             .ToArrayAsync(ct);
     }
 
-    internal byte[] UnprotectPrivateKey(KeyPairRecord record)
+    internal Task<PublicSigningKey?> GetVerificationKeyAsync(Guid id, CancellationToken ct = default)
     {
-        return _protector.Unprotect(record.PrivateKey);
+        return context.KeyPairRecords
+            .AsNoTracking()
+            .Verifiable(timeProvider)
+            .Where(k => k.KeyPairId == id)
+            .Select(x =>
+                new PublicSigningKey { Id = x.KeyPairId, PublicKey = x.PublicKey, ExpirationTime = x.ExpiresAt })
+            .FirstOrDefaultAsync(ct);
     }
 
     internal Task<KeyRotationJob?> GetRotationJobAsync(CancellationToken ct = default)
     {
-        return context.KeyRotationJobs.AsNoTracking().NewestFirst().FirstOrDefaultAsync(ct);
+        return context.KeyRotationJobs
+            .AsNoTracking()
+            .LatestSuccessfulFirst()
+            .FirstOrDefaultAsync(ct);
     }
 }

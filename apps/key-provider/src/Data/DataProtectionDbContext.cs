@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeyProvider.Data;
 
-public class DataProtectionDbContext(DbContextOptions<DataProtectionDbContext> options)
+internal sealed class DataProtectionDbContext(DbContextOptions<DataProtectionDbContext> options)
     : DbContext(options), IDataProtectionKeyContext
 {
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();

@@ -4,7 +4,12 @@ namespace KeyProvider.Signing;
 
 public sealed record SigningServiceOptions
 {
-    [Required]
+    [Required] public string Algorithm { get; init; } = "EdDSA";
+
+    [Required] public string Type { get; init; } = "JWT";
+
+    [Required] public string Issuer { get; init; } = "WeatherLab";
+
     [Range(typeof(TimeSpan), "00:01:00", "00:15:00")]
-    public required TimeSpan TokenLifetime { get; init; } = TimeSpan.FromMinutes(5);
+    public TimeSpan TokenLifetime { get; init; } = TimeSpan.FromMinutes(5);
 }

@@ -15,7 +15,7 @@ internal static class QueryProviderExtensions
         return query.Where(r => r.ExpiresAt > timeProvider.GetUtcNow());
     }
 
-    internal static IQueryable<KeyRotationJob> NewestFirst(this IQueryable<KeyRotationJob> query)
+    internal static IQueryable<KeyRotationJob> LatestSuccessfulFirst(this IQueryable<KeyRotationJob> query)
     {
         return query.Where(k => k.Success == true).OrderByDescending(k => k.FinishedAt);
     }
