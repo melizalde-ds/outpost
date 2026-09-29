@@ -2,6 +2,7 @@ using KeyProvider.CryptoKeys;
 using KeyProvider.Data;
 using KeyProvider.KeyPairHub;
 using KeyProvider.KeyRotation;
+using KeyProvider.Signing;
 using KeyProvider.Worker;
 
 using Microsoft.Extensions.Options;
@@ -21,6 +22,10 @@ build.Services.AddSingleton<Ed25519KeyGenerator>();
 
 build.Services.AddScoped<KeyIngestionService>();
 build.Services.AddScoped<KeyRetrievalService>();
+
+build.Services.AddOptionsWithValidateOnStart<SigningServiceOptions>().BindConfiguration("Signing")
+    .ValidateDataAnnotations();
+build.Services.AddSingleton<SigningService>();
 
 build.Services.AddOptionsWithValidateOnStart<KeyRotationOptions>().BindConfiguration("KeyRotation")
     .ValidateDataAnnotations();
