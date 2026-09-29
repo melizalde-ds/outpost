@@ -26,7 +26,7 @@ internal sealed class KeyPairStore(
         await context.SaveChangesAsync(ct);
     }
 
-    internal async Task<PrivateSigningKey?> GetLatestPrivateKeyAsync(CancellationToken ct = default)
+    internal async Task<SigningKeyPair?> GetLatestKeyPairAsync(CancellationToken ct = default)
     {
         KeyPairRecord? record = await context.KeyPairRecords
             .AsNoTracking()
@@ -38,12 +38,19 @@ internal sealed class KeyPairStore(
             return null;
         }
 
-        return new PrivateSigningKey
+        PrivateSigningKey privateKey = new()
         {
             Id = record.KeyPairId,
             PrivateKey = _protector.Unprotect(record.PrivateKey),
             ExpirationTime = record.ExpiresAt
         };
+
+        PublicSigningKey publicKey = new()
+        {
+            Id = record.KeyPairId, PublicKey = record.PublicKey, ExpirationTime = record.ExpiresAt
+        };
+
+        return new SigningKeyPair(privateKey, publicKey);
     }
 
     internal Task<PublicSigningKey[]> GetVerificationKeysAsync(CancellationToken ct = default)

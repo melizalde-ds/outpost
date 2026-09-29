@@ -25,40 +25,31 @@ namespace KeyProvider.Api.Generated.V1 {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cht3ZWF0aGVybGFiL2tleS92MS9rZXkucHJvdG8SEXdlYXRoZXJsYWIua2V5",
-            "LnYxGh5nb29nbGUvcHJvdG9idWYvZHVyYXRpb24ucHJvdG8aH2dvb2dsZS9w",
-            "cm90b2J1Zi90aW1lc3RhbXAucHJvdG8iYwoQU2lnblRva2VuUmVxdWVzdBIY",
-            "CgdzdWJqZWN0GAEgASgJUgdzdWJqZWN0EjUKCGxpZmV0aW1lGAIgASgLMhku",
-            "Z29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uUghsaWZldGltZSKAAQoRU2lnblRv",
-            "a2VuUmVzcG9uc2USGQoFdG9rZW4YASABKAlCA4ABAVIFdG9rZW4SOQoKZXhw",
-            "aXJlc19hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCWV4",
-            "cGlyZXNBdBIVCgZrZXlfaWQYAyABKAlSBWtleUlkIhwKGkdldFZlcmlmaWNh",
-            "dGlvbktleXNSZXF1ZXN0IlUKG0dldFZlcmlmaWNhdGlvbktleXNSZXNwb25z",
-            "ZRI2CgRrZXlzGAEgAygLMiIud2VhdGhlcmxhYi5rZXkudjEuVmVyaWZpY2F0",
-            "aW9uS2V5UgRrZXlzIoIBCg9WZXJpZmljYXRpb25LZXkSFQoGa2V5X2lkGAEg",
-            "ASgJUgVrZXlJZBIdCgpwdWJsaWNfa2V5GAIgASgMUglwdWJsaWNLZXkSOQoK",
-            "ZXhwaXJlc19hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBS",
-            "CWV4cGlyZXNBdCIyChlHZXRWZXJpZmljYXRpb25LZXlSZXF1ZXN0EhUKBmtl",
-            "eV9pZBgBIAEoCVIFa2V5SWQiUgoaR2V0VmVyaWZpY2F0aW9uS2V5UmVzcG9u",
-            "c2USNAoDa2V5GAEgASgLMiIud2VhdGhlcmxhYi5rZXkudjEuVmVyaWZpY2F0",
-            "aW9uS2V5UgNrZXkyzQIKCktleVNlcnZpY2USVgoJU2lnblRva2VuEiMud2Vh",
-            "dGhlcmxhYi5rZXkudjEuU2lnblRva2VuUmVxdWVzdBokLndlYXRoZXJsYWIu",
-            "a2V5LnYxLlNpZ25Ub2tlblJlc3BvbnNlEnQKE0dldFZlcmlmaWNhdGlvbktl",
-            "eXMSLS53ZWF0aGVybGFiLmtleS52MS5HZXRWZXJpZmljYXRpb25LZXlzUmVx",
-            "dWVzdBouLndlYXRoZXJsYWIua2V5LnYxLkdldFZlcmlmaWNhdGlvbktleXNS",
-            "ZXNwb25zZRJxChJHZXRWZXJpZmljYXRpb25LZXkSLC53ZWF0aGVybGFiLmtl",
-            "eS52MS5HZXRWZXJpZmljYXRpb25LZXlSZXF1ZXN0Gi0ud2VhdGhlcmxhYi5r",
-            "ZXkudjEuR2V0VmVyaWZpY2F0aW9uS2V5UmVzcG9uc2VCH6oCHEtleVByb3Zp",
+            "LnYxGh9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvIiwKEFNpZ25U",
+            "b2tlblJlcXVlc3QSGAoHc3ViamVjdBgBIAEoCVIHc3ViamVjdCKXAQoRU2ln",
+            "blRva2VuUmVzcG9uc2USGQoFdG9rZW4YASABKAlCA4ABAVIFdG9rZW4SUgoQ",
+            "dmVyaWZpY2F0aW9uX2tleRgCIAEoCzIiLndlYXRoZXJsYWIua2V5LnYxLlZl",
+            "cmlmaWNhdGlvbktleUgAUg92ZXJpZmljYXRpb25LZXmIAQFCEwoRX3Zlcmlm",
+            "aWNhdGlvbl9rZXkiHAoaR2V0VmVyaWZpY2F0aW9uS2V5c1JlcXVlc3QiVQob",
+            "R2V0VmVyaWZpY2F0aW9uS2V5c1Jlc3BvbnNlEjYKBGtleXMYASADKAsyIi53",
+            "ZWF0aGVybGFiLmtleS52MS5WZXJpZmljYXRpb25LZXlSBGtleXMiggEKD1Zl",
+            "cmlmaWNhdGlvbktleRIVCgZrZXlfaWQYASABKAlSBWtleUlkEh0KCnB1Ymxp",
+            "Y19rZXkYAiABKAxSCXB1YmxpY0tleRI5CgpleHBpcmVzX2F0GAMgASgLMhou",
+            "Z29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJZXhwaXJlc0F0MtoBCgpLZXlT",
+            "ZXJ2aWNlElYKCVNpZ25Ub2tlbhIjLndlYXRoZXJsYWIua2V5LnYxLlNpZ25U",
+            "b2tlblJlcXVlc3QaJC53ZWF0aGVybGFiLmtleS52MS5TaWduVG9rZW5SZXNw",
+            "b25zZRJ0ChNHZXRWZXJpZmljYXRpb25LZXlzEi0ud2VhdGhlcmxhYi5rZXku",
+            "djEuR2V0VmVyaWZpY2F0aW9uS2V5c1JlcXVlc3QaLi53ZWF0aGVybGFiLmtl",
+            "eS52MS5HZXRWZXJpZmljYXRpb25LZXlzUmVzcG9uc2VCH6oCHEtleVByb3Zp",
             "ZGVyLkFwaS5HZW5lcmF0ZWQuVjFiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.SignTokenRequest), global::KeyProvider.Api.Generated.V1.SignTokenRequest.Parser, new[]{ "Subject", "Lifetime" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.SignTokenResponse), global::KeyProvider.Api.Generated.V1.SignTokenResponse.Parser, new[]{ "Token", "ExpiresAt", "KeyId" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.SignTokenRequest), global::KeyProvider.Api.Generated.V1.SignTokenRequest.Parser, new[]{ "Subject" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.SignTokenResponse), global::KeyProvider.Api.Generated.V1.SignTokenResponse.Parser, new[]{ "Token", "VerificationKey" }, new[]{ "VerificationKey" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.GetVerificationKeysRequest), global::KeyProvider.Api.Generated.V1.GetVerificationKeysRequest.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.GetVerificationKeysResponse), global::KeyProvider.Api.Generated.V1.GetVerificationKeysResponse.Parser, new[]{ "Keys" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.VerificationKey), global::KeyProvider.Api.Generated.V1.VerificationKey.Parser, new[]{ "KeyId", "PublicKey", "ExpiresAt" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.GetVerificationKeyRequest), global::KeyProvider.Api.Generated.V1.GetVerificationKeyRequest.Parser, new[]{ "KeyId" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.GetVerificationKeyResponse), global::KeyProvider.Api.Generated.V1.GetVerificationKeyResponse.Parser, new[]{ "Key" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.VerificationKey), global::KeyProvider.Api.Generated.V1.VerificationKey.Parser, new[]{ "KeyId", "PublicKey", "ExpiresAt" }, null, null, null, null)
           }));
     }
     #endregion
@@ -101,7 +92,6 @@ namespace KeyProvider.Api.Generated.V1 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public SignTokenRequest(SignTokenRequest other) : this() {
       subject_ = other.subject_;
-      lifetime_ = other.lifetime_ != null ? other.lifetime_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -123,18 +113,6 @@ namespace KeyProvider.Api.Generated.V1 {
       }
     }
 
-    /// <summary>Field number for the "lifetime" field.</summary>
-    public const int LifetimeFieldNumber = 2;
-    private global::Google.Protobuf.WellKnownTypes.Duration lifetime_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.WellKnownTypes.Duration Lifetime {
-      get { return lifetime_; }
-      set {
-        lifetime_ = value;
-      }
-    }
-
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -151,7 +129,6 @@ namespace KeyProvider.Api.Generated.V1 {
         return true;
       }
       if (Subject != other.Subject) return false;
-      if (!object.Equals(Lifetime, other.Lifetime)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -160,7 +137,6 @@ namespace KeyProvider.Api.Generated.V1 {
     public override int GetHashCode() {
       int hash = 1;
       if (Subject.Length != 0) hash ^= Subject.GetHashCode();
-      if (lifetime_ != null) hash ^= Lifetime.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -183,10 +159,6 @@ namespace KeyProvider.Api.Generated.V1 {
         output.WriteRawTag(10);
         output.WriteString(Subject);
       }
-      if (lifetime_ != null) {
-        output.WriteRawTag(18);
-        output.WriteMessage(Lifetime);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -201,10 +173,6 @@ namespace KeyProvider.Api.Generated.V1 {
         output.WriteRawTag(10);
         output.WriteString(Subject);
       }
-      if (lifetime_ != null) {
-        output.WriteRawTag(18);
-        output.WriteMessage(Lifetime);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -217,9 +185,6 @@ namespace KeyProvider.Api.Generated.V1 {
       int size = 0;
       if (Subject.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Subject);
-      }
-      if (lifetime_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Lifetime);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -235,12 +200,6 @@ namespace KeyProvider.Api.Generated.V1 {
       }
       if (other.Subject.Length != 0) {
         Subject = other.Subject;
-      }
-      if (other.lifetime_ != null) {
-        if (lifetime_ == null) {
-          Lifetime = new global::Google.Protobuf.WellKnownTypes.Duration();
-        }
-        Lifetime.MergeFrom(other.Lifetime);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -265,13 +224,6 @@ namespace KeyProvider.Api.Generated.V1 {
             Subject = input.ReadString();
             break;
           }
-          case 18: {
-            if (lifetime_ == null) {
-              Lifetime = new global::Google.Protobuf.WellKnownTypes.Duration();
-            }
-            input.ReadMessage(Lifetime);
-            break;
-          }
         }
       }
     #endif
@@ -293,13 +245,6 @@ namespace KeyProvider.Api.Generated.V1 {
             break;
           case 10: {
             Subject = input.ReadString();
-            break;
-          }
-          case 18: {
-            if (lifetime_ == null) {
-              Lifetime = new global::Google.Protobuf.WellKnownTypes.Duration();
-            }
-            input.ReadMessage(Lifetime);
             break;
           }
         }
@@ -345,8 +290,7 @@ namespace KeyProvider.Api.Generated.V1 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public SignTokenResponse(SignTokenResponse other) : this() {
       token_ = other.token_;
-      expiresAt_ = other.expiresAt_ != null ? other.expiresAt_.Clone() : null;
-      keyId_ = other.keyId_;
+      verificationKey_ = other.verificationKey_ != null ? other.verificationKey_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -368,27 +312,15 @@ namespace KeyProvider.Api.Generated.V1 {
       }
     }
 
-    /// <summary>Field number for the "expires_at" field.</summary>
-    public const int ExpiresAtFieldNumber = 2;
-    private global::Google.Protobuf.WellKnownTypes.Timestamp expiresAt_;
+    /// <summary>Field number for the "verification_key" field.</summary>
+    public const int VerificationKeyFieldNumber = 2;
+    private global::KeyProvider.Api.Generated.V1.VerificationKey verificationKey_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::Google.Protobuf.WellKnownTypes.Timestamp ExpiresAt {
-      get { return expiresAt_; }
+    public global::KeyProvider.Api.Generated.V1.VerificationKey VerificationKey {
+      get { return verificationKey_; }
       set {
-        expiresAt_ = value;
-      }
-    }
-
-    /// <summary>Field number for the "key_id" field.</summary>
-    public const int KeyIdFieldNumber = 3;
-    private string keyId_ = "";
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string KeyId {
-      get { return keyId_; }
-      set {
-        keyId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        verificationKey_ = value;
       }
     }
 
@@ -408,8 +340,7 @@ namespace KeyProvider.Api.Generated.V1 {
         return true;
       }
       if (Token != other.Token) return false;
-      if (!object.Equals(ExpiresAt, other.ExpiresAt)) return false;
-      if (KeyId != other.KeyId) return false;
+      if (!object.Equals(VerificationKey, other.VerificationKey)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -418,8 +349,7 @@ namespace KeyProvider.Api.Generated.V1 {
     public override int GetHashCode() {
       int hash = 1;
       if (Token.Length != 0) hash ^= Token.GetHashCode();
-      if (expiresAt_ != null) hash ^= ExpiresAt.GetHashCode();
-      if (KeyId.Length != 0) hash ^= KeyId.GetHashCode();
+      if (verificationKey_ != null) hash ^= VerificationKey.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -442,13 +372,9 @@ namespace KeyProvider.Api.Generated.V1 {
         output.WriteRawTag(10);
         output.WriteString(Token);
       }
-      if (expiresAt_ != null) {
+      if (verificationKey_ != null) {
         output.WriteRawTag(18);
-        output.WriteMessage(ExpiresAt);
-      }
-      if (KeyId.Length != 0) {
-        output.WriteRawTag(26);
-        output.WriteString(KeyId);
+        output.WriteMessage(VerificationKey);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -464,13 +390,9 @@ namespace KeyProvider.Api.Generated.V1 {
         output.WriteRawTag(10);
         output.WriteString(Token);
       }
-      if (expiresAt_ != null) {
+      if (verificationKey_ != null) {
         output.WriteRawTag(18);
-        output.WriteMessage(ExpiresAt);
-      }
-      if (KeyId.Length != 0) {
-        output.WriteRawTag(26);
-        output.WriteString(KeyId);
+        output.WriteMessage(VerificationKey);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -485,11 +407,8 @@ namespace KeyProvider.Api.Generated.V1 {
       if (Token.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Token);
       }
-      if (expiresAt_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ExpiresAt);
-      }
-      if (KeyId.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(KeyId);
+      if (verificationKey_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(VerificationKey);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -506,14 +425,11 @@ namespace KeyProvider.Api.Generated.V1 {
       if (other.Token.Length != 0) {
         Token = other.Token;
       }
-      if (other.expiresAt_ != null) {
-        if (expiresAt_ == null) {
-          ExpiresAt = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+      if (other.verificationKey_ != null) {
+        if (verificationKey_ == null) {
+          VerificationKey = new global::KeyProvider.Api.Generated.V1.VerificationKey();
         }
-        ExpiresAt.MergeFrom(other.ExpiresAt);
-      }
-      if (other.KeyId.Length != 0) {
-        KeyId = other.KeyId;
+        VerificationKey.MergeFrom(other.VerificationKey);
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -539,14 +455,10 @@ namespace KeyProvider.Api.Generated.V1 {
             break;
           }
           case 18: {
-            if (expiresAt_ == null) {
-              ExpiresAt = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            if (verificationKey_ == null) {
+              VerificationKey = new global::KeyProvider.Api.Generated.V1.VerificationKey();
             }
-            input.ReadMessage(ExpiresAt);
-            break;
-          }
-          case 26: {
-            KeyId = input.ReadString();
+            input.ReadMessage(VerificationKey);
             break;
           }
         }
@@ -573,14 +485,10 @@ namespace KeyProvider.Api.Generated.V1 {
             break;
           }
           case 18: {
-            if (expiresAt_ == null) {
-              ExpiresAt = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            if (verificationKey_ == null) {
+              VerificationKey = new global::KeyProvider.Api.Generated.V1.VerificationKey();
             }
-            input.ReadMessage(ExpiresAt);
-            break;
-          }
-          case 26: {
-            KeyId = input.ReadString();
+            input.ReadMessage(VerificationKey);
             break;
           }
         }
@@ -1210,411 +1118,6 @@ namespace KeyProvider.Api.Generated.V1 {
               ExpiresAt = new global::Google.Protobuf.WellKnownTypes.Timestamp();
             }
             input.ReadMessage(ExpiresAt);
-            break;
-          }
-        }
-      }
-    }
-    #endif
-
-  }
-
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class GetVerificationKeyRequest : pb::IMessage<GetVerificationKeyRequest>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
-    private static readonly pb::MessageParser<GetVerificationKeyRequest> _parser = new pb::MessageParser<GetVerificationKeyRequest>(() => new GetVerificationKeyRequest());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<GetVerificationKeyRequest> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::KeyProvider.Api.Generated.V1.KeyReflection.Descriptor.MessageTypes[5]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public GetVerificationKeyRequest() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public GetVerificationKeyRequest(GetVerificationKeyRequest other) : this() {
-      keyId_ = other.keyId_;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public GetVerificationKeyRequest Clone() {
-      return new GetVerificationKeyRequest(this);
-    }
-
-    /// <summary>Field number for the "key_id" field.</summary>
-    public const int KeyIdFieldNumber = 1;
-    private string keyId_ = "";
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public string KeyId {
-      get { return keyId_; }
-      set {
-        keyId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override bool Equals(object other) {
-      return Equals(other as GetVerificationKeyRequest);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(GetVerificationKeyRequest other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (KeyId != other.KeyId) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (KeyId.Length != 0) hash ^= KeyId.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
-      if (KeyId.Length != 0) {
-        output.WriteRawTag(10);
-        output.WriteString(KeyId);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (KeyId.Length != 0) {
-        output.WriteRawTag(10);
-        output.WriteString(KeyId);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int CalculateSize() {
-      int size = 0;
-      if (KeyId.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(KeyId);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(GetVerificationKeyRequest other) {
-      if (other == null) {
-        return;
-      }
-      if (other.KeyId.Length != 0) {
-        KeyId = other.KeyId;
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 10: {
-            KeyId = input.ReadString();
-            break;
-          }
-        }
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 10: {
-            KeyId = input.ReadString();
-            break;
-          }
-        }
-      }
-    }
-    #endif
-
-  }
-
-  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
-  public sealed partial class GetVerificationKeyResponse : pb::IMessage<GetVerificationKeyResponse>
-  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      , pb::IBufferMessage
-  #endif
-  {
-    private static readonly pb::MessageParser<GetVerificationKeyResponse> _parser = new pb::MessageParser<GetVerificationKeyResponse>(() => new GetVerificationKeyResponse());
-    private pb::UnknownFieldSet _unknownFields;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pb::MessageParser<GetVerificationKeyResponse> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::KeyProvider.Api.Generated.V1.KeyReflection.Descriptor.MessageTypes[6]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public GetVerificationKeyResponse() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public GetVerificationKeyResponse(GetVerificationKeyResponse other) : this() {
-      key_ = other.key_ != null ? other.key_.Clone() : null;
-      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public GetVerificationKeyResponse Clone() {
-      return new GetVerificationKeyResponse(this);
-    }
-
-    /// <summary>Field number for the "key" field.</summary>
-    public const int KeyFieldNumber = 1;
-    private global::KeyProvider.Api.Generated.V1.VerificationKey key_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::KeyProvider.Api.Generated.V1.VerificationKey Key {
-      get { return key_; }
-      set {
-        key_ = value;
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override bool Equals(object other) {
-      return Equals(other as GetVerificationKeyResponse);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public bool Equals(GetVerificationKeyResponse other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!object.Equals(Key, other.Key)) return false;
-      return Equals(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (key_ != null) hash ^= Key.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void WriteTo(pb::CodedOutputStream output) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      output.WriteRawMessage(this);
-    #else
-      if (key_ != null) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Key);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(output);
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (key_ != null) {
-        output.WriteRawTag(10);
-        output.WriteMessage(Key);
-      }
-      if (_unknownFields != null) {
-        _unknownFields.WriteTo(ref output);
-      }
-    }
-    #endif
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public int CalculateSize() {
-      int size = 0;
-      if (key_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Key);
-      }
-      if (_unknownFields != null) {
-        size += _unknownFields.CalculateSize();
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(GetVerificationKeyResponse other) {
-      if (other == null) {
-        return;
-      }
-      if (other.key_ != null) {
-        if (key_ == null) {
-          Key = new global::KeyProvider.Api.Generated.V1.VerificationKey();
-        }
-        Key.MergeFrom(other.Key);
-      }
-      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public void MergeFrom(pb::CodedInputStream input) {
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-      input.ReadRawMessage(this);
-    #else
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
-            break;
-          case 10: {
-            if (key_ == null) {
-              Key = new global::KeyProvider.Api.Generated.V1.VerificationKey();
-            }
-            input.ReadMessage(Key);
-            break;
-          }
-        }
-      }
-    #endif
-    }
-
-    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-      if ((tag & 7) == 4) {
-        // Abort on any end group tag.
-        return;
-      }
-      switch(tag) {
-          default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
-            break;
-          case 10: {
-            if (key_ == null) {
-              Key = new global::KeyProvider.Api.Generated.V1.VerificationKey();
-            }
-            input.ReadMessage(Key);
             break;
           }
         }

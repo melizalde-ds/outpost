@@ -54,9 +54,10 @@ internal sealed class SigningService(
         return JsonSerializer.SerializeToUtf8Bytes(claims);
     }
 
-    internal async Task<string> GenerateTokenAsync(Guid sub, CancellationToken ct = default)
+    internal async Task<(string Token, PublicSigningKey? PublicKey)> GenerateTokenAsync(Guid sub,
+        CancellationToken ct = default)
     {
-        PrivateSigningKey privateKey = await GetPrivateKeyAsync(ct);
+        (PrivateSigningKey privateKey, PublicSigningKey? publicKey) = await GetKeyPairAsync(ct);
         byte[] headerJson = GetHeader(privateKey);
         byte[] payloadJson = GetPayload(sub);
 
@@ -69,15 +70,16 @@ internal sealed class SigningService(
 
         byte[] signature = signer.GenerateSignature();
 
-        return $"{signingInput}.{B64Url(signature)}";
+        return ($"{signingInput}.{B64Url(signature)}", publicKey);
     }
 
-    private async Task<PrivateSigningKey> GetPrivateKeyAsync(CancellationToken ct)
+    private async Task<(PrivateSigningKey PrivateKey, PublicSigningKey? PublicKey)> GetKeyPairAsync(
+        CancellationToken ct)
     {
         PrivateSigningKey? cached = _activePrivateKey;
         if (cached is not null && CanSign(cached))
         {
-            return cached;
+            return (cached, null);
         }
 
         await _refreshLock.WaitAsync(ct);
@@ -86,22 +88,22 @@ internal sealed class SigningService(
             cached = _activePrivateKey;
             if (cached is not null && CanSign(cached))
             {
-                return cached;
+                return (cached, null);
             }
 
             await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
             KeyPairStore retrieval = scope.ServiceProvider.GetRequiredService<KeyPairStore>();
 
-            PrivateSigningKey fresh = await retrieval.GetLatestPrivateKeyAsync(ct)
-                                      ?? throw new SigningKeyNotFoundException();
+            SigningKeyPair fresh = await retrieval.GetLatestKeyPairAsync(ct)
+                                   ?? throw new SigningKeyNotFoundException();
 
-            if (!CanSign(fresh))
+            if (!CanSign(fresh.PrivateKey))
             {
-                throw new SigningKeyExpiredException(fresh.Id, fresh.ExpirationTime);
+                throw new SigningKeyExpiredException(fresh.PrivateKey.Id, fresh.PrivateKey.ExpirationTime);
             }
 
-            _activePrivateKey = fresh;
-            return fresh;
+            _activePrivateKey = fresh.PrivateKey;
+            return (fresh.PrivateKey, fresh.PublicKey);
         }
         finally
         {

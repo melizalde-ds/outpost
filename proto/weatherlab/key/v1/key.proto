@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package weatherlab.key.v1;
 
-import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
 option csharp_namespace = "KeyProvider.Api.Generated.V1";
@@ -10,18 +9,15 @@ option csharp_namespace = "KeyProvider.Api.Generated.V1";
 service KeyService {
   rpc SignToken(SignTokenRequest) returns (SignTokenResponse);
   rpc GetVerificationKeys(GetVerificationKeysRequest) returns (GetVerificationKeysResponse);
-  rpc GetVerificationKey(GetVerificationKeyRequest) returns (GetVerificationKeyResponse);
 }
 
 message SignTokenRequest {
   string subject = 1;
-  google.protobuf.Duration lifetime = 2;
 }
 
 message SignTokenResponse {
   string token = 1 [debug_redact = true];
-  google.protobuf.Timestamp expires_at = 2;
-  string key_id = 3;
+  optional VerificationKey verification_key = 2;
 }
 
 message GetVerificationKeysRequest {}
@@ -34,12 +30,4 @@ message VerificationKey {
   string key_id = 1;
   bytes public_key = 2;
   google.protobuf.Timestamp expires_at = 3;
-}
-
-message GetVerificationKeyRequest {
-  string key_id = 1;
-}
-
-message GetVerificationKeyResponse {
-  VerificationKey key = 1;
 }
