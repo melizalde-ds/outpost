@@ -1,6 +1,8 @@
 include:
-  - ./apps/auth/docker-compose.yml
-  - ./apps/key-provider/docker-compose.yml
+  - path: ./apps/auth/docker-compose.yml
+    env_file: ./apps/auth/.env
+  - path: ./apps/key-provider/docker-compose.yml
+    env_file: ./apps/key-provider/.env
 
 services:
     token_redis:

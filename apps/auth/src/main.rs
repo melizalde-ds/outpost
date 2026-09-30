@@ -11,7 +11,6 @@ use crate::{
 };
 
 mod grpc;
-mod jwt;
 mod password;
 mod proto;
 mod repository;
