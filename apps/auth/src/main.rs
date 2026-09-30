@@ -30,7 +30,7 @@ async fn main() -> anyhow::Result<()> {
 
     info!("Auth service starting...");
     let auth_service = WeatherAuthService::new(Arc::new(auth_repo), Arc::new(passwords));
-    let addr: SocketAddr = settings.grpc.get_grpc_address().parse()?;
+    let addr: SocketAddr = settings.grpc.server.get_grpc_address().parse()?;
     info!("Auth service listening on {}", addr);
     Server::builder()
         .add_service(AuthServiceServer::new(auth_service))
