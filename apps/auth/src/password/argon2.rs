@@ -3,9 +3,13 @@ use std::sync::Arc;
 use async_trait::async_trait;
 
 use argon2::{Argon2, PasswordHash, PasswordHasher as Argon2Hasher, PasswordVerifier};
+use secrecy::ExposeSecret;
 use tokio::sync::Semaphore;
 
-use crate::password::{PasswordHasher, errors::PasswordError};
+use crate::{
+    password::{PasswordHasher, errors::PasswordError},
+    settings::get_settings,
+};
 
 #[derive(Debug)]
 pub struct Argon2PasswordHasher {
@@ -14,10 +18,17 @@ pub struct Argon2PasswordHasher {
 }
 
 impl Argon2PasswordHasher {
-    pub fn new(pepper: Vec<u8>, max_concurrent: usize) -> Self {
-        let permits = Arc::new(Semaphore::new(max_concurrent));
+    pub fn new() -> Self {
+        let settings = get_settings();
+        let permits = Arc::new(Semaphore::new(settings.auth.concurrency_limit));
         Self {
-            pepper: pepper.into(),
+            pepper: settings
+                .auth
+                .password_pepper
+                .expose_secret()
+                .as_bytes()
+                .to_vec()
+                .into(),
             permits,
         }
     }

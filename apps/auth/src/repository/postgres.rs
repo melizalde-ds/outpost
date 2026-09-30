@@ -1,8 +1,12 @@
 use async_trait::async_trait;
+use secrecy::ExposeSecret;
 use sqlx::{PgPool, query_as, query_scalar};
 use uuid::Uuid;
 
-use crate::repository::{AuthRepository, Credentials, UserId, errors::RepositoryError};
+use crate::{
+    repository::{AuthRepository, Credentials, UserId, errors::RepositoryError},
+    settings::get_settings,
+};
 
 #[derive(Debug)]
 pub struct PostgresAuthRepository {
@@ -10,8 +14,11 @@ pub struct PostgresAuthRepository {
 }
 
 impl PostgresAuthRepository {
-    pub fn new(db_pool: PgPool) -> Self {
-        Self { db_pool }
+    pub async fn new() -> anyhow::Result<Self> {
+        let settings = get_settings();
+        let db_pool =
+            sqlx::PgPool::connect(settings.database.connection_string().expose_secret()).await?;
+        Ok(Self { db_pool })
     }
 }
 

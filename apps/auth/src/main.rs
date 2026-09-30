@@ -1,4 +1,3 @@
-use std::env;
 use std::{net::SocketAddr, sync::Arc};
 
 use tonic::transport::Server;
@@ -15,25 +14,23 @@ mod password;
 mod proto;
 mod repository;
 mod service;
+mod settings;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
-    info!("Starting WeatherLab Auth Service...");
-    let pepper = env::var("AUTH_PEPPER")?;
-    let database_url = env::var("AUTH_DATABASE_URL")?;
+    let settings = settings::init()?;
 
-    let addr: SocketAddr = "[::1]:50051".parse()?;
-    let db_pool = sqlx::PgPool::connect(&database_url).await?;
+    let auth_repo = PostgresAuthRepository::new().await?;
     info!("Connected to database");
-    let auth_repo = PostgresAuthRepository::new(db_pool);
-    let passwords = Argon2PasswordHasher::new(pepper.into_bytes(), 10);
+
+    let passwords = Argon2PasswordHasher::new();
     info!("Auth repository initialized");
 
     info!("Auth service starting...");
     let auth_service = WeatherAuthService::new(Arc::new(auth_repo), Arc::new(passwords));
-
+    let addr: SocketAddr = settings.grpc.get_grpc_address().parse()?;
     info!("Auth service listening on {}", addr);
     Server::builder()
         .add_service(AuthServiceServer::new(auth_service))
