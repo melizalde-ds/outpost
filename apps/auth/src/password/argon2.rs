@@ -8,7 +8,7 @@ use tokio::sync::Semaphore;
 
 use crate::{
     password::{PasswordHasher, errors::PasswordError},
-    settings::get_settings,
+    settings::password::PasswordSettings,
 };
 
 #[derive(Debug)]
@@ -18,18 +18,10 @@ pub struct Argon2PasswordHasher {
 }
 
 impl Argon2PasswordHasher {
-    pub fn new() -> Self {
-        let settings = get_settings();
-        let permits = Arc::new(Semaphore::new(settings.auth.concurrency_limit));
+    pub fn new(settings: &PasswordSettings) -> Self {
         Self {
-            pepper: settings
-                .auth
-                .password_pepper
-                .expose_secret()
-                .as_bytes()
-                .to_vec()
-                .into(),
-            permits,
+            pepper: settings.pepper.expose_secret().as_bytes().into(),
+            permits: Arc::new(Semaphore::new(settings.concurrency_limit)),
         }
     }
 }
