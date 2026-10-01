@@ -10,10 +10,12 @@ pub struct GrpcSettings {
 pub struct GrpcEndpoint {
     pub host: String,
     pub port: u16,
-    pub channel_settings: Option<ChannelSettings>,
+    #[serde(default)]
+    pub channel_settings: ChannelSettings,
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(default)]
 pub struct ChannelSettings {
     pub connect_timeout: u64,
     pub timeout: u64,
@@ -25,13 +27,22 @@ impl Default for GrpcSettings {
             server: GrpcEndpoint {
                 host: "[::]".to_string(),
                 port: 50051,
-                channel_settings: None,
+                channel_settings: ChannelSettings::default(),
             },
             key_service_client: GrpcEndpoint {
                 host: "[::1]".to_string(),
                 port: 50052,
-                channel_settings: None,
+                channel_settings: ChannelSettings::default(),
             },
+        }
+    }
+}
+
+impl Default for ChannelSettings {
+    fn default() -> Self {
+        Self {
+            connect_timeout: 2,
+            timeout: 3,
         }
     }
 }
@@ -39,5 +50,9 @@ impl Default for GrpcSettings {
 impl GrpcEndpoint {
     pub fn get_grpc_address(&self) -> String {
         format!("{}:{}", self.host, self.port)
+    }
+
+    pub fn client_uri(&self) -> String {
+        format!("http://{}:{}", self.host, self.port)
     }
 }

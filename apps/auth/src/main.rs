@@ -1,7 +1,5 @@
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, sync::Arc, time::Duration};
 
-use secrecy::ExposeSecret;
-use sqlx::{PgPool, postgres::PgPoolOptions};
 use tonic::transport::{Channel, Endpoint, Server};
 use tracing::info;
 
@@ -55,15 +53,12 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn create_channel(endpoint: &GrpcEndpoint) -> anyhow::Result<Channel> {
-    let mut channel_endpoint = Endpoint::from_shared(endpoint.get_grpc_address())?;
-
-    if let Some(channel_settings) = &endpoint.channel_settings {
-        let connect_timeout = std::time::Duration::from_secs(channel_settings.connect_timeout);
-        let timeout = std::time::Duration::from_secs(channel_settings.timeout);
-        channel_endpoint = channel_endpoint
-            .connect_timeout(connect_timeout)
-            .timeout(timeout);
-    }
+    let channel_settings = &endpoint.channel_settings;
+    let connect_timeout = Duration::from_secs(channel_settings.connect_timeout);
+    let timeout = Duration::from_secs(channel_settings.timeout);
+    let channel_endpoint = Endpoint::from_shared(endpoint.client_uri())?
+        .connect_timeout(connect_timeout)
+        .timeout(timeout);
 
     Ok(channel_endpoint.connect_lazy())
 }
