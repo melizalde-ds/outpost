@@ -1,12 +1,13 @@
 use std::sync::Arc;
 
+use secrecy::SecretSlice;
 use uuid::Uuid;
 
 use crate::{
     password::PasswordHasher,
     proto::auth::v1::{
         LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
-        RegisterResponse,
+        RegisterResponse, TokenPair,
     },
     repository::{AuthRepository, errors::RepositoryError},
     service::{SigningService, errors::AuthServiceError},
@@ -36,7 +37,8 @@ impl WeatherAuthService {
         &self,
         req: RegisterRequest,
     ) -> Result<RegisterResponse, AuthServiceError> {
-        let password_hash = self.passwords.hash(req.password.into_bytes()).await?;
+        let password = SecretSlice::from(req.password.into_bytes());
+        let password_hash = self.passwords.hash(password).await?;
 
         match self
             .repo
@@ -44,11 +46,12 @@ impl WeatherAuthService {
             .await
         {
             Ok(user_id) => {
-                let token = self.signing_service.sign(user_id.0)?;
+                let token = self.signing_service.sign(user_id.0).await?;
                 Ok(RegisterResponse {
-                    user_id: user_id.0.to_string(),
-                    access_token: token,
-                    ..Default::default()
+                    tokens: Some(TokenPair {
+                        access_token: token,
+                        ..Default::default()
+                    }),
                 })
             }
             Err(RepositoryError::UniqueViolation(_)) => {
@@ -63,15 +66,15 @@ impl WeatherAuthService {
             return Err(AuthServiceError::UserNotFound(req.username));
         };
 
+        let password = SecretSlice::from(req.password.into_bytes());
+        let password_matches = self
+            .passwords
+            .verify(password, credentials.password_hash)
+            .await?;
+
         if !credentials.active {
             return Err(AuthServiceError::UserNotActive(credentials.user_id));
         }
-
-        let password_matches = self
-            .passwords
-            .verify(req.password.into_bytes(), &credentials.password_hash)
-            .await?;
-
         match password_matches {
             true => Ok(LoginResponse::default()),
             false => Err(AuthServiceError::InvalidCredentials(req.username)),

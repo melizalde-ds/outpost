@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1dweatherlab/auth/v1/auth.proto\x12\x12weatherlab.auth.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"N\n\x0fRegisterRequest\x12\x1a\n\x08username\x18\x01 \x01(\tR\x08username\x12\x1f\n\x08password\x18\x02 \x01(\tB\x03\x80\x01\x01R\x08password\"\xd0\x01\n\x10RegisterResponse\x12\x17\n\x07user_id\x18\x01 \x01(\tR\x06userId\x12&\n\x0c\x61\x63\x63\x65ss_token\x18\x02 \x01(\tB\x03\x80\x01\x01R\x0b\x61\x63\x63\x65ssToken\x12Q\n\x17\x61\x63\x63\x65ss_token_expires_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\x14\x61\x63\x63\x65ssTokenExpiresAt\x12(\n\rrefresh_token\x18\x04 \x01(\tB\x03\x80\x01\x01R\x0crefreshToken\"K\n\x0cLoginRequest\x12\x1a\n\x08username\x18\x01 \x01(\tR\x08username\x12\x1f\n\x08password\x18\x02 \x01(\tB\x03\x80\x01\x01R\x08password\"\xb4\x01\n\rLoginResponse\x12&\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\tB\x03\x80\x01\x01R\x0b\x61\x63\x63\x65ssToken\x12Q\n\x17\x61\x63\x63\x65ss_token_expires_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\x14\x61\x63\x63\x65ssTokenExpiresAt\x12(\n\rrefresh_token\x18\x03 \x01(\tB\x03\x80\x01\x01R\x0crefreshToken\"?\n\x13RefreshTokenRequest\x12(\n\rrefresh_token\x18\x01 \x01(\tB\x03\x80\x01\x01R\x0crefreshToken\"\xbb\x01\n\x14RefreshTokenResponse\x12&\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\tB\x03\x80\x01\x01R\x0b\x61\x63\x63\x65ssToken\x12Q\n\x17\x61\x63\x63\x65ss_token_expires_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\x14\x61\x63\x63\x65ssTokenExpiresAt\x12(\n\rrefresh_token\x18\x03 \x01(\tB\x03\x80\x01\x01R\x0crefreshToken2\x95\x02\n\x0b\x41uthService\x12U\n\x08Register\x12#.weatherlab.auth.v1.RegisterRequest\x1a$.weatherlab.auth.v1.RegisterResponse\x12L\n\x05Login\x12 .weatherlab.auth.v1.LoginRequest\x1a!.weatherlab.auth.v1.LoginResponse\x12\x61\n\x0cRefreshToken\x12\'.weatherlab.auth.v1.RefreshTokenRequest\x1a(.weatherlab.auth.v1.RefreshTokenResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1dweatherlab/auth/v1/auth.proto\x12\x12weatherlab.auth.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"N\n\x0fRegisterRequest\x12\x1a\n\x08username\x18\x01 \x01(\tR\x08username\x12\x1f\n\x08password\x18\x02 \x01(\tB\x03\x80\x01\x01R\x08password\"\xb2\x01\n\tTokenPair\x12&\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\tB\x03\x80\x01\x01R\x0b\x61\x63\x63\x65ssToken\x12(\n\rrefresh_token\x18\x02 \x01(\tB\x03\x80\x01\x01R\x0crefreshToken\x12S\n\x18refresh_token_expires_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\x15refreshTokenExpiresAt\"I\n\x10RegisterResponse\x12\x35\n\x06tokens\x18\x01 \x01(\x0b\x32\x1d.weatherlab.auth.v1.TokenPairR\x06tokens\"K\n\x0cLoginRequest\x12\x1a\n\x08username\x18\x01 \x01(\tR\x08username\x12\x1f\n\x08password\x18\x02 \x01(\tB\x03\x80\x01\x01R\x08password\"F\n\rLoginResponse\x12\x35\n\x06tokens\x18\x01 \x01(\x0b\x32\x1d.weatherlab.auth.v1.TokenPairR\x06tokens\"?\n\x13RefreshTokenRequest\x12(\n\rrefresh_token\x18\x01 \x01(\tB\x03\x80\x01\x01R\x0crefreshToken\"M\n\x14RefreshTokenResponse\x12\x35\n\x06tokens\x18\x01 \x01(\x0b\x32\x1d.weatherlab.auth.v1.TokenPairR\x06tokens2\x95\x02\n\x0b\x41uthService\x12U\n\x08Register\x12#.weatherlab.auth.v1.RegisterRequest\x1a$.weatherlab.auth.v1.RegisterResponse\x12L\n\x05Login\x12 .weatherlab.auth.v1.LoginRequest\x1a!.weatherlab.auth.v1.LoginResponse\x12\x61\n\x0cRefreshToken\x12\'.weatherlab.auth.v1.RefreshTokenRequest\x1a(.weatherlab.auth.v1.RefreshTokenResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,34 +34,28 @@ if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_REGISTERREQUEST'].fields_by_name['password']._loaded_options = None
   _globals['_REGISTERREQUEST'].fields_by_name['password']._serialized_options = b'\200\001\001'
-  _globals['_REGISTERRESPONSE'].fields_by_name['access_token']._loaded_options = None
-  _globals['_REGISTERRESPONSE'].fields_by_name['access_token']._serialized_options = b'\200\001\001'
-  _globals['_REGISTERRESPONSE'].fields_by_name['refresh_token']._loaded_options = None
-  _globals['_REGISTERRESPONSE'].fields_by_name['refresh_token']._serialized_options = b'\200\001\001'
+  _globals['_TOKENPAIR'].fields_by_name['access_token']._loaded_options = None
+  _globals['_TOKENPAIR'].fields_by_name['access_token']._serialized_options = b'\200\001\001'
+  _globals['_TOKENPAIR'].fields_by_name['refresh_token']._loaded_options = None
+  _globals['_TOKENPAIR'].fields_by_name['refresh_token']._serialized_options = b'\200\001\001'
   _globals['_LOGINREQUEST'].fields_by_name['password']._loaded_options = None
   _globals['_LOGINREQUEST'].fields_by_name['password']._serialized_options = b'\200\001\001'
-  _globals['_LOGINRESPONSE'].fields_by_name['access_token']._loaded_options = None
-  _globals['_LOGINRESPONSE'].fields_by_name['access_token']._serialized_options = b'\200\001\001'
-  _globals['_LOGINRESPONSE'].fields_by_name['refresh_token']._loaded_options = None
-  _globals['_LOGINRESPONSE'].fields_by_name['refresh_token']._serialized_options = b'\200\001\001'
   _globals['_REFRESHTOKENREQUEST'].fields_by_name['refresh_token']._loaded_options = None
   _globals['_REFRESHTOKENREQUEST'].fields_by_name['refresh_token']._serialized_options = b'\200\001\001'
-  _globals['_REFRESHTOKENRESPONSE'].fields_by_name['access_token']._loaded_options = None
-  _globals['_REFRESHTOKENRESPONSE'].fields_by_name['access_token']._serialized_options = b'\200\001\001'
-  _globals['_REFRESHTOKENRESPONSE'].fields_by_name['refresh_token']._loaded_options = None
-  _globals['_REFRESHTOKENRESPONSE'].fields_by_name['refresh_token']._serialized_options = b'\200\001\001'
   _globals['_REGISTERREQUEST']._serialized_start=86
   _globals['_REGISTERREQUEST']._serialized_end=164
-  _globals['_REGISTERRESPONSE']._serialized_start=167
-  _globals['_REGISTERRESPONSE']._serialized_end=375
-  _globals['_LOGINREQUEST']._serialized_start=377
-  _globals['_LOGINREQUEST']._serialized_end=452
-  _globals['_LOGINRESPONSE']._serialized_start=455
-  _globals['_LOGINRESPONSE']._serialized_end=635
-  _globals['_REFRESHTOKENREQUEST']._serialized_start=637
-  _globals['_REFRESHTOKENREQUEST']._serialized_end=700
-  _globals['_REFRESHTOKENRESPONSE']._serialized_start=703
-  _globals['_REFRESHTOKENRESPONSE']._serialized_end=890
-  _globals['_AUTHSERVICE']._serialized_start=893
-  _globals['_AUTHSERVICE']._serialized_end=1170
+  _globals['_TOKENPAIR']._serialized_start=167
+  _globals['_TOKENPAIR']._serialized_end=345
+  _globals['_REGISTERRESPONSE']._serialized_start=347
+  _globals['_REGISTERRESPONSE']._serialized_end=420
+  _globals['_LOGINREQUEST']._serialized_start=422
+  _globals['_LOGINREQUEST']._serialized_end=497
+  _globals['_LOGINRESPONSE']._serialized_start=499
+  _globals['_LOGINRESPONSE']._serialized_end=569
+  _globals['_REFRESHTOKENREQUEST']._serialized_start=571
+  _globals['_REFRESHTOKENREQUEST']._serialized_end=634
+  _globals['_REFRESHTOKENRESPONSE']._serialized_start=636
+  _globals['_REFRESHTOKENRESPONSE']._serialized_end=713
+  _globals['_AUTHSERVICE']._serialized_start=716
+  _globals['_AUTHSERVICE']._serialized_end=993
 # @@protoc_insertion_point(module_scope)

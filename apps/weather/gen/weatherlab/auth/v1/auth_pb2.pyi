@@ -40,29 +40,46 @@ class RegisterRequest(_message.Message):
 Global___RegisterRequest: _TypeAlias = RegisterRequest  # noqa: Y015
 
 @_typing.final
-class RegisterResponse(_message.Message):
+class TokenPair(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    USER_ID_FIELD_NUMBER: _builtins.int
     ACCESS_TOKEN_FIELD_NUMBER: _builtins.int
-    ACCESS_TOKEN_EXPIRES_AT_FIELD_NUMBER: _builtins.int
     REFRESH_TOKEN_FIELD_NUMBER: _builtins.int
-    user_id: _builtins.str
+    REFRESH_TOKEN_EXPIRES_AT_FIELD_NUMBER: _builtins.int
     access_token: _builtins.str
     refresh_token: _builtins.str
     @_builtins.property
-    def access_token_expires_at(self) -> _timestamp_pb2.Timestamp: ...
+    def refresh_token_expires_at(self) -> _timestamp_pb2.Timestamp: ...
     def __init__(
         self,
         *,
-        user_id: _builtins.str = ...,
         access_token: _builtins.str = ...,
-        access_token_expires_at: _timestamp_pb2.Timestamp | None = ...,
         refresh_token: _builtins.str = ...,
+        refresh_token_expires_at: _timestamp_pb2.Timestamp | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["access_token_expires_at", b"access_token_expires_at"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["refresh_token_expires_at", b"refresh_token_expires_at"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["access_token", b"access_token", "access_token_expires_at", b"access_token_expires_at", "refresh_token", b"refresh_token", "user_id", b"user_id"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["access_token", b"access_token", "refresh_token", b"refresh_token", "refresh_token_expires_at", b"refresh_token_expires_at"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___TokenPair: _TypeAlias = TokenPair  # noqa: Y015
+
+@_typing.final
+class RegisterResponse(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    TOKENS_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def tokens(self) -> Global___TokenPair: ...
+    def __init__(
+        self,
+        *,
+        tokens: Global___TokenPair | None = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _typing.Literal["tokens", b"tokens"]  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["tokens", b"tokens"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -94,23 +111,17 @@ Global___LoginRequest: _TypeAlias = LoginRequest  # noqa: Y015
 class LoginResponse(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    ACCESS_TOKEN_FIELD_NUMBER: _builtins.int
-    ACCESS_TOKEN_EXPIRES_AT_FIELD_NUMBER: _builtins.int
-    REFRESH_TOKEN_FIELD_NUMBER: _builtins.int
-    access_token: _builtins.str
-    refresh_token: _builtins.str
+    TOKENS_FIELD_NUMBER: _builtins.int
     @_builtins.property
-    def access_token_expires_at(self) -> _timestamp_pb2.Timestamp: ...
+    def tokens(self) -> Global___TokenPair: ...
     def __init__(
         self,
         *,
-        access_token: _builtins.str = ...,
-        access_token_expires_at: _timestamp_pb2.Timestamp | None = ...,
-        refresh_token: _builtins.str = ...,
+        tokens: Global___TokenPair | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["access_token_expires_at", b"access_token_expires_at"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["tokens", b"tokens"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["access_token", b"access_token", "access_token_expires_at", b"access_token_expires_at", "refresh_token", b"refresh_token"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["tokens", b"tokens"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
@@ -139,23 +150,17 @@ Global___RefreshTokenRequest: _TypeAlias = RefreshTokenRequest  # noqa: Y015
 class RefreshTokenResponse(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
-    ACCESS_TOKEN_FIELD_NUMBER: _builtins.int
-    ACCESS_TOKEN_EXPIRES_AT_FIELD_NUMBER: _builtins.int
-    REFRESH_TOKEN_FIELD_NUMBER: _builtins.int
-    access_token: _builtins.str
-    refresh_token: _builtins.str
+    TOKENS_FIELD_NUMBER: _builtins.int
     @_builtins.property
-    def access_token_expires_at(self) -> _timestamp_pb2.Timestamp: ...
+    def tokens(self) -> Global___TokenPair: ...
     def __init__(
         self,
         *,
-        access_token: _builtins.str = ...,
-        access_token_expires_at: _timestamp_pb2.Timestamp | None = ...,
-        refresh_token: _builtins.str = ...,
+        tokens: Global___TokenPair | None = ...,
     ) -> None: ...
-    _HasFieldArgType: _TypeAlias = _typing.Literal["access_token_expires_at", b"access_token_expires_at"]  # noqa: Y015
+    _HasFieldArgType: _TypeAlias = _typing.Literal["tokens", b"tokens"]  # noqa: Y015
     def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["access_token", b"access_token", "access_token_expires_at", b"access_token_expires_at", "refresh_token", b"refresh_token"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["tokens", b"tokens"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 

@@ -23,12 +23,12 @@ impl Default for GrpcSettings {
     fn default() -> Self {
         Self {
             server: GrpcEndpoint {
-                host: "localhost".to_string(),
+                host: "[::]".to_string(),
                 port: 50051,
                 channel_settings: None,
             },
             key_service_client: GrpcEndpoint {
-                host: "localhost".to_string(),
+                host: "[::1]".to_string(),
                 port: 50052,
                 channel_settings: None,
             },

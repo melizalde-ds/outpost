@@ -15,11 +15,14 @@ message RegisterRequest {
   string password = 2 [debug_redact = true];
 }
 
+message TokenPair {
+  string access_token = 1 [debug_redact = true];
+  string refresh_token = 2 [debug_redact = true];
+  google.protobuf.Timestamp refresh_token_expires_at = 3;
+}
+
 message RegisterResponse {
-  string user_id = 1;
-  string access_token = 2 [debug_redact = true];
-  google.protobuf.Timestamp access_token_expires_at = 3;
-  string refresh_token = 4 [debug_redact = true];
+  TokenPair tokens = 1;
 }
 
 message LoginRequest {
@@ -28,9 +31,7 @@ message LoginRequest {
 }
 
 message LoginResponse {
-  string access_token = 1 [debug_redact = true];
-  google.protobuf.Timestamp access_token_expires_at = 2;
-  string refresh_token = 3 [debug_redact = true];
+  TokenPair tokens = 1;
 }
 
 message RefreshTokenRequest {
@@ -38,7 +39,5 @@ message RefreshTokenRequest {
 }
 
 message RefreshTokenResponse {
-  string access_token = 1 [debug_redact = true];
-  google.protobuf.Timestamp access_token_expires_at = 2;
-  string refresh_token = 3 [debug_redact = true];
+  TokenPair tokens = 1;
 }
