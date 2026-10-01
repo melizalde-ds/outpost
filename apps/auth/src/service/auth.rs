@@ -9,18 +9,27 @@ use crate::{
         RegisterResponse,
     },
     repository::{AuthRepository, errors::RepositoryError},
-    service::errors::AuthServiceError,
+    service::{SigningService, errors::AuthServiceError},
 };
 
 #[derive(Debug)]
 pub struct WeatherAuthService {
     repo: Arc<dyn AuthRepository>,
     passwords: Arc<dyn PasswordHasher>,
+    signing_service: Arc<dyn SigningService>,
 }
 
 impl WeatherAuthService {
-    pub fn new(repo: Arc<dyn AuthRepository>, passwords: Arc<dyn PasswordHasher>) -> Self {
-        Self { repo, passwords }
+    pub fn new(
+        repo: Arc<dyn AuthRepository>,
+        passwords: Arc<dyn PasswordHasher>,
+        signing_service: Arc<dyn SigningService>,
+    ) -> Self {
+        Self {
+            repo,
+            passwords,
+            signing_service,
+        }
     }
 
     pub(crate) async fn register(
@@ -34,10 +43,14 @@ impl WeatherAuthService {
             .insert_credentials(&req.username, password_hash)
             .await
         {
-            Ok(user_id) => Ok(RegisterResponse {
-                user_id: user_id.0.to_string(),
-                ..Default::default()
-            }),
+            Ok(user_id) => {
+                let token = self.signing_service.sign(user_id.0)?;
+                Ok(RegisterResponse {
+                    user_id: user_id.0.to_string(),
+                    access_token: token,
+                    ..Default::default()
+                })
+            }
             Err(RepositoryError::UniqueViolation(_)) => {
                 Err(AuthServiceError::UserAlreadyExists(req.username))
             }

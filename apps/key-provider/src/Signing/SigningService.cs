@@ -46,6 +46,7 @@ internal sealed class SigningService(
         {
             ["iss"] = _options.Issuer,
             ["sub"] = sub.ToString(),
+            ["aud"] = _options.Audience,
             ["iat"] = now.ToUnixTimeSeconds(),
             ["exp"] = (now + _options.TokenLifetime).ToUnixTimeSeconds(),
             ["jti"] = Guid.CreateVersion7(now).ToString("N")
