@@ -75,8 +75,17 @@ impl WeatherAuthService {
         if !credentials.active {
             return Err(AuthServiceError::UserNotActive(credentials.user_id));
         }
+
         match password_matches {
-            true => Ok(LoginResponse::default()),
+            true => {
+                let token: String = self.signing_service.sign(credentials.user_id).await?;
+                Ok(LoginResponse {
+                    tokens: Some(TokenPair {
+                        access_token: token,
+                        ..Default::default()
+                    }),
+                })
+            }
             false => Err(AuthServiceError::InvalidCredentials(req.username)),
         }
     }
@@ -85,7 +94,7 @@ impl WeatherAuthService {
         &self,
         _req: RefreshTokenRequest,
     ) -> Result<RefreshTokenResponse, AuthServiceError> {
-        let user_id = Uuid::new_v4();
+        let user_id = Uuid::now_v7();
 
         if !self.repo.is_active(&user_id).await? {
             return Err(AuthServiceError::UserNotActive(user_id));

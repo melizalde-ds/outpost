@@ -1,5 +1,5 @@
 CREATE TABLE auth(
-    user_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid PRIMARY KEY DEFAULT uuidv7(),
     username text NOT NULL UNIQUE,
     password_hash text NOT NULL,
     active boolean NOT NULL DEFAULT true,
