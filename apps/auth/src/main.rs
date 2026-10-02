@@ -11,6 +11,7 @@ use crate::{
     settings::{Settings, grpc::GrpcEndpoint},
 };
 
+mod cache;
 mod grpc;
 mod password;
 mod proto;

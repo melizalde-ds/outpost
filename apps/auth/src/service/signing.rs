@@ -1,4 +1,5 @@
 use anyhow::bail;
+use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use chrono::DateTime;
 use tonic::{async_trait, transport::Channel};
 use tracing::error;
@@ -70,7 +71,13 @@ impl TryFrom<VerificationKey> for super::PublicKey {
 
     fn try_from(value: VerificationKey) -> Result<Self, Self::Error> {
         let kid = Uuid::parse_str(&value.key_id)?;
-        let key = String::from_utf8(value.public_key)?;
+        if value.public_key.len() != 32 {
+            bail!(
+                "key {kid}: expected 32 bytes, got {}",
+                value.public_key.len()
+            );
+        }
+        let key = URL_SAFE_NO_PAD.encode(&value.public_key);
         let Some(timestamp) = value.expires_at else {
             bail!("Verification key is missing expiration time");
         };
