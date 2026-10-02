@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use serde::{Serialize, Serializer};
@@ -35,14 +37,15 @@ impl JwkData {
 #[derive(Debug, Clone)]
 pub struct JwkRecord {
     pub kid: Uuid,
-    pub json: Box<RawValue>,
+    pub json: Arc<RawValue>,
     pub exp: DateTime<Utc>,
 }
 
 impl JwkRecord {
     pub fn new(kid: Uuid, data: JwkData, exp: DateTime<Utc>) -> Result<Self> {
-        let json = serde_json::value::to_raw_value(&data)
+        let box_json = serde_json::value::to_raw_value(&data)
             .with_context(|| format!("failed to serialize JWK {kid}"))?;
+        let json = Arc::from(box_json);
         Ok(Self { kid, json, exp })
     }
 }
