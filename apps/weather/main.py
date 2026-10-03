@@ -6,6 +6,7 @@ if __name__ == "__main__":
     password = "secret_password"
 
     client = get_auth()
+
     response = client.login(username, password)
 
     print("Login response:")

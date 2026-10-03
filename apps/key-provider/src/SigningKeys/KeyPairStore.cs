@@ -77,7 +77,9 @@ internal sealed class KeyPairStore(
 
         PublicSigningKey publicKey = new()
         {
-            Id = record.KeyPairId, PublicKey = record.PublicKey, ExpirationTime = record.ExpiresAt
+            Id = record.KeyPairId,
+            PublicKey = record.PublicKey,
+            ExpirationTime = record.ExpiresAt
         };
 
         return new SigningKeyPair(privateKey, publicKey);
@@ -90,7 +92,7 @@ internal sealed class KeyPairStore(
             return await context.KeyPairRecords
                 .AsNoTracking()
                 .Verifiable(timeProvider)
-                .NewestFirst()
+                .JwkOrdering()
                 .Select(x =>
                     new PublicSigningKey { Id = x.KeyPairId, PublicKey = x.PublicKey, ExpirationTime = x.ExpiresAt })
                 .ToArrayAsync(ct);

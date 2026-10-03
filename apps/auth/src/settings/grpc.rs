@@ -21,23 +21,6 @@ pub struct ChannelSettings {
     pub timeout: u64,
 }
 
-impl Default for GrpcSettings {
-    fn default() -> Self {
-        Self {
-            server: GrpcEndpoint {
-                host: "[::]".to_string(),
-                port: 50051,
-                channel_settings: ChannelSettings::default(),
-            },
-            key_service_client: GrpcEndpoint {
-                host: "[::1]".to_string(),
-                port: 50052,
-                channel_settings: ChannelSettings::default(),
-            },
-        }
-    }
-}
-
 impl Default for ChannelSettings {
     fn default() -> Self {
         Self {

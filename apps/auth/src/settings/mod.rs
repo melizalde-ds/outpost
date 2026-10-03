@@ -16,7 +16,6 @@ pub struct Settings {
     #[serde(default)]
     pub database: DatabaseSettings,
     pub password: PasswordSettings,
-    #[serde(default)]
     pub grpc: GrpcSettings,
     #[serde(default)]
     pub server: ServerSettings,

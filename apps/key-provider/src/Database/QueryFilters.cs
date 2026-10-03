@@ -10,6 +10,11 @@ internal static class QueryFilters
         return query.OrderByDescending(p => p.CreatedAt);
     }
 
+    internal static IQueryable<KeyPairRecord> JwkOrdering(this IQueryable<KeyPairRecord> query)
+    {
+        return query.OrderBy(p => p.CreatedAt);
+    }
+
     internal static IQueryable<KeyPairRecord> Verifiable(this IQueryable<KeyPairRecord> query,
         TimeProvider timeProvider)
     {
