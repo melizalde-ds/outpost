@@ -4,14 +4,16 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
+mod errors;
 mod key_service;
 
+pub use errors::SigningError;
 pub use key_service::WeatherSigningService;
 
 #[async_trait]
 pub trait SigningService: Debug + Send + Sync + 'static {
-    async fn sign(&self, sub: Uuid) -> anyhow::Result<SignedToken>;
-    async fn get_verification_keys(&self) -> anyhow::Result<Vec<PublicKey>>;
+    async fn sign(&self, sub: Uuid) -> Result<SignedToken, SigningError>;
+    async fn get_verification_keys(&self) -> Result<Vec<PublicKey>, SigningError>;
 }
 
 pub struct SignedToken {

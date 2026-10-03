@@ -1,4 +1,3 @@
-use anyhow::bail;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use chrono::DateTime;
 use tonic::{async_trait, transport::Channel};
@@ -10,7 +9,7 @@ use crate::{
         GetVerificationKeysRequest, SignTokenRequest, VerificationKey,
         key_service_client::KeyServiceClient,
     },
-    signing::{PublicKey, SignedToken, SigningService},
+    signing::{PublicKey, SignedToken, SigningError, SigningService},
 };
 
 #[derive(Debug)]
@@ -28,7 +27,7 @@ impl WeatherSigningService {
 
 #[async_trait]
 impl SigningService for WeatherSigningService {
-    async fn sign(&self, sub: Uuid) -> anyhow::Result<SignedToken> {
+    async fn sign(&self, sub: Uuid) -> Result<SignedToken, SigningError> {
         let mut stub = self.client.clone();
         let response = stub
             .sign_token(SignTokenRequest {
@@ -50,7 +49,7 @@ impl SigningService for WeatherSigningService {
         })
     }
 
-    async fn get_verification_keys(&self) -> anyhow::Result<Vec<PublicKey>> {
+    async fn get_verification_keys(&self) -> Result<Vec<PublicKey>, SigningError> {
         let mut stub = self.client.clone();
         let response = stub
             .get_verification_keys(GetVerificationKeysRequest {})
@@ -75,23 +74,20 @@ impl SigningService for WeatherSigningService {
 }
 
 impl TryFrom<VerificationKey> for PublicKey {
-    type Error = anyhow::Error;
+    type Error = SigningError;
 
     fn try_from(value: VerificationKey) -> Result<Self, Self::Error> {
         let kid = Uuid::parse_str(&value.key_id)?;
         if value.public_key.len() != 32 {
-            bail!(
-                "key {kid}: expected 32 bytes, got {}",
-                value.public_key.len()
-            );
+            return Err(SigningError::BadKeyLength(kid, value.public_key.len()));
         }
         let key = URL_SAFE_NO_PAD.encode(&value.public_key);
         let Some(timestamp) = value.expires_at else {
-            bail!("Verification key is missing expiration time");
+            return Err(SigningError::MissingExpiry(kid));
         };
 
         let Some(exp) = DateTime::from_timestamp(timestamp.seconds, timestamp.nanos as u32) else {
-            bail!("Failed to create DateTime from timestamp");
+            return Err(SigningError::BadExpiry(kid));
         };
 
         Ok(PublicKey { kid, key, exp })

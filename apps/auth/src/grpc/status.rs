@@ -1,7 +1,7 @@
-use tonic::Status;
+use tonic::{Code, Status};
 use tracing::{error, info, warn};
 
-use crate::{password::PasswordError, service::AuthServiceError};
+use crate::{password::PasswordError, service::AuthServiceError, signing::SigningError};
 
 impl From<AuthServiceError> for Status {
     fn from(err: AuthServiceError) -> Self {
@@ -22,8 +22,20 @@ impl From<AuthServiceError> for Status {
                 warn!(error = %e, "password service shutting down");
                 Status::unavailable("service unavailable, retry later")
             }
+            AuthServiceError::Signing(SigningError::Call(status))
+                if matches!(status.code(), Code::Unavailable | Code::DeadlineExceeded) =>
+            {
+                warn!(error = %status, "key service unavailable");
+                Status::unavailable("service unavailable, retry later")
+            }
+            e @ AuthServiceError::Redis(_) => {
+                warn!(error = %e, "failed to publish verification keys");
+                Status::unavailable("service unavailable, retry later")
+            }
             e @ (AuthServiceError::Repository(_)
             | AuthServiceError::Password(_)
+            | AuthServiceError::Signing(_)
+            | AuthServiceError::Cache(_)
             | AuthServiceError::UnexpectedError(_)) => {
                 error!(error = ?e, "internal failure");
                 Status::internal("internal error")

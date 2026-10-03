@@ -4,7 +4,7 @@ use secrecy::SecretSlice;
 use uuid::Uuid;
 
 use crate::{
-    cache::JwkCache,
+    cache::{JwkCache, JwkRecord},
     password::PasswordHasher,
     proto::auth::v1::{
         LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
@@ -105,15 +105,23 @@ impl WeatherAuthService {
         let signed = self.signing_service.sign(user_id).await?;
 
         if let Some(key) = signed.new_key {
-            self.key_cache.insert(key)?;
-            self.redis_client
-                .push_verification_key(&key.try_into()?)
-                .await?;
+            let record = JwkRecord::try_from(key)?;
+            self.redis_client.push_verification_key(&record).await?;
+            self.key_cache.insert(record)?;
         }
 
         if !self.key_cache.contains(&signed.key_id) {
-            let keys = self.signing_service.get_verification_keys().await?;
-            self.key_cache.rebuild(keys)?;
+            let records = self
+                .signing_service
+                .get_verification_keys()
+                .await?
+                .into_iter()
+                .map(JwkRecord::try_from)
+                .collect::<Result<Vec<_>, _>>()?;
+            self.redis_client
+                .push_multiple_verification_keys(&records)
+                .await?;
+            self.key_cache.rebuild(records);
         }
 
         Ok(signed.token)

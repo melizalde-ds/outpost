@@ -1,7 +1,10 @@
 use thiserror::Error;
 use uuid::Uuid;
 
-use crate::{password::PasswordError, repository::RepositoryError};
+use crate::{
+    cache::CacheError, password::PasswordError, redis::RedisClientError,
+    repository::RepositoryError, signing::SigningError,
+};
 
 #[derive(Error, Debug)]
 pub enum AuthServiceError {
@@ -17,6 +20,12 @@ pub enum AuthServiceError {
     Repository(#[from] RepositoryError),
     #[error("Password engine error: {0}")]
     Password(#[from] PasswordError),
+    #[error("Signing error: {0}")]
+    Signing(#[from] SigningError),
+    #[error("Key cache error: {0}")]
+    Cache(#[from] CacheError),
+    #[error("Redis error: {0}")]
+    Redis(#[from] RedisClientError),
     #[error("Unexpected error occurred: {0}")]
     UnexpectedError(#[from] anyhow::Error),
 }

@@ -48,7 +48,7 @@ async fn main() -> anyhow::Result<()> {
     info!("Password hasher initialized");
     let signing_service = Arc::new(WeatherSigningService::new(signing_channel));
     info!("Signing service initialized");
-    let cache = create_cache(&signing_service).await?;
+    let cache = create_cache(&signing_service, &redis_client).await?;
     info!("JWK cache initialized with {} records", cache.live().len());
 
     info!("Auth service starting...");
@@ -80,11 +80,17 @@ fn create_channel(endpoint: &GrpcEndpoint) -> anyhow::Result<Channel> {
     Ok(channel_endpoint.connect_lazy())
 }
 
-async fn create_cache(client: &WeatherSigningService) -> anyhow::Result<JwkCache> {
+async fn create_cache(
+    client: &WeatherSigningService,
+    redis_client: &RedisClient,
+) -> anyhow::Result<JwkCache> {
     let keys = client.get_verification_keys().await?;
     let records = keys
         .into_iter()
         .map(JwkRecord::try_from)
         .collect::<Result<Vec<_>, _>>()?;
+    redis_client
+        .push_multiple_verification_keys(&records)
+        .await?;
     Ok(JwkCache::new(records))
 }

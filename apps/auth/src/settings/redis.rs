@@ -17,6 +17,6 @@ impl Default for RedisSettings {
 
 impl RedisSettings {
     pub fn get_redis_address(&self) -> String {
-        format!("{}:{}", self.host, self.port)
+        format!("redis://{}:{}", self.host, self.port)
     }
 }

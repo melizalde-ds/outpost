@@ -1,12 +1,11 @@
 use std::sync::Arc;
 
-use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use serde::{Serialize, Serializer};
 use serde_json::value::RawValue;
 use uuid::Uuid;
 
-use crate::signing::PublicKey;
+use crate::{cache::CacheError, signing::PublicKey};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct JwkData {
@@ -40,22 +39,21 @@ pub struct JwkRecord {
 }
 
 impl JwkRecord {
-    pub fn new(kid: Uuid, data: JwkData, exp: DateTime<Utc>) -> Result<Self> {
-        let box_json = serde_json::value::to_raw_value(&data)
-            .with_context(|| format!("failed to serialize JWK {kid}"))?;
+    pub fn new(kid: Uuid, data: JwkData, exp: DateTime<Utc>) -> Result<Self, CacheError> {
+        let box_json = serde_json::value::to_raw_value(&data)?;
         let json = Arc::from(box_json);
         Ok(Self { kid, json, exp })
     }
 }
 
 impl Serialize for JwkRecord {
-    fn serialize<S: Serializer>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         self.json.serialize(serializer)
     }
 }
 
 impl TryFrom<PublicKey> for JwkRecord {
-    type Error = anyhow::Error;
+    type Error = CacheError;
 
     fn try_from(value: PublicKey) -> Result<Self, Self::Error> {
         let data = JwkData::new(value.kid.to_string(), value.key);

@@ -3,7 +3,8 @@ use core::slice;
 use redis::{Client, RedisResult, aio::ConnectionManager};
 use uuid::Uuid;
 
-use crate::cache::JwkRecord;
+use crate::{cache::JwkRecord, redis::RedisClientError};
+
 #[derive(Debug, Clone)]
 pub struct RedisClient {
     conn: ConnectionManager,
@@ -15,7 +16,10 @@ impl RedisClient {
         Ok(Self { conn })
     }
 
-    pub(crate) async fn push_verification_key(&self, key: &JwkRecord) -> RedisResult<()> {
+    pub(crate) async fn push_verification_key(
+        &self,
+        key: &JwkRecord,
+    ) -> Result<(), RedisClientError> {
         self.push_multiple_verification_keys(slice::from_ref(key))
             .await
     }
@@ -23,7 +27,7 @@ impl RedisClient {
     pub(crate) async fn push_multiple_verification_keys(
         &self,
         keys: &[JwkRecord],
-    ) -> RedisResult<()> {
+    ) -> Result<(), RedisClientError> {
         let mut con = self.conn.clone();
         let mut pipe = redis::pipe();
 
@@ -38,7 +42,8 @@ impl RedisClient {
                 .pexpire_at(&redis_key, key.exp.timestamp_millis())
                 .ignore();
         }
-        pipe.query_async(&mut con).await?
+        pipe.query_async::<()>(&mut con).await?;
+        Ok(())
     }
 
     fn redis_key(kid: &Uuid) -> String {

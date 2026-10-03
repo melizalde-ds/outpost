@@ -1,13 +1,12 @@
 use std::sync::Arc;
 
-use anyhow::bail;
 use arc_swap::ArcSwap;
 use uuid::Uuid;
 
-use crate::signing::PublicKey;
-
+mod errors;
 mod record;
 
+pub use errors::CacheError;
 pub use record::JwkRecord;
 
 #[derive(Debug, Clone)]
@@ -22,11 +21,10 @@ impl JwkCache {
         }
     }
 
-    pub fn insert(&self, record: PublicKey) -> anyhow::Result<()> {
-        let to_add = JwkRecord::try_from(record)?;
+    pub fn insert(&self, to_add: JwkRecord) -> Result<(), CacheError> {
         let cutoff = chrono::Utc::now();
         if to_add.exp <= cutoff {
-            bail!("Cannot insert expired JWK record with kid {}", to_add.kid);
+            return Err(CacheError::ExpiredKey(to_add.kid));
         }
 
         if self.contains(&to_add.kid) {
@@ -58,12 +56,7 @@ impl JwkCache {
         keys[start..].to_vec()
     }
 
-    pub fn rebuild(&self, records: Vec<PublicKey>) -> anyhow::Result<()> {
-        let next = records
-            .into_iter()
-            .map(JwkRecord::try_from)
-            .collect::<Result<Vec<_>, _>>()?;
-        self.cache.store(Arc::new(next));
-        Ok(())
+    pub fn rebuild(&self, records: Vec<JwkRecord>) {
+        self.cache.store(Arc::new(records));
     }
 }
