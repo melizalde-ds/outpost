@@ -55,10 +55,9 @@ internal sealed class SigningService(
         return JsonSerializer.SerializeToUtf8Bytes(claims);
     }
 
-    internal async Task<(string Token, PublicSigningKey? PublicKey)> GenerateTokenAsync(Guid sub,
-        CancellationToken ct = default)
+    internal async Task<SignedToken> GenerateTokenAsync(Guid sub, CancellationToken ct = default)
     {
-        (PrivateSigningKey privateKey, PublicSigningKey? publicKey) = await GetKeyPairAsync(ct);
+        (PrivateSigningKey privateKey, PublicSigningKey? newPublicKey) = await GetActiveKeyAsync(ct);
         byte[] headerJson = GetHeader(privateKey);
         byte[] payloadJson = GetPayload(sub);
 
@@ -71,16 +70,15 @@ internal sealed class SigningService(
 
         byte[] signature = signer.GenerateSignature();
 
-        return ($"{signingInput}.{B64Url(signature)}", publicKey);
+        return new SignedToken($"{signingInput}.{B64Url(signature)}", privateKey.Id, newPublicKey);
     }
 
-    private async Task<(PrivateSigningKey PrivateKey, PublicSigningKey? PublicKey)> GetKeyPairAsync(
-        CancellationToken ct)
+    private async Task<ActiveKey> GetActiveKeyAsync(CancellationToken ct)
     {
         PrivateSigningKey? cached = _activePrivateKey;
         if (cached is not null && CanSign(cached))
         {
-            return (cached, null);
+            return new ActiveKey(cached, null);
         }
 
         await _refreshLock.WaitAsync(ct);
@@ -89,13 +87,13 @@ internal sealed class SigningService(
             cached = _activePrivateKey;
             if (cached is not null && CanSign(cached))
             {
-                return (cached, null);
+                return new ActiveKey(cached, null);
             }
 
             await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-            KeyPairStore retrieval = scope.ServiceProvider.GetRequiredService<KeyPairStore>();
+            KeyPairStore keyPairStore = scope.ServiceProvider.GetRequiredService<KeyPairStore>();
 
-            SigningKeyPair fresh = await retrieval.GetLatestKeyPairAsync(ct)
+            SigningKeyPair fresh = await keyPairStore.GetLatestKeyPairAsync(ct)
                                    ?? throw new SigningKeyNotFoundException();
 
             if (!CanSign(fresh.PrivateKey))
@@ -104,7 +102,7 @@ internal sealed class SigningService(
             }
 
             _activePrivateKey = fresh.PrivateKey;
-            return (fresh.PrivateKey, fresh.PublicKey);
+            return new ActiveKey(fresh.PrivateKey, fresh.PublicKey);
         }
         finally
         {

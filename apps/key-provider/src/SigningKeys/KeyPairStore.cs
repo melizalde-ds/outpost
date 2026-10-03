@@ -18,7 +18,7 @@ internal sealed class KeyPairStore(
     private readonly IDataProtector _protector =
         dataProtectionProvider.CreateProtector(KeyPairRecord.PrivateKeyProtectionPurpose);
 
-    internal async Task SaveRotationAsync(KeyPairRecord record, CancellationToken ct = default)
+    internal async Task SaveKeyPairAsync(KeyPairRecord record, CancellationToken ct = default)
     {
         if (!record.RotationJob.Success)
         {
@@ -70,16 +70,12 @@ internal sealed class KeyPairStore(
 
         PrivateSigningKey privateKey = new()
         {
-            Id = record.KeyPairId,
-            PrivateKey = privateKeyBytes,
-            ExpirationTime = record.ExpiresAt
+            Id = record.KeyPairId, PrivateKey = privateKeyBytes, ExpirationTime = record.ExpiresAt
         };
 
         PublicSigningKey publicKey = new()
         {
-            Id = record.KeyPairId,
-            PublicKey = record.PublicKey,
-            ExpirationTime = record.ExpiresAt
+            Id = record.KeyPairId, PublicKey = record.PublicKey, ExpirationTime = record.ExpiresAt
         };
 
         return new SigningKeyPair(privateKey, publicKey);
@@ -92,7 +88,7 @@ internal sealed class KeyPairStore(
             return await context.KeyPairRecords
                 .AsNoTracking()
                 .Verifiable(timeProvider)
-                .JwkOrdering()
+                .OldestFirst()
                 .Select(x =>
                     new PublicSigningKey { Id = x.KeyPairId, PublicKey = x.PublicKey, ExpirationTime = x.ExpiresAt })
                 .ToArrayAsync(ct);

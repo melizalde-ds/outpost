@@ -17,7 +17,7 @@ message SignTokenRequest {
 
 message SignTokenResponse {
   string token = 1 [debug_redact = true];
-  bytes public_key = 2;
+  string key_id = 2;
   optional VerificationKey verification_key = 3;
 }
 

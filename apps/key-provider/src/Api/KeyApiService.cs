@@ -22,22 +22,21 @@ internal sealed class KeyApiService(
             throw new InvalidSubjectException(request.Subject);
         }
 
-        (string token, PublicSigningKey? publicKey) =
-            await service.GenerateTokenAsync(subId, context.CancellationToken);
+        SignedToken signed = await service.GenerateTokenAsync(subId, context.CancellationToken);
 
-        if (publicKey is not null)
+        SignTokenResponse response = new() { Token = signed.Token, KeyId = signed.KeyId.ToString() };
+
+        if (signed.NewPublicKey is { } newPublicKey)
         {
-            VerificationKey key = new()
+            response.VerificationKey = new VerificationKey
             {
-                KeyId = publicKey.Id.ToString(),
-                PublicKey = ByteString.CopyFrom(publicKey.PublicKey),
-                ExpiresAt = publicKey.ExpirationTime.ToTimestamp()
+                KeyId = newPublicKey.Id.ToString(),
+                PublicKey = ByteString.CopyFrom(newPublicKey.PublicKey),
+                ExpiresAt = newPublicKey.ExpirationTime.ToTimestamp()
             };
-
-            return new SignTokenResponse { Token = token, VerificationKey = key };
         }
 
-        return new SignTokenResponse { Token = token };
+        return response;
     }
 
     public override async Task<GetVerificationKeysResponse> GetVerificationKeys(GetVerificationKeysRequest request,
@@ -45,9 +44,9 @@ internal sealed class KeyApiService(
     {
         logger.LogInformation("Getting verification keys...");
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-        KeyPairStore retrieval = scope.ServiceProvider.GetRequiredService<KeyPairStore>();
+        KeyPairStore keyPairStore = scope.ServiceProvider.GetRequiredService<KeyPairStore>();
 
-        PublicSigningKey[] sourceKeys = await retrieval.GetVerificationKeysAsync(context.CancellationToken);
+        PublicSigningKey[] sourceKeys = await keyPairStore.GetVerificationKeysAsync(context.CancellationToken);
 
         List<VerificationKey> publicKeys = new();
 

@@ -47,7 +47,7 @@ internal sealed class RotationWorker(
     {
         Guid tickId = Guid.CreateVersion7(timeProvider.GetUtcNow());
 
-        KeyRotationJob? latest = await rotationService.GetLatestRotationAsync(stoppingToken);
+        KeyRotationJob? latest = await rotationService.GetLatestSuccessfulJobAsync(stoppingToken);
         DateTimeOffset now = timeProvider.GetUtcNow();
 
         DateTimeOffset? dueAt = latest is null
@@ -95,7 +95,7 @@ internal sealed class RotationWorker(
         try
         {
             KeyRotationResult result = await _pipeline.ExecuteAsync(
-                static (service, ct) => new ValueTask<KeyRotationResult>(service.KeyRotationAsync(ct)),
+                static (service, ct) => new ValueTask<KeyRotationResult>(service.RotateAsync(ct)),
                 rotationService,
                 stoppingToken);
 

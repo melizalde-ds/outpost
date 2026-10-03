@@ -18,7 +18,7 @@ internal sealed class RotationJobStore(KeyProviderDbContext context)
         await context.SaveChangesAsync(ct);
     }
 
-    internal Task<KeyRotationJob?> GetRotationJobAsync(CancellationToken ct = default)
+    internal Task<KeyRotationJob?> GetLatestSuccessfulJobAsync(CancellationToken ct = default)
     {
         return context.KeyRotationJobs
             .AsNoTracking()

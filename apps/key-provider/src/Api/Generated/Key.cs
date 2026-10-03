@@ -26,27 +26,28 @@ namespace KeyProvider.Api.Generated.V1 {
           string.Concat(
             "Cht3ZWF0aGVybGFiL2tleS92MS9rZXkucHJvdG8SEXdlYXRoZXJsYWIua2V5",
             "LnYxGh9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvIiwKEFNpZ25U",
-            "b2tlblJlcXVlc3QSGAoHc3ViamVjdBgBIAEoCVIHc3ViamVjdCKXAQoRU2ln",
-            "blRva2VuUmVzcG9uc2USGQoFdG9rZW4YASABKAlCA4ABAVIFdG9rZW4SUgoQ",
-            "dmVyaWZpY2F0aW9uX2tleRgCIAEoCzIiLndlYXRoZXJsYWIua2V5LnYxLlZl",
-            "cmlmaWNhdGlvbktleUgAUg92ZXJpZmljYXRpb25LZXmIAQFCEwoRX3Zlcmlm",
-            "aWNhdGlvbl9rZXkiHAoaR2V0VmVyaWZpY2F0aW9uS2V5c1JlcXVlc3QiVQob",
-            "R2V0VmVyaWZpY2F0aW9uS2V5c1Jlc3BvbnNlEjYKBGtleXMYASADKAsyIi53",
-            "ZWF0aGVybGFiLmtleS52MS5WZXJpZmljYXRpb25LZXlSBGtleXMiggEKD1Zl",
-            "cmlmaWNhdGlvbktleRIVCgZrZXlfaWQYASABKAlSBWtleUlkEh0KCnB1Ymxp",
-            "Y19rZXkYAiABKAxSCXB1YmxpY0tleRI5CgpleHBpcmVzX2F0GAMgASgLMhou",
-            "Z29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJZXhwaXJlc0F0MtoBCgpLZXlT",
-            "ZXJ2aWNlElYKCVNpZ25Ub2tlbhIjLndlYXRoZXJsYWIua2V5LnYxLlNpZ25U",
-            "b2tlblJlcXVlc3QaJC53ZWF0aGVybGFiLmtleS52MS5TaWduVG9rZW5SZXNw",
-            "b25zZRJ0ChNHZXRWZXJpZmljYXRpb25LZXlzEi0ud2VhdGhlcmxhYi5rZXku",
-            "djEuR2V0VmVyaWZpY2F0aW9uS2V5c1JlcXVlc3QaLi53ZWF0aGVybGFiLmtl",
-            "eS52MS5HZXRWZXJpZmljYXRpb25LZXlzUmVzcG9uc2VCH6oCHEtleVByb3Zp",
-            "ZGVyLkFwaS5HZW5lcmF0ZWQuVjFiBnByb3RvMw=="));
+            "b2tlblJlcXVlc3QSGAoHc3ViamVjdBgBIAEoCVIHc3ViamVjdCKuAQoRU2ln",
+            "blRva2VuUmVzcG9uc2USGQoFdG9rZW4YASABKAlCA4ABAVIFdG9rZW4SFQoG",
+            "a2V5X2lkGAIgASgJUgVrZXlJZBJSChB2ZXJpZmljYXRpb25fa2V5GAMgASgL",
+            "MiIud2VhdGhlcmxhYi5rZXkudjEuVmVyaWZpY2F0aW9uS2V5SABSD3Zlcmlm",
+            "aWNhdGlvbktleYgBAUITChFfdmVyaWZpY2F0aW9uX2tleSIcChpHZXRWZXJp",
+            "ZmljYXRpb25LZXlzUmVxdWVzdCJVChtHZXRWZXJpZmljYXRpb25LZXlzUmVz",
+            "cG9uc2USNgoEa2V5cxgBIAMoCzIiLndlYXRoZXJsYWIua2V5LnYxLlZlcmlm",
+            "aWNhdGlvbktleVIEa2V5cyKCAQoPVmVyaWZpY2F0aW9uS2V5EhUKBmtleV9p",
+            "ZBgBIAEoCVIFa2V5SWQSHQoKcHVibGljX2tleRgCIAEoDFIJcHVibGljS2V5",
+            "EjkKCmV4cGlyZXNfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0",
+            "YW1wUglleHBpcmVzQXQy2gEKCktleVNlcnZpY2USVgoJU2lnblRva2VuEiMu",
+            "d2VhdGhlcmxhYi5rZXkudjEuU2lnblRva2VuUmVxdWVzdBokLndlYXRoZXJs",
+            "YWIua2V5LnYxLlNpZ25Ub2tlblJlc3BvbnNlEnQKE0dldFZlcmlmaWNhdGlv",
+            "bktleXMSLS53ZWF0aGVybGFiLmtleS52MS5HZXRWZXJpZmljYXRpb25LZXlz",
+            "UmVxdWVzdBouLndlYXRoZXJsYWIua2V5LnYxLkdldFZlcmlmaWNhdGlvbktl",
+            "eXNSZXNwb25zZUIfqgIcS2V5UHJvdmlkZXIuQXBpLkdlbmVyYXRlZC5WMWIG",
+            "cHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.SignTokenRequest), global::KeyProvider.Api.Generated.V1.SignTokenRequest.Parser, new[]{ "Subject" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.SignTokenResponse), global::KeyProvider.Api.Generated.V1.SignTokenResponse.Parser, new[]{ "Token", "VerificationKey" }, new[]{ "VerificationKey" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.SignTokenResponse), global::KeyProvider.Api.Generated.V1.SignTokenResponse.Parser, new[]{ "Token", "KeyId", "VerificationKey" }, new[]{ "VerificationKey" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.GetVerificationKeysRequest), global::KeyProvider.Api.Generated.V1.GetVerificationKeysRequest.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.GetVerificationKeysResponse), global::KeyProvider.Api.Generated.V1.GetVerificationKeysResponse.Parser, new[]{ "Keys" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.VerificationKey), global::KeyProvider.Api.Generated.V1.VerificationKey.Parser, new[]{ "KeyId", "PublicKey", "ExpiresAt" }, null, null, null, null)
@@ -290,6 +291,7 @@ namespace KeyProvider.Api.Generated.V1 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public SignTokenResponse(SignTokenResponse other) : this() {
       token_ = other.token_;
+      keyId_ = other.keyId_;
       verificationKey_ = other.verificationKey_ != null ? other.verificationKey_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -312,8 +314,20 @@ namespace KeyProvider.Api.Generated.V1 {
       }
     }
 
+    /// <summary>Field number for the "key_id" field.</summary>
+    public const int KeyIdFieldNumber = 2;
+    private string keyId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string KeyId {
+      get { return keyId_; }
+      set {
+        keyId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     /// <summary>Field number for the "verification_key" field.</summary>
-    public const int VerificationKeyFieldNumber = 2;
+    public const int VerificationKeyFieldNumber = 3;
     private global::KeyProvider.Api.Generated.V1.VerificationKey verificationKey_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -340,6 +354,7 @@ namespace KeyProvider.Api.Generated.V1 {
         return true;
       }
       if (Token != other.Token) return false;
+      if (KeyId != other.KeyId) return false;
       if (!object.Equals(VerificationKey, other.VerificationKey)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -349,6 +364,7 @@ namespace KeyProvider.Api.Generated.V1 {
     public override int GetHashCode() {
       int hash = 1;
       if (Token.Length != 0) hash ^= Token.GetHashCode();
+      if (KeyId.Length != 0) hash ^= KeyId.GetHashCode();
       if (verificationKey_ != null) hash ^= VerificationKey.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -372,8 +388,12 @@ namespace KeyProvider.Api.Generated.V1 {
         output.WriteRawTag(10);
         output.WriteString(Token);
       }
-      if (verificationKey_ != null) {
+      if (KeyId.Length != 0) {
         output.WriteRawTag(18);
+        output.WriteString(KeyId);
+      }
+      if (verificationKey_ != null) {
+        output.WriteRawTag(26);
         output.WriteMessage(VerificationKey);
       }
       if (_unknownFields != null) {
@@ -390,8 +410,12 @@ namespace KeyProvider.Api.Generated.V1 {
         output.WriteRawTag(10);
         output.WriteString(Token);
       }
-      if (verificationKey_ != null) {
+      if (KeyId.Length != 0) {
         output.WriteRawTag(18);
+        output.WriteString(KeyId);
+      }
+      if (verificationKey_ != null) {
+        output.WriteRawTag(26);
         output.WriteMessage(VerificationKey);
       }
       if (_unknownFields != null) {
@@ -406,6 +430,9 @@ namespace KeyProvider.Api.Generated.V1 {
       int size = 0;
       if (Token.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Token);
+      }
+      if (KeyId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(KeyId);
       }
       if (verificationKey_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(VerificationKey);
@@ -424,6 +451,9 @@ namespace KeyProvider.Api.Generated.V1 {
       }
       if (other.Token.Length != 0) {
         Token = other.Token;
+      }
+      if (other.KeyId.Length != 0) {
+        KeyId = other.KeyId;
       }
       if (other.verificationKey_ != null) {
         if (verificationKey_ == null) {
@@ -455,6 +485,10 @@ namespace KeyProvider.Api.Generated.V1 {
             break;
           }
           case 18: {
+            KeyId = input.ReadString();
+            break;
+          }
+          case 26: {
             if (verificationKey_ == null) {
               VerificationKey = new global::KeyProvider.Api.Generated.V1.VerificationKey();
             }
@@ -485,6 +519,10 @@ namespace KeyProvider.Api.Generated.V1 {
             break;
           }
           case 18: {
+            KeyId = input.ReadString();
+            break;
+          }
+          case 26: {
             if (verificationKey_ == null) {
               VerificationKey = new global::KeyProvider.Api.Generated.V1.VerificationKey();
             }
