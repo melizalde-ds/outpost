@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use sqlx::{PgPool, query_as, query_scalar};
 use uuid::Uuid;
 
-use crate::repository::{AuthRepository, Credentials, UserId, errors::RepositoryError};
+use crate::repository::{AuthRepository, Credentials, RepositoryError, UserId};
 
 #[derive(Debug)]
 pub struct PostgresAuthRepository {

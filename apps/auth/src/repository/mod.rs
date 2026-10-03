@@ -4,10 +4,11 @@ use async_trait::async_trait;
 
 use uuid::Uuid;
 
-use crate::repository::errors::RepositoryError;
+mod errors;
+mod postgres;
 
-pub(crate) mod errors;
-pub(crate) mod postgres;
+pub use errors::RepositoryError;
+pub use postgres::PostgresAuthRepository;
 
 #[derive(Debug, sqlx::Type)]
 #[sqlx(transparent)]

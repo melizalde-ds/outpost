@@ -4,17 +4,15 @@ use secrecy::SecretSlice;
 use uuid::Uuid;
 
 use crate::{
-    cache::jwk::JwkCache,
+    cache::JwkCache,
     password::PasswordHasher,
-    proto::{
-        auth::v1::{
-            LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse,
-            RegisterRequest, RegisterResponse, TokenPair,
-        },
-        key,
+    proto::auth::v1::{
+        LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
+        RegisterResponse, TokenPair,
     },
-    repository::{AuthRepository, errors::RepositoryError},
-    service::{SigningService, errors::AuthServiceError},
+    repository::{AuthRepository, RepositoryError},
+    service::AuthServiceError,
+    signing::SigningService,
 };
 
 #[derive(Debug)]
@@ -53,11 +51,7 @@ impl WeatherAuthService {
             .await
         {
             Ok(user_id) => {
-                let (token, option_key) = self.signing_service.sign(user_id.0).await?;
-
-                if let Some(key) = option_key {
-                    self.key_cache.insert(key)?;
-                }
+                let token = self.issue_token(user_id.0).await?;
 
                 Ok(RegisterResponse {
                     tokens: Some(TokenPair {
@@ -90,11 +84,7 @@ impl WeatherAuthService {
 
         match password_matches {
             true => {
-                let (token, option_key) = self.signing_service.sign(credentials.user_id).await?;
-
-                if let Some(key) = option_key {
-                    self.key_cache.insert(key)?;
-                }
+                let token = self.issue_token(credentials.user_id).await?;
 
                 Ok(LoginResponse {
                     tokens: Some(TokenPair {
@@ -105,6 +95,21 @@ impl WeatherAuthService {
             }
             false => Err(AuthServiceError::InvalidCredentials(req.username)),
         }
+    }
+
+    async fn issue_token(&self, user_id: Uuid) -> Result<String, AuthServiceError> {
+        let signed = self.signing_service.sign(user_id).await?;
+
+        if let Some(key) = signed.new_key {
+            self.key_cache.insert(key)?;
+        }
+
+        if !self.key_cache.contains(&signed.key_id) {
+            let keys = self.signing_service.get_verification_keys().await?;
+            self.key_cache.rebuild(keys)?;
+        }
+
+        Ok(signed.token)
     }
 
     pub(crate) async fn refresh_token(

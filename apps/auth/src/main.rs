@@ -4,12 +4,13 @@ use tonic::transport::{Channel, Endpoint, Server};
 use tracing::info;
 
 use crate::{
-    cache::{JwkRecord, jwk::JwkCache},
-    password::argon2::Argon2PasswordHasher,
+    cache::{JwkCache, JwkRecord},
+    password::Argon2PasswordHasher,
     proto::auth::v1::auth_service_server::AuthServiceServer,
-    repository::postgres::PostgresAuthRepository,
-    service::{SigningService, auth::WeatherAuthService, signing::WeatherSigningService},
-    settings::{Settings, grpc::GrpcEndpoint},
+    repository::PostgresAuthRepository,
+    service::WeatherAuthService,
+    settings::{GrpcEndpoint, Settings},
+    signing::{SigningService, WeatherSigningService},
 };
 
 mod cache;
@@ -19,6 +20,7 @@ mod proto;
 mod repository;
 mod service;
 mod settings;
+mod signing;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

@@ -1,66 +1,69 @@
 use std::sync::Arc;
 
-use anyhow::{Context, Result};
-use chrono::{DateTime, Utc};
-use serde::{Serialize, Serializer};
-use serde_json::value::RawValue;
+use anyhow::bail;
+use arc_swap::ArcSwap;
 use uuid::Uuid;
 
-use crate::service::PublicKey;
+use crate::signing::PublicKey;
 
-pub(crate) mod jwk;
+mod record;
 
-#[derive(Debug, Clone, Serialize)]
-pub struct JwkData {
-    kty: &'static str,
-    crv: &'static str,
-    kid: String,
-    alg: &'static str,
-    #[serde(rename = "use")]
-    use_: &'static str,
-    x: String,
-}
-
-impl JwkData {
-    pub fn new(kid: impl Into<String>, x: impl Into<String>) -> Self {
-        Self {
-            kty: "OKP",
-            crv: "Ed25519",
-            kid: kid.into(),
-            alg: "EdDSA",
-            use_: "sig",
-            x: x.into(),
-        }
-    }
-}
+pub use record::JwkRecord;
 
 #[derive(Debug, Clone)]
-pub struct JwkRecord {
-    pub kid: Uuid,
-    pub json: Arc<RawValue>,
-    pub exp: DateTime<Utc>,
+pub struct JwkCache {
+    pub cache: Arc<ArcSwap<Vec<JwkRecord>>>,
 }
 
-impl JwkRecord {
-    pub fn new(kid: Uuid, data: JwkData, exp: DateTime<Utc>) -> Result<Self> {
-        let box_json = serde_json::value::to_raw_value(&data)
-            .with_context(|| format!("failed to serialize JWK {kid}"))?;
-        let json = Arc::from(box_json);
-        Ok(Self { kid, json, exp })
+impl JwkCache {
+    pub fn new(initial: Vec<JwkRecord>) -> Self {
+        Self {
+            cache: Arc::new(ArcSwap::from_pointee(initial)),
+        }
     }
-}
 
-impl Serialize for JwkRecord {
-    fn serialize<S: Serializer>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> {
-        self.json.serialize(serializer)
+    pub fn insert(&self, record: PublicKey) -> anyhow::Result<()> {
+        let to_add = JwkRecord::try_from(record)?;
+        let cutoff = chrono::Utc::now();
+        if to_add.exp <= cutoff {
+            bail!("Cannot insert expired JWK record with kid {}", to_add.kid);
+        }
+
+        if self.contains(&to_add.kid) {
+            return Ok(());
+        }
+
+        self.cache.rcu(|current| {
+            let live = &current[current.partition_point(|jr| jr.exp <= cutoff)..];
+            live.iter()
+                .chain(std::iter::once(&to_add))
+                .cloned()
+                .collect::<Vec<_>>()
+        });
+
+        Ok(())
     }
-}
 
-impl TryFrom<PublicKey> for JwkRecord {
-    type Error = anyhow::Error;
+    pub fn contains(&self, kid: &Uuid) -> bool {
+        self.cache
+            .load()
+            .binary_search_by(|jr| jr.kid.cmp(kid))
+            .is_ok()
+    }
 
-    fn try_from(value: PublicKey) -> Result<Self, Self::Error> {
-        let data = JwkData::new(value.kid.to_string(), value.key);
-        Self::new(value.kid, data, value.exp)
+    pub fn live(&self) -> Vec<JwkRecord> {
+        let now = chrono::Utc::now();
+        let keys = self.cache.load();
+        let start = keys.partition_point(|jr| jr.exp <= now);
+        keys[start..].to_vec()
+    }
+
+    pub fn rebuild(&self, records: Vec<PublicKey>) -> anyhow::Result<()> {
+        let next = records
+            .into_iter()
+            .map(JwkRecord::try_from)
+            .collect::<Result<Vec<_>, _>>()?;
+        self.cache.store(Arc::new(next));
+        Ok(())
     }
 }

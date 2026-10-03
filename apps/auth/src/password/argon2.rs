@@ -7,8 +7,8 @@ use secrecy::{ExposeSecret, SecretSlice, SecretString};
 use tokio::sync::Semaphore;
 
 use crate::{
-    password::{PasswordHasher, errors::PasswordError},
-    settings::password::PasswordSettings,
+    password::{PasswordError, PasswordHasher},
+    settings::PasswordSettings,
 };
 
 #[derive(Debug)]

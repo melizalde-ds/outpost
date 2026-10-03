@@ -1,7 +1,7 @@
 use tonic::Status;
 use tracing::{error, info, warn};
 
-use crate::{password::errors::PasswordError, service::errors::AuthServiceError};
+use crate::{password::PasswordError, service::AuthServiceError};
 
 impl From<AuthServiceError> for Status {
     fn from(err: AuthServiceError) -> Self {

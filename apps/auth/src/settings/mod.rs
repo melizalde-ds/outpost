@@ -1,15 +1,15 @@
 use config::Config;
 use serde::Deserialize;
 
-use crate::settings::{
-    database::DatabaseSettings, grpc::GrpcSettings, password::PasswordSettings,
-    server::ServerSettings,
-};
+mod database;
+mod grpc;
+mod password;
+mod server;
 
-pub(crate) mod database;
-pub(crate) mod grpc;
-pub(crate) mod password;
-pub(crate) mod server;
+pub use database::DatabaseSettings;
+pub use grpc::{GrpcEndpoint, GrpcSettings};
+pub use password::PasswordSettings;
+pub use server::ServerSettings;
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {

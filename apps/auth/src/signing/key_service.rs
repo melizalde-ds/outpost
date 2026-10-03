@@ -10,7 +10,7 @@ use crate::{
         GetVerificationKeysRequest, SignTokenRequest, VerificationKey,
         key_service_client::KeyServiceClient,
     },
-    service::{PublicKey, SigningService},
+    signing::{PublicKey, SignedToken, SigningService},
 };
 
 #[derive(Debug)]
@@ -28,7 +28,7 @@ impl WeatherSigningService {
 
 #[async_trait]
 impl SigningService for WeatherSigningService {
-    async fn sign(&self, sub: Uuid) -> anyhow::Result<(String, Option<PublicKey>)> {
+    async fn sign(&self, sub: Uuid) -> anyhow::Result<SignedToken> {
         let mut stub = self.client.clone();
         let response = stub
             .sign_token(SignTokenRequest {
@@ -37,15 +37,20 @@ impl SigningService for WeatherSigningService {
             .await?
             .into_inner();
 
-        let token = response.token;
-        let Some(key) = response.verification_key else {
-            return Ok((token, None));
-        };
+        let key_id = Uuid::parse_str(&response.key_id)?;
+        let new_key = response
+            .verification_key
+            .map(PublicKey::try_from)
+            .transpose()?;
 
-        Ok((token, Some(key.try_into()?)))
+        Ok(SignedToken {
+            token: response.token,
+            key_id,
+            new_key,
+        })
     }
 
-    async fn get_verification_keys(&self) -> anyhow::Result<Vec<super::PublicKey>> {
+    async fn get_verification_keys(&self) -> anyhow::Result<Vec<PublicKey>> {
         let mut stub = self.client.clone();
         let response = stub
             .get_verification_keys(GetVerificationKeysRequest {})
@@ -56,7 +61,7 @@ impl SigningService for WeatherSigningService {
         let public_keys = keys
             .into_iter()
             .filter_map(|k| {
-                super::PublicKey::try_from(k)
+                PublicKey::try_from(k)
                     .map_err(|e| {
                         error!("Failed to convert verification key: {}", e);
                         e
@@ -69,7 +74,7 @@ impl SigningService for WeatherSigningService {
     }
 }
 
-impl TryFrom<VerificationKey> for super::PublicKey {
+impl TryFrom<VerificationKey> for PublicKey {
     type Error = anyhow::Error;
 
     fn try_from(value: VerificationKey) -> Result<Self, Self::Error> {
@@ -89,6 +94,6 @@ impl TryFrom<VerificationKey> for super::PublicKey {
             bail!("Failed to create DateTime from timestamp");
         };
 
-        Ok(super::PublicKey { kid, key, exp })
+        Ok(PublicKey { kid, key, exp })
     }
 }

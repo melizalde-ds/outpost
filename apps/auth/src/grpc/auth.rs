@@ -5,7 +5,7 @@ use crate::{
         LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
         RegisterResponse, auth_service_server::AuthService,
     },
-    service::auth::WeatherAuthService,
+    service::WeatherAuthService,
 };
 
 #[tonic::async_trait]

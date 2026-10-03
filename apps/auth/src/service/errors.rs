@@ -1,7 +1,7 @@
 use thiserror::Error;
 use uuid::Uuid;
 
-use crate::{password::errors::PasswordError, repository::errors::RepositoryError};
+use crate::{password::PasswordError, repository::RepositoryError};
 
 #[derive(Error, Debug)]
 pub enum AuthServiceError {
