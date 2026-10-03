@@ -10,6 +10,7 @@ use crate::{
         LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
         RegisterResponse, TokenPair,
     },
+    redis::client::RedisClient,
     repository::{AuthRepository, RepositoryError},
     service::AuthServiceError,
     signing::SigningService,
@@ -21,6 +22,7 @@ pub struct WeatherAuthService {
     passwords: Arc<dyn PasswordHasher>,
     signing_service: Arc<dyn SigningService>,
     key_cache: JwkCache,
+    redis_client: Arc<RedisClient>,
 }
 
 impl WeatherAuthService {
@@ -29,11 +31,13 @@ impl WeatherAuthService {
         passwords: Arc<dyn PasswordHasher>,
         signing_service: Arc<dyn SigningService>,
         key_cache: JwkCache,
+        redis_client: Arc<RedisClient>,
     ) -> Self {
         Self {
             repo,
             passwords,
             signing_service,
+            redis_client,
             key_cache,
         }
     }
@@ -102,6 +106,9 @@ impl WeatherAuthService {
 
         if let Some(key) = signed.new_key {
             self.key_cache.insert(key)?;
+            self.redis_client
+                .push_verification_key(&key.try_into()?)
+                .await?;
         }
 
         if !self.key_cache.contains(&signed.key_id) {

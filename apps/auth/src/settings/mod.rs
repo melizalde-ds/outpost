@@ -4,12 +4,12 @@ use serde::Deserialize;
 mod database;
 mod grpc;
 mod password;
-mod server;
+mod redis;
 
 pub use database::DatabaseSettings;
 pub use grpc::{GrpcEndpoint, GrpcSettings};
 pub use password::PasswordSettings;
-pub use server::ServerSettings;
+pub use redis::RedisSettings;
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {
@@ -18,7 +18,7 @@ pub struct Settings {
     pub password: PasswordSettings,
     pub grpc: GrpcSettings,
     #[serde(default)]
-    pub server: ServerSettings,
+    pub redis: RedisSettings,
 }
 
 impl Settings {

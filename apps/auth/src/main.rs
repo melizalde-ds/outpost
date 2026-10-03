@@ -1,5 +1,6 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
+use ::redis::Client;
 use tonic::transport::{Channel, Endpoint, Server};
 use tracing::info;
 
@@ -7,6 +8,7 @@ use crate::{
     cache::{JwkCache, JwkRecord},
     password::Argon2PasswordHasher,
     proto::auth::v1::auth_service_server::AuthServiceServer,
+    redis::client::RedisClient,
     repository::PostgresAuthRepository,
     service::WeatherAuthService,
     settings::{GrpcEndpoint, Settings},
@@ -17,6 +19,7 @@ mod cache;
 mod grpc;
 mod password;
 mod proto;
+mod redis;
 mod repository;
 mod service;
 mod settings;
@@ -33,6 +36,9 @@ async fn main() -> anyhow::Result<()> {
         .connect_with(settings.database.connection_options())
         .await?;
     info!("Connected to database");
+
+    let client = Client::open(settings.redis.get_redis_address())?;
+    let redis_client = RedisClient::new(client).await?;
 
     let signing_channel = create_channel(&settings.grpc.key_service_client)?;
 
@@ -51,6 +57,7 @@ async fn main() -> anyhow::Result<()> {
         Arc::new(passwords),
         signing_service,
         cache,
+        Arc::new(redis_client),
     );
     let addr: SocketAddr = settings.grpc.server.get_grpc_address().parse()?;
     info!("Auth service listening on {}", addr);
