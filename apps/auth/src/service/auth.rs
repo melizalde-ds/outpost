@@ -4,10 +4,14 @@ use secrecy::SecretSlice;
 use uuid::Uuid;
 
 use crate::{
+    cache::jwk::JwkCache,
     password::PasswordHasher,
-    proto::auth::v1::{
-        LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
-        RegisterResponse, TokenPair,
+    proto::{
+        auth::v1::{
+            LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse,
+            RegisterRequest, RegisterResponse, TokenPair,
+        },
+        key,
     },
     repository::{AuthRepository, errors::RepositoryError},
     service::{SigningService, errors::AuthServiceError},
@@ -18,6 +22,7 @@ pub struct WeatherAuthService {
     repo: Arc<dyn AuthRepository>,
     passwords: Arc<dyn PasswordHasher>,
     signing_service: Arc<dyn SigningService>,
+    key_cache: JwkCache,
 }
 
 impl WeatherAuthService {
@@ -25,11 +30,13 @@ impl WeatherAuthService {
         repo: Arc<dyn AuthRepository>,
         passwords: Arc<dyn PasswordHasher>,
         signing_service: Arc<dyn SigningService>,
+        key_cache: JwkCache,
     ) -> Self {
         Self {
             repo,
             passwords,
             signing_service,
+            key_cache,
         }
     }
 
@@ -46,7 +53,12 @@ impl WeatherAuthService {
             .await
         {
             Ok(user_id) => {
-                let token = self.signing_service.sign(user_id.0).await?;
+                let (token, option_key) = self.signing_service.sign(user_id.0).await?;
+
+                if let Some(key) = option_key {
+                    self.key_cache.insert(key)?;
+                }
+
                 Ok(RegisterResponse {
                     tokens: Some(TokenPair {
                         access_token: token,
@@ -78,7 +90,12 @@ impl WeatherAuthService {
 
         match password_matches {
             true => {
-                let token: String = self.signing_service.sign(credentials.user_id).await?;
+                let (token, option_key) = self.signing_service.sign(credentials.user_id).await?;
+
+                if let Some(key) = option_key {
+                    self.key_cache.insert(key)?;
+                }
+
                 Ok(LoginResponse {
                     tokens: Some(TokenPair {
                         access_token: token,

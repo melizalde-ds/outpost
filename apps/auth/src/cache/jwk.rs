@@ -12,9 +12,9 @@ pub struct JwkCache {
 }
 
 impl JwkCache {
-    pub fn new(initial: JwkRecord) -> Self {
+    pub fn new(initial: Vec<JwkRecord>) -> Self {
         Self {
-            cache: Arc::new(ArcSwap::from_pointee(vec![initial])),
+            cache: Arc::new(ArcSwap::from_pointee(initial)),
         }
     }
 
@@ -31,11 +31,12 @@ impl JwkCache {
 
         self.cache.rcu(|current| {
             let live = &current[current.partition_point(|jr| jr.exp <= cutoff)..];
-            let mut next = Vec::with_capacity(live.len() + 1);
-            next.extend_from_slice(live);
-            next.push(to_add.clone());
-            next
+            live.iter()
+                .chain(std::iter::once(&to_add))
+                .cloned()
+                .collect::<Vec<_>>()
         });
+
         Ok(())
     }
 

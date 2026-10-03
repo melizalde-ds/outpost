@@ -4,10 +4,11 @@ use tonic::transport::{Channel, Endpoint, Server};
 use tracing::info;
 
 use crate::{
+    cache::{JwkRecord, jwk::JwkCache},
     password::argon2::Argon2PasswordHasher,
     proto::auth::v1::auth_service_server::AuthServiceServer,
     repository::postgres::PostgresAuthRepository,
-    service::{auth::WeatherAuthService, signing::WeatherSigningService},
+    service::{SigningService, auth::WeatherAuthService, signing::WeatherSigningService},
     settings::{Settings, grpc::GrpcEndpoint},
 };
 
@@ -39,10 +40,16 @@ async fn main() -> anyhow::Result<()> {
     info!("Password hasher initialized");
     let signing_service = Arc::new(WeatherSigningService::new(signing_channel));
     info!("Signing service initialized");
+    let cache = create_cache(&signing_service).await?;
+    info!("JWK cache initialized with {} records", cache.live().len());
 
     info!("Auth service starting...");
-    let auth_service =
-        WeatherAuthService::new(Arc::new(auth_repo), Arc::new(passwords), signing_service);
+    let auth_service = WeatherAuthService::new(
+        Arc::new(auth_repo),
+        Arc::new(passwords),
+        signing_service,
+        cache,
+    );
     let addr: SocketAddr = settings.grpc.server.get_grpc_address().parse()?;
     info!("Auth service listening on {}", addr);
     Server::builder()
@@ -62,4 +69,13 @@ fn create_channel(endpoint: &GrpcEndpoint) -> anyhow::Result<Channel> {
         .timeout(timeout);
 
     Ok(channel_endpoint.connect_lazy())
+}
+
+async fn create_cache(client: &WeatherSigningService) -> anyhow::Result<JwkCache> {
+    let keys = client.get_verification_keys().await?;
+    let records = keys
+        .into_iter()
+        .map(JwkRecord::try_from)
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(JwkCache::new(records))
 }

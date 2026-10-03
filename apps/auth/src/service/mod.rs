@@ -10,7 +10,7 @@ pub(crate) mod signing;
 
 #[async_trait]
 pub trait SigningService: Debug + Send + Sync + 'static {
-    async fn sign(&self, sub: Uuid) -> anyhow::Result<String>;
+    async fn sign(&self, sub: Uuid) -> anyhow::Result<(String, Option<PublicKey>)>;
     async fn get_verification_keys(&self) -> anyhow::Result<Vec<PublicKey>>;
 }
 

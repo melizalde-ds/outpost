@@ -10,7 +10,7 @@ use crate::{
         GetVerificationKeysRequest, SignTokenRequest, VerificationKey,
         key_service_client::KeyServiceClient,
     },
-    service::SigningService,
+    service::{PublicKey, SigningService},
 };
 
 #[derive(Debug)]
@@ -28,7 +28,7 @@ impl WeatherSigningService {
 
 #[async_trait]
 impl SigningService for WeatherSigningService {
-    async fn sign(&self, sub: Uuid) -> anyhow::Result<String> {
+    async fn sign(&self, sub: Uuid) -> anyhow::Result<(String, Option<PublicKey>)> {
         let mut stub = self.client.clone();
         let response = stub
             .sign_token(SignTokenRequest {
@@ -38,8 +38,11 @@ impl SigningService for WeatherSigningService {
             .into_inner();
 
         let token = response.token;
+        let Some(key) = response.verification_key else {
+            return Ok((token, None));
+        };
 
-        Ok(token)
+        Ok((token, Some(key.try_into()?)))
     }
 
     async fn get_verification_keys(&self) -> anyhow::Result<Vec<super::PublicKey>> {
