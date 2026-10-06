@@ -1,9 +1,9 @@
 use core::slice;
 
-use redis::{Client, RedisResult, aio::ConnectionManager};
+use redis::{AsyncCommands, Client, RedisResult, aio::ConnectionManager};
 use uuid::Uuid;
 
-use crate::{cache::JwkRecord, redis::RedisClientError};
+use crate::redis::{JwkRecord, RedisClientError};
 
 #[derive(Debug, Clone)]
 pub struct RedisClient {
@@ -14,6 +14,11 @@ impl RedisClient {
     pub async fn new(client: Client) -> RedisResult<Self> {
         let conn: ConnectionManager = client.get_connection_manager().await?;
         Ok(Self { conn })
+    }
+
+    pub(crate) async fn has_verification_key(&self, kid: &Uuid) -> Result<bool, RedisClientError> {
+        let mut con = self.conn.clone();
+        Ok(con.exists(Self::redis_key(kid)).await?)
     }
 
     pub(crate) async fn push_verification_key(

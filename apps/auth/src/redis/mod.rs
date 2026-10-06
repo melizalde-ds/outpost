@@ -1,4 +1,6 @@
 pub mod client;
 mod errors;
+mod record;
 
-pub use errors::RedisClientError;
+pub use errors::{RecordError, RedisClientError};
+pub use record::JwkRecord;

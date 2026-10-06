@@ -35,7 +35,7 @@ impl From<AuthServiceError> for Status {
             e @ (AuthServiceError::Repository(_)
             | AuthServiceError::Password(_)
             | AuthServiceError::Signing(_)
-            | AuthServiceError::Cache(_)
+            | AuthServiceError::Record(_)
             | AuthServiceError::UnexpectedError(_)) => {
                 error!(error = ?e, "internal failure");
                 Status::internal("internal error")

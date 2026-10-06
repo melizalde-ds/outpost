@@ -5,17 +5,15 @@ use tonic::transport::{Channel, Endpoint, Server};
 use tracing::info;
 
 use crate::{
-    cache::{JwkCache, JwkRecord},
     password::Argon2PasswordHasher,
     proto::auth::v1::auth_service_server::AuthServiceServer,
-    redis::client::RedisClient,
+    redis::{JwkRecord, client::RedisClient},
     repository::PostgresAuthRepository,
     service::WeatherAuthService,
     settings::{GrpcEndpoint, Settings},
     signing::{SigningService, WeatherSigningService},
 };
 
-mod cache;
 mod grpc;
 mod password;
 mod proto;
@@ -48,15 +46,14 @@ async fn main() -> anyhow::Result<()> {
     info!("Password hasher initialized");
     let signing_service = Arc::new(WeatherSigningService::new(signing_channel));
     info!("Signing service initialized");
-    let cache = create_cache(&signing_service, &redis_client).await?;
-    info!("JWK cache initialized with {} records", cache.live().len());
+    let published = publish_verification_keys(&signing_service, &redis_client).await?;
+    info!("Published {} verification keys", published);
 
     info!("Auth service starting...");
     let auth_service = WeatherAuthService::new(
         Arc::new(auth_repo),
         Arc::new(passwords),
         signing_service,
-        cache,
         Arc::new(redis_client),
     );
     let addr: SocketAddr = settings.grpc.server.get_grpc_address().parse()?;
@@ -80,10 +77,10 @@ fn create_channel(endpoint: &GrpcEndpoint) -> anyhow::Result<Channel> {
     Ok(channel_endpoint.connect_lazy())
 }
 
-async fn create_cache(
+async fn publish_verification_keys(
     client: &WeatherSigningService,
     redis_client: &RedisClient,
-) -> anyhow::Result<JwkCache> {
+) -> anyhow::Result<usize> {
     let keys = client.get_verification_keys().await?;
     let records = keys
         .into_iter()
@@ -92,5 +89,5 @@ async fn create_cache(
     redis_client
         .push_multiple_verification_keys(&records)
         .await?;
-    Ok(JwkCache::new(records))
+    Ok(records.len())
 }

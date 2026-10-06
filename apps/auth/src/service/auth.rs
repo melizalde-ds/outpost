@@ -4,13 +4,12 @@ use secrecy::SecretSlice;
 use uuid::Uuid;
 
 use crate::{
-    cache::{JwkCache, JwkRecord},
     password::PasswordHasher,
     proto::auth::v1::{
         LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
         RegisterResponse, TokenPair,
     },
-    redis::client::RedisClient,
+    redis::{JwkRecord, client::RedisClient},
     repository::{AuthRepository, RepositoryError},
     service::AuthServiceError,
     signing::SigningService,
@@ -21,7 +20,6 @@ pub struct WeatherAuthService {
     repo: Arc<dyn AuthRepository>,
     passwords: Arc<dyn PasswordHasher>,
     signing_service: Arc<dyn SigningService>,
-    key_cache: JwkCache,
     redis_client: Arc<RedisClient>,
 }
 
@@ -30,7 +28,6 @@ impl WeatherAuthService {
         repo: Arc<dyn AuthRepository>,
         passwords: Arc<dyn PasswordHasher>,
         signing_service: Arc<dyn SigningService>,
-        key_cache: JwkCache,
         redis_client: Arc<RedisClient>,
     ) -> Self {
         Self {
@@ -38,7 +35,6 @@ impl WeatherAuthService {
             passwords,
             signing_service,
             redis_client,
-            key_cache,
         }
     }
 
@@ -107,10 +103,11 @@ impl WeatherAuthService {
         if let Some(key) = signed.new_key {
             let record = JwkRecord::try_from(key)?;
             self.redis_client.push_verification_key(&record).await?;
-            self.key_cache.insert(record)?;
-        }
-
-        if !self.key_cache.contains(&signed.key_id) {
+        } else if !self
+            .redis_client
+            .has_verification_key(&signed.key_id)
+            .await?
+        {
             let records = self
                 .signing_service
                 .get_verification_keys()
@@ -121,7 +118,6 @@ impl WeatherAuthService {
             self.redis_client
                 .push_multiple_verification_keys(&records)
                 .await?;
-            self.key_cache.rebuild(records);
         }
 
         Ok(signed.token)

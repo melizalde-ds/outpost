@@ -5,7 +5,7 @@ use serde::{Serialize, Serializer};
 use serde_json::value::RawValue;
 use uuid::Uuid;
 
-use crate::{cache::CacheError, signing::PublicKey};
+use crate::{redis::RecordError, signing::PublicKey};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct JwkData {
@@ -39,7 +39,7 @@ pub struct JwkRecord {
 }
 
 impl JwkRecord {
-    pub fn new(kid: Uuid, data: JwkData, exp: DateTime<Utc>) -> Result<Self, CacheError> {
+    pub fn new(kid: Uuid, data: JwkData, exp: DateTime<Utc>) -> Result<Self, RecordError> {
         let box_json = serde_json::value::to_raw_value(&data)?;
         let json = Arc::from(box_json);
         Ok(Self { kid, json, exp })
@@ -53,7 +53,7 @@ impl Serialize for JwkRecord {
 }
 
 impl TryFrom<PublicKey> for JwkRecord {
-    type Error = CacheError;
+    type Error = RecordError;
 
     fn try_from(value: PublicKey) -> Result<Self, Self::Error> {
         let data = JwkData::new(value.kid.to_string(), value.key);
