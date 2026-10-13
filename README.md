@@ -183,9 +183,8 @@ just check-generated  # fail if the generated code is out of date
 just key-scripts      # regenerate the idempotent SQL scripts for the key-provider
 ```
 
-The Python generator plugins come from the uv environment, so run `uv sync`
-first and call the proto recipes through `uv run`, for example
-`uv run just generate`.
+`just generate` runs buf through uv, so the Python generator plugins are
+installed for you.
 
 Layout:
 
