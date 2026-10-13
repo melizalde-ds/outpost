@@ -2,7 +2,7 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 
 key_provider := "apps/key-provider/src"
 key_scripts := "apps/key-provider/db/scripts"
-generated := "apps/key-provider/src/Api/Generated apps/weather/gen"
+generated := "apps/key-provider/src/Api/Generated examples/python-client/gen"
 
 default:
     @just --list

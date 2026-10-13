@@ -6,12 +6,12 @@ inputs:
       - weatherlab.auth.v1.AuthService
 plugins:
   - remote: buf.build/protocolbuffers/python
-    out: apps/weather/gen
+    out: examples/python-client/gen
   - remote: buf.build/grpc/python
-    out: apps/weather/gen
+    out: examples/python-client/gen
   - local: protoc-gen-mypy
-    out: apps/weather/gen
+    out: examples/python-client/gen
   - local: protoc-gen-mypy_grpc
-    out: apps/weather/gen
+    out: examples/python-client/gen
     opt:
       - sync_only

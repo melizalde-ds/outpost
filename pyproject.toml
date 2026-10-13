@@ -1,2 +1,2 @@
 [tool.uv.workspace]
-members = ["apps/weather"]
+members = ["examples/python-client"]

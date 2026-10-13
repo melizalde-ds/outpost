@@ -1,7 +1,7 @@
 [project]
-name = "weather"
+name = "python-client"
 version = "0.1.0"
-description = "Add your description here"
+description = "Example Python client for the Outpost auth service"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
