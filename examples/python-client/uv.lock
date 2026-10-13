@@ -2,11 +2,6 @@ version = 1
 revision = 3
 requires-python = ">=3.14"
 
-[manifest]
-members = [
-    "python-client",
-]
-
 [[package]]
 name = "annotated-types"
 version = "0.8.0"
@@ -167,7 +162,7 @@ wheels = [
 [[package]]
 name = "python-client"
 version = "0.1.0"
-source = { editable = "examples/python-client" }
+source = { editable = "." }
 dependencies = [
     { name = "grpcio" },
     { name = "grpcio-tools" },

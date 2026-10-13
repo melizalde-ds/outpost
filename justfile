@@ -18,7 +18,7 @@ breaking:
 
 [group('proto')]
 generate:
-    for t in codegen/buf.gen.*.yaml; do uv run --package python-client buf generate --template "$t"; done
+    for t in codegen/buf.gen.*.yaml; do uv run --project examples/python-client buf generate --template "$t"; done
 
 [group('proto')]
 check-generated: generate

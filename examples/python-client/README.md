@@ -5,12 +5,12 @@ generates a gRPC client from `proto/` and logs in.
 
 ## Run it
 
-Start the auth service first (see the root README), then from the repo root:
+Start the auth service first (see the root README), then from this folder:
 
 ```sh
 export OUTPOST_USERNAME=your-username
 export OUTPOST_PASSWORD=your-password
-uv run --package python-client python examples/python-client/main.py
+uv run python main.py
 ```
 
 The user has to exist already. `AuthClient.register` creates one.
