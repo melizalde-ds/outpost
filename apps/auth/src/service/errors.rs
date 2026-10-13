@@ -3,9 +3,9 @@ use uuid::Uuid;
 
 use crate::{
     password::PasswordError,
-    redis::{RecordError, RedisClientError},
     repository::RepositoryError,
     signing::SigningError,
+    verification_keys::{RecordError, VerificationKeyStoreError},
 };
 
 #[derive(Error, Debug)]
@@ -26,8 +26,8 @@ pub enum AuthServiceError {
     Signing(#[from] SigningError),
     #[error("Verification key record error: {0}")]
     Record(#[from] RecordError),
-    #[error("Redis error: {0}")]
-    Redis(#[from] RedisClientError),
+    #[error("Verification key store error: {0}")]
+    VerificationKeyStore(#[from] VerificationKeyStoreError),
     #[error("Unexpected error occurred: {0}")]
     UnexpectedError(#[from] anyhow::Error),
 }

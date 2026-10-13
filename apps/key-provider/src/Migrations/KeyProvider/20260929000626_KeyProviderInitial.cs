@@ -81,7 +81,7 @@ public partial class KeyProviderInitial : Migration
                              LANGUAGE plpgsql AS $fn$
                              BEGIN
                                  RAISE EXCEPTION USING
-                                     ERRCODE = 'WLA01',
+                                     ERRCODE = 'OPA01',
                                      MESSAGE = format('%s on append-only table %I.%I is not allowed', TG_OP, TG_TABLE_SCHEMA, TG_TABLE_NAME),
                                      SCHEMA = TG_TABLE_SCHEMA,
                                      TABLE = TG_TABLE_NAME;
@@ -98,7 +98,7 @@ public partial class KeyProviderInitial : Migration
                                      WHERE id = NEW.key_pair_rotation_job_id AND success
                                  ) THEN
                                      RAISE EXCEPTION USING
-                                         ERRCODE = 'WLA02',
+                                         ERRCODE = 'OPA02',
                                          MESSAGE = format('key pair %s references rotation job %s, which is missing or did not succeed', NEW.id, NEW.key_pair_rotation_job_id),
                                          SCHEMA = TG_TABLE_SCHEMA,
                                          TABLE = TG_TABLE_NAME,

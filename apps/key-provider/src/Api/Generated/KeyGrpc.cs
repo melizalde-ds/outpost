@@ -7,7 +7,7 @@
 
 using grpc = global::Grpc.Core;
 
-namespace KeyProvider.Api.Generated.V1 {
+namespace Outpost.Key.V1 {
   public static partial class KeyService
   {
     static readonly string __ServiceName = "outpost.key.v1.KeyService";
@@ -46,16 +46,16 @@ namespace KeyProvider.Api.Generated.V1 {
     }
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-    static readonly grpc::Marshaller<global::KeyProvider.Api.Generated.V1.SignTokenRequest> __Marshaller_outpost_key_v1_SignTokenRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::KeyProvider.Api.Generated.V1.SignTokenRequest.Parser));
+    static readonly grpc::Marshaller<global::Outpost.Key.V1.SignTokenRequest> __Marshaller_outpost_key_v1_SignTokenRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Outpost.Key.V1.SignTokenRequest.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-    static readonly grpc::Marshaller<global::KeyProvider.Api.Generated.V1.SignTokenResponse> __Marshaller_outpost_key_v1_SignTokenResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::KeyProvider.Api.Generated.V1.SignTokenResponse.Parser));
+    static readonly grpc::Marshaller<global::Outpost.Key.V1.SignTokenResponse> __Marshaller_outpost_key_v1_SignTokenResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Outpost.Key.V1.SignTokenResponse.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-    static readonly grpc::Marshaller<global::KeyProvider.Api.Generated.V1.GetVerificationKeysRequest> __Marshaller_outpost_key_v1_GetVerificationKeysRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::KeyProvider.Api.Generated.V1.GetVerificationKeysRequest.Parser));
+    static readonly grpc::Marshaller<global::Outpost.Key.V1.GetVerificationKeysRequest> __Marshaller_outpost_key_v1_GetVerificationKeysRequest = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Outpost.Key.V1.GetVerificationKeysRequest.Parser));
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-    static readonly grpc::Marshaller<global::KeyProvider.Api.Generated.V1.GetVerificationKeysResponse> __Marshaller_outpost_key_v1_GetVerificationKeysResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::KeyProvider.Api.Generated.V1.GetVerificationKeysResponse.Parser));
+    static readonly grpc::Marshaller<global::Outpost.Key.V1.GetVerificationKeysResponse> __Marshaller_outpost_key_v1_GetVerificationKeysResponse = grpc::Marshallers.Create(__Helper_SerializeMessage, context => __Helper_DeserializeMessage(context, global::Outpost.Key.V1.GetVerificationKeysResponse.Parser));
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-    static readonly grpc::Method<global::KeyProvider.Api.Generated.V1.SignTokenRequest, global::KeyProvider.Api.Generated.V1.SignTokenResponse> __Method_SignToken = new grpc::Method<global::KeyProvider.Api.Generated.V1.SignTokenRequest, global::KeyProvider.Api.Generated.V1.SignTokenResponse>(
+    static readonly grpc::Method<global::Outpost.Key.V1.SignTokenRequest, global::Outpost.Key.V1.SignTokenResponse> __Method_SignToken = new grpc::Method<global::Outpost.Key.V1.SignTokenRequest, global::Outpost.Key.V1.SignTokenResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "SignToken",
@@ -63,7 +63,7 @@ namespace KeyProvider.Api.Generated.V1 {
         __Marshaller_outpost_key_v1_SignTokenResponse);
 
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-    static readonly grpc::Method<global::KeyProvider.Api.Generated.V1.GetVerificationKeysRequest, global::KeyProvider.Api.Generated.V1.GetVerificationKeysResponse> __Method_GetVerificationKeys = new grpc::Method<global::KeyProvider.Api.Generated.V1.GetVerificationKeysRequest, global::KeyProvider.Api.Generated.V1.GetVerificationKeysResponse>(
+    static readonly grpc::Method<global::Outpost.Key.V1.GetVerificationKeysRequest, global::Outpost.Key.V1.GetVerificationKeysResponse> __Method_GetVerificationKeys = new grpc::Method<global::Outpost.Key.V1.GetVerificationKeysRequest, global::Outpost.Key.V1.GetVerificationKeysResponse>(
         grpc::MethodType.Unary,
         __ServiceName,
         "GetVerificationKeys",
@@ -73,7 +73,7 @@ namespace KeyProvider.Api.Generated.V1 {
     /// <summary>Service descriptor</summary>
     public static global::Google.Protobuf.Reflection.ServiceDescriptor Descriptor
     {
-      get { return global::KeyProvider.Api.Generated.V1.KeyReflection.Descriptor.Services[0]; }
+      get { return global::Outpost.Key.V1.KeyReflection.Descriptor.Services[0]; }
     }
 
     /// <summary>Base class for server-side implementations of KeyService</summary>
@@ -81,13 +81,13 @@ namespace KeyProvider.Api.Generated.V1 {
     public abstract partial class KeyServiceBase
     {
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-      public virtual global::System.Threading.Tasks.Task<global::KeyProvider.Api.Generated.V1.SignTokenResponse> SignToken(global::KeyProvider.Api.Generated.V1.SignTokenRequest request, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task<global::Outpost.Key.V1.SignTokenResponse> SignToken(global::Outpost.Key.V1.SignTokenRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
 
       [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
-      public virtual global::System.Threading.Tasks.Task<global::KeyProvider.Api.Generated.V1.GetVerificationKeysResponse> GetVerificationKeys(global::KeyProvider.Api.Generated.V1.GetVerificationKeysRequest request, grpc::ServerCallContext context)
+      public virtual global::System.Threading.Tasks.Task<global::Outpost.Key.V1.GetVerificationKeysResponse> GetVerificationKeys(global::Outpost.Key.V1.GetVerificationKeysRequest request, grpc::ServerCallContext context)
       {
         throw new grpc::RpcException(new grpc::Status(grpc::StatusCode.Unimplemented, ""));
       }
@@ -111,8 +111,8 @@ namespace KeyProvider.Api.Generated.V1 {
     [global::System.CodeDom.Compiler.GeneratedCode("grpc_csharp_plugin", null)]
     public static void BindService(grpc::ServiceBinderBase serviceBinder, KeyServiceBase serviceImpl)
     {
-      serviceBinder.AddMethod(__Method_SignToken, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::KeyProvider.Api.Generated.V1.SignTokenRequest, global::KeyProvider.Api.Generated.V1.SignTokenResponse>(serviceImpl.SignToken));
-      serviceBinder.AddMethod(__Method_GetVerificationKeys, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::KeyProvider.Api.Generated.V1.GetVerificationKeysRequest, global::KeyProvider.Api.Generated.V1.GetVerificationKeysResponse>(serviceImpl.GetVerificationKeys));
+      serviceBinder.AddMethod(__Method_SignToken, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Outpost.Key.V1.SignTokenRequest, global::Outpost.Key.V1.SignTokenResponse>(serviceImpl.SignToken));
+      serviceBinder.AddMethod(__Method_GetVerificationKeys, serviceImpl == null ? null : new grpc::UnaryServerMethod<global::Outpost.Key.V1.GetVerificationKeysRequest, global::Outpost.Key.V1.GetVerificationKeysResponse>(serviceImpl.GetVerificationKeys));
     }
 
   }

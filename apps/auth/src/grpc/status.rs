@@ -28,7 +28,7 @@ impl From<AuthServiceError> for Status {
                 warn!(error = %status, "key service unavailable");
                 Status::unavailable("service unavailable, retry later")
             }
-            e @ AuthServiceError::Redis(_) => {
+            e @ AuthServiceError::VerificationKeyStore(_) => {
                 warn!(error = %e, "failed to publish verification keys");
                 Status::unavailable("service unavailable, retry later")
             }

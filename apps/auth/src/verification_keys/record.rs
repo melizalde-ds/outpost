@@ -5,7 +5,7 @@ use serde::{Serialize, Serializer};
 use serde_json::value::RawValue;
 use uuid::Uuid;
 
-use crate::{redis::RecordError, signing::PublicKey};
+use crate::{signing::PublicKey, verification_keys::RecordError};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct JwkData {

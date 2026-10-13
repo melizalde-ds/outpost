@@ -1,8 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>67994495-d2d1-4924-aeaa-c2540c485668</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
@@ -19,6 +16,6 @@
     <PackageReference Include="Polly.Extensions"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\libs\shared\efcore-extensions-dotnet\Outpost.EntityFrameworkCore.csproj"/>
+    <ProjectReference Include="..\..\..\libs\efcore-extensions\Outpost.EntityFrameworkCore.csproj"/>
   </ItemGroup>
 </Project>

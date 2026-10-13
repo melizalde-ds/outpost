@@ -3,9 +3,10 @@ using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
-using KeyProvider.Api.Generated.V1;
 using KeyProvider.Signing;
 using KeyProvider.SigningKeys;
+
+using Outpost.Key.V1;
 
 namespace KeyProvider.Api;
 

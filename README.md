@@ -44,8 +44,8 @@ Auth and the key-provider each have their own Postgres database.
 
 The database blocks bad writes with two error codes:
 
-- `WLA01`: something tried to change or delete a key record.
-- `WLA02`: something tried to save a key whose rotation did not succeed.
+- `OPA01`: something tried to change or delete a key record.
+- `OPA02`: something tried to save a key whose rotation did not succeed.
 
 ## Run it locally
 

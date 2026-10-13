@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum RedisClientError {
+pub enum VerificationKeyStoreError {
     #[error("Redis command failed: {0}")]
     Command(#[from] redis::RedisError),
 }

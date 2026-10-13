@@ -1,27 +1,27 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
-use ::redis::Client;
+use redis::Client;
 use tonic::transport::{Channel, Endpoint, Server};
 use tracing::info;
 
 use crate::{
     password::Argon2PasswordHasher,
     proto::auth::v1::auth_service_server::AuthServiceServer,
-    redis::{JwkRecord, client::RedisClient},
     repository::PostgresAuthRepository,
     service::DefaultAuthService,
     settings::{GrpcEndpoint, Settings},
     signing::{KeySigningService, SigningService},
+    verification_keys::{JwkRecord, RedisVerificationKeyStore, VerificationKeyStore},
 };
 
 mod grpc;
 mod password;
 mod proto;
-mod redis;
 mod repository;
 mod service;
 mod settings;
 mod signing;
+mod verification_keys;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -36,7 +36,7 @@ async fn main() -> anyhow::Result<()> {
     info!("Connected to database");
 
     let client = Client::open(settings.redis.get_redis_address())?;
-    let redis_client = RedisClient::new(client).await?;
+    let verification_keys = RedisVerificationKeyStore::new(client).await?;
 
     let signing_channel = create_channel(&settings.grpc.key_service_client)?;
 
@@ -46,7 +46,7 @@ async fn main() -> anyhow::Result<()> {
     info!("Password hasher initialized");
     let signing_service = Arc::new(KeySigningService::new(signing_channel));
     info!("Signing service initialized");
-    let published = publish_verification_keys(&signing_service, &redis_client).await?;
+    let published = publish_verification_keys(&signing_service, &verification_keys).await?;
     info!("Published {} verification keys", published);
 
     info!("Auth service starting...");
@@ -54,7 +54,7 @@ async fn main() -> anyhow::Result<()> {
         Arc::new(auth_repo),
         Arc::new(passwords),
         signing_service,
-        Arc::new(redis_client),
+        Arc::new(verification_keys),
     );
     let addr: SocketAddr = settings.grpc.server.get_grpc_address().parse()?;
     info!("Auth service listening on {}", addr);
@@ -79,14 +79,14 @@ fn create_channel(endpoint: &GrpcEndpoint) -> anyhow::Result<Channel> {
 
 async fn publish_verification_keys(
     client: &KeySigningService,
-    redis_client: &RedisClient,
+    verification_keys: &RedisVerificationKeyStore,
 ) -> anyhow::Result<usize> {
     let keys = client.get_verification_keys().await?;
     let records = keys
         .into_iter()
         .map(JwkRecord::try_from)
         .collect::<Result<Vec<_>, _>>()?;
-    redis_client
+    verification_keys
         .push_multiple_verification_keys(&records)
         .await?;
     Ok(records.len())

@@ -4,8 +4,6 @@ package outpost.key.v1;
 
 import "google/protobuf/timestamp.proto";
 
-option csharp_namespace = "KeyProvider.Api.Generated.V1";
-
 service KeyService {
   rpc SignToken(SignTokenRequest) returns (SignTokenResponse);
   rpc GetVerificationKeys(GetVerificationKeysRequest) returns (GetVerificationKeysResponse);

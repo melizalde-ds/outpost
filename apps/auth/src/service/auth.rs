@@ -9,10 +9,10 @@ use crate::{
         LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
         RegisterResponse, TokenPair,
     },
-    redis::{JwkRecord, client::RedisClient},
     repository::{AuthRepository, RepositoryError},
     service::AuthServiceError,
     signing::SigningService,
+    verification_keys::{JwkRecord, VerificationKeyStore},
 };
 
 #[derive(Debug)]
@@ -20,7 +20,7 @@ pub struct DefaultAuthService {
     repo: Arc<dyn AuthRepository>,
     passwords: Arc<dyn PasswordHasher>,
     signing_service: Arc<dyn SigningService>,
-    redis_client: Arc<RedisClient>,
+    verification_keys: Arc<dyn VerificationKeyStore>,
 }
 
 impl DefaultAuthService {
@@ -28,13 +28,13 @@ impl DefaultAuthService {
         repo: Arc<dyn AuthRepository>,
         passwords: Arc<dyn PasswordHasher>,
         signing_service: Arc<dyn SigningService>,
-        redis_client: Arc<RedisClient>,
+        verification_keys: Arc<dyn VerificationKeyStore>,
     ) -> Self {
         Self {
             repo,
             passwords,
             signing_service,
-            redis_client,
+            verification_keys,
         }
     }
 
@@ -102,9 +102,11 @@ impl DefaultAuthService {
 
         if let Some(key) = signed.new_key {
             let record = JwkRecord::try_from(key)?;
-            self.redis_client.push_verification_key(&record).await?;
+            self.verification_keys
+                .push_verification_key(&record)
+                .await?;
         } else if !self
-            .redis_client
+            .verification_keys
             .has_verification_key(&signed.key_id)
             .await?
         {
@@ -115,7 +117,7 @@ impl DefaultAuthService {
                 .into_iter()
                 .map(JwkRecord::try_from)
                 .collect::<Result<Vec<_>, _>>()?;
-            self.redis_client
+            self.verification_keys
                 .push_multiple_verification_keys(&records)
                 .await?;
         }

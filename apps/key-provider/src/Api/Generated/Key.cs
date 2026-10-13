@@ -9,7 +9,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace KeyProvider.Api.Generated.V1 {
+namespace Outpost.Key.V1 {
 
   /// <summary>Holder for reflection information generated from outpost/key/v1/key.proto</summary>
   public static partial class KeyReflection {
@@ -40,16 +40,15 @@ namespace KeyProvider.Api.Generated.V1 {
             "djEuU2lnblRva2VuUmVxdWVzdBohLm91dHBvc3Qua2V5LnYxLlNpZ25Ub2tl",
             "blJlc3BvbnNlEm4KE0dldFZlcmlmaWNhdGlvbktleXMSKi5vdXRwb3N0Lmtl",
             "eS52MS5HZXRWZXJpZmljYXRpb25LZXlzUmVxdWVzdBorLm91dHBvc3Qua2V5",
-            "LnYxLkdldFZlcmlmaWNhdGlvbktleXNSZXNwb25zZUIfqgIcS2V5UHJvdmlk",
-            "ZXIuQXBpLkdlbmVyYXRlZC5WMWIGcHJvdG8z"));
+            "LnYxLkdldFZlcmlmaWNhdGlvbktleXNSZXNwb25zZWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.SignTokenRequest), global::KeyProvider.Api.Generated.V1.SignTokenRequest.Parser, new[]{ "Subject" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.SignTokenResponse), global::KeyProvider.Api.Generated.V1.SignTokenResponse.Parser, new[]{ "Token", "KeyId", "VerificationKey" }, new[]{ "VerificationKey" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.GetVerificationKeysRequest), global::KeyProvider.Api.Generated.V1.GetVerificationKeysRequest.Parser, null, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.GetVerificationKeysResponse), global::KeyProvider.Api.Generated.V1.GetVerificationKeysResponse.Parser, new[]{ "Keys" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::KeyProvider.Api.Generated.V1.VerificationKey), global::KeyProvider.Api.Generated.V1.VerificationKey.Parser, new[]{ "KeyId", "PublicKey", "ExpiresAt" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Outpost.Key.V1.SignTokenRequest), global::Outpost.Key.V1.SignTokenRequest.Parser, new[]{ "Subject" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Outpost.Key.V1.SignTokenResponse), global::Outpost.Key.V1.SignTokenResponse.Parser, new[]{ "Token", "KeyId", "VerificationKey" }, new[]{ "VerificationKey" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Outpost.Key.V1.GetVerificationKeysRequest), global::Outpost.Key.V1.GetVerificationKeysRequest.Parser, null, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Outpost.Key.V1.GetVerificationKeysResponse), global::Outpost.Key.V1.GetVerificationKeysResponse.Parser, new[]{ "Keys" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Outpost.Key.V1.VerificationKey), global::Outpost.Key.V1.VerificationKey.Parser, new[]{ "KeyId", "PublicKey", "ExpiresAt" }, null, null, null, null)
           }));
     }
     #endregion
@@ -71,7 +70,7 @@ namespace KeyProvider.Api.Generated.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::KeyProvider.Api.Generated.V1.KeyReflection.Descriptor.MessageTypes[0]; }
+      get { return global::Outpost.Key.V1.KeyReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -269,7 +268,7 @@ namespace KeyProvider.Api.Generated.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::KeyProvider.Api.Generated.V1.KeyReflection.Descriptor.MessageTypes[1]; }
+      get { return global::Outpost.Key.V1.KeyReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -327,10 +326,10 @@ namespace KeyProvider.Api.Generated.V1 {
 
     /// <summary>Field number for the "verification_key" field.</summary>
     public const int VerificationKeyFieldNumber = 3;
-    private global::KeyProvider.Api.Generated.V1.VerificationKey verificationKey_;
+    private global::Outpost.Key.V1.VerificationKey verificationKey_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::KeyProvider.Api.Generated.V1.VerificationKey VerificationKey {
+    public global::Outpost.Key.V1.VerificationKey VerificationKey {
       get { return verificationKey_; }
       set {
         verificationKey_ = value;
@@ -456,7 +455,7 @@ namespace KeyProvider.Api.Generated.V1 {
       }
       if (other.verificationKey_ != null) {
         if (verificationKey_ == null) {
-          VerificationKey = new global::KeyProvider.Api.Generated.V1.VerificationKey();
+          VerificationKey = new global::Outpost.Key.V1.VerificationKey();
         }
         VerificationKey.MergeFrom(other.VerificationKey);
       }
@@ -489,7 +488,7 @@ namespace KeyProvider.Api.Generated.V1 {
           }
           case 26: {
             if (verificationKey_ == null) {
-              VerificationKey = new global::KeyProvider.Api.Generated.V1.VerificationKey();
+              VerificationKey = new global::Outpost.Key.V1.VerificationKey();
             }
             input.ReadMessage(VerificationKey);
             break;
@@ -523,7 +522,7 @@ namespace KeyProvider.Api.Generated.V1 {
           }
           case 26: {
             if (verificationKey_ == null) {
-              VerificationKey = new global::KeyProvider.Api.Generated.V1.VerificationKey();
+              VerificationKey = new global::Outpost.Key.V1.VerificationKey();
             }
             input.ReadMessage(VerificationKey);
             break;
@@ -550,7 +549,7 @@ namespace KeyProvider.Api.Generated.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::KeyProvider.Api.Generated.V1.KeyReflection.Descriptor.MessageTypes[2]; }
+      get { return global::Outpost.Key.V1.KeyReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -711,7 +710,7 @@ namespace KeyProvider.Api.Generated.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::KeyProvider.Api.Generated.V1.KeyReflection.Descriptor.MessageTypes[3]; }
+      get { return global::Outpost.Key.V1.KeyReflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -743,12 +742,12 @@ namespace KeyProvider.Api.Generated.V1 {
 
     /// <summary>Field number for the "keys" field.</summary>
     public const int KeysFieldNumber = 1;
-    private static readonly pb::FieldCodec<global::KeyProvider.Api.Generated.V1.VerificationKey> _repeated_keys_codec
-        = pb::FieldCodec.ForMessage(10, global::KeyProvider.Api.Generated.V1.VerificationKey.Parser);
-    private readonly pbc::RepeatedField<global::KeyProvider.Api.Generated.V1.VerificationKey> keys_ = new pbc::RepeatedField<global::KeyProvider.Api.Generated.V1.VerificationKey>();
+    private static readonly pb::FieldCodec<global::Outpost.Key.V1.VerificationKey> _repeated_keys_codec
+        = pb::FieldCodec.ForMessage(10, global::Outpost.Key.V1.VerificationKey.Parser);
+    private readonly pbc::RepeatedField<global::Outpost.Key.V1.VerificationKey> keys_ = new pbc::RepeatedField<global::Outpost.Key.V1.VerificationKey>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::RepeatedField<global::KeyProvider.Api.Generated.V1.VerificationKey> Keys {
+    public pbc::RepeatedField<global::Outpost.Key.V1.VerificationKey> Keys {
       get { return keys_; }
     }
 
@@ -898,7 +897,7 @@ namespace KeyProvider.Api.Generated.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::KeyProvider.Api.Generated.V1.KeyReflection.Descriptor.MessageTypes[4]; }
+      get { return global::Outpost.Key.V1.KeyReflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
