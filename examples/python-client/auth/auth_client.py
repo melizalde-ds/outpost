@@ -7,7 +7,7 @@ import grpc
 from grpc import Channel
 from pydantic import BaseModel, Field, HttpUrl, IPvAnyAddress
 
-from weatherlab.auth.v1.auth_pb2 import (
+from outpost.auth.v1.auth_pb2 import (
     LoginRequest,
     LoginResponse,
     RefreshTokenRequest,
@@ -15,7 +15,7 @@ from weatherlab.auth.v1.auth_pb2 import (
     RegisterRequest,
     RegisterResponse,
 )
-from weatherlab.auth.v1.auth_pb2_grpc import AuthServiceStub
+from outpost.auth.v1.auth_pb2_grpc import AuthServiceStub
 
 
 class AuthConfiguration(BaseModel):

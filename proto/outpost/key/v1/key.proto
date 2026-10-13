@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package weatherlab.key.v1;
+package outpost.key.v1;
 
 import "google/protobuf/timestamp.proto";
 

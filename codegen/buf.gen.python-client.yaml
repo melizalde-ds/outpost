@@ -3,7 +3,7 @@ clean: true
 inputs:
   - directory: proto
     types:
-      - weatherlab.auth.v1.AuthService
+      - outpost.auth.v1.AuthService
 plugins:
   - remote: buf.build/protocolbuffers/python
     out: examples/python-client/gen

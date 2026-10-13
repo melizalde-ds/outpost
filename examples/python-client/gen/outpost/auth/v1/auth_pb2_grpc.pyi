@@ -5,7 +5,7 @@ isort:skip_file
 
 from collections import abc as _abc
 from grpc import aio as _aio
-from weatherlab.auth.v1 import auth_pb2 as _auth_pb2
+from outpost.auth.v1 import auth_pb2 as _auth_pb2
 import abc as _abc_1
 import grpc as _grpc
 import sys
