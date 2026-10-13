@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Weatherlab.EntityFrameworkCore.AppendOnly;
+namespace Outpost.EntityFrameworkCore.AppendOnly;
 
 public sealed class AppendOnlyInterceptor : SaveChangesInterceptor
 {

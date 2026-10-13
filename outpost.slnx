@@ -7,6 +7,6 @@
   <Folder Name="/libs/"/>
   <Folder Name="/libs/shared/"/>
   <Folder Name="/libs/shared/efcore-extensions-dotnet/">
-    <Project Path="libs/shared/efcore-extensions-dotnet/Weatherlab.EntityFrameworkCore.csproj"/>
+    <Project Path="libs/shared/efcore-extensions-dotnet/Outpost.EntityFrameworkCore.csproj"/>
   </Folder>
 </Solution>

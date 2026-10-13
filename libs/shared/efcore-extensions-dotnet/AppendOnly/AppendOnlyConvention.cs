@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
-namespace Weatherlab.EntityFrameworkCore.AppendOnly;
+namespace Outpost.EntityFrameworkCore.AppendOnly;
 
 public sealed class AppendOnlyConvention : IEntityTypeAddedConvention, IModelFinalizingConvention
 {

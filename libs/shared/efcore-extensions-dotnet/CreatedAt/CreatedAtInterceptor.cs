@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Weatherlab.EntityFrameworkCore.CreatedAt;
+namespace Outpost.EntityFrameworkCore.CreatedAt;
 
 public sealed class CreatedAtInterceptor(TimeProvider timeProvider) : SaveChangesInterceptor
 {

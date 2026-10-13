@@ -1,4 +1,4 @@
-namespace Weatherlab.EntityFrameworkCore.AppendOnly;
+namespace Outpost.EntityFrameworkCore.AppendOnly;
 
 public static class AppendOnlySqlState
 {

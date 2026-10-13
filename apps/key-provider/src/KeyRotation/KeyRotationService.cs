@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 using Org.BouncyCastle.Crypto.Parameters;
 
-using Weatherlab.EntityFrameworkCore.AppendOnly;
+using Outpost.EntityFrameworkCore.AppendOnly;
 
 namespace KeyProvider.KeyRotation;
 

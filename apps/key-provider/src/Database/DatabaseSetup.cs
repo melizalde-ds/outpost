@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
-using Weatherlab.EntityFrameworkCore.AppendOnly;
-using Weatherlab.EntityFrameworkCore.CreatedAt;
+using Outpost.EntityFrameworkCore.AppendOnly;
+using Outpost.EntityFrameworkCore.CreatedAt;
 
 namespace KeyProvider.Database;
 

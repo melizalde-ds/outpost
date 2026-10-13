@@ -19,6 +19,6 @@
     <PackageReference Include="Polly.Extensions"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\libs\shared\efcore-extensions-dotnet\Weatherlab.EntityFrameworkCore.csproj"/>
+    <ProjectReference Include="..\..\..\libs\shared\efcore-extensions-dotnet\Outpost.EntityFrameworkCore.csproj"/>
   </ItemGroup>
 </Project>

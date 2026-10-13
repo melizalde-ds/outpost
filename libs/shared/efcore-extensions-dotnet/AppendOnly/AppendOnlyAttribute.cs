@@ -1,4 +1,4 @@
-namespace Weatherlab.EntityFrameworkCore.AppendOnly;
+namespace Outpost.EntityFrameworkCore.AppendOnly;
 
 [AttributeUsage(AttributeTargets.Class)]
 public sealed class AppendOnlyAttribute : Attribute

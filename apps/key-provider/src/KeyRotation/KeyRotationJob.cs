@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-using Weatherlab.EntityFrameworkCore.AppendOnly;
-using Weatherlab.EntityFrameworkCore.CreatedAt;
+using Outpost.EntityFrameworkCore.AppendOnly;
+using Outpost.EntityFrameworkCore.CreatedAt;
 
 namespace KeyProvider.KeyRotation;
 

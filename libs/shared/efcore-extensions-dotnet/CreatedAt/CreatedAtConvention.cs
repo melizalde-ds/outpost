@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
-namespace Weatherlab.EntityFrameworkCore.CreatedAt;
+namespace Outpost.EntityFrameworkCore.CreatedAt;
 
 public sealed class CreatedAtConvention : IModelFinalizingConvention
 {

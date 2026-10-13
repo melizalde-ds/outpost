@@ -1,4 +1,4 @@
-namespace Weatherlab.EntityFrameworkCore.CreatedAt;
+namespace Outpost.EntityFrameworkCore.CreatedAt;
 
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class CreatedAtAttribute : Attribute

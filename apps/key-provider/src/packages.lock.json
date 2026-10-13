@@ -309,7 +309,7 @@
           "System.Composition.Runtime": "9.0.0"
         }
       },
-      "weatherlab.entityframeworkcore": {
+      "outpost.entityframeworkcore": {
         "type": "Project",
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "[10.0.12, )"
