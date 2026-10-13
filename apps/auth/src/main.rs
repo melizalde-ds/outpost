@@ -9,9 +9,9 @@ use crate::{
     proto::auth::v1::auth_service_server::AuthServiceServer,
     redis::{JwkRecord, client::RedisClient},
     repository::PostgresAuthRepository,
-    service::WeatherAuthService,
+    service::DefaultAuthService,
     settings::{GrpcEndpoint, Settings},
-    signing::{SigningService, WeatherSigningService},
+    signing::{KeySigningService, SigningService},
 };
 
 mod grpc;
@@ -44,13 +44,13 @@ async fn main() -> anyhow::Result<()> {
     info!("Auth repository initialized");
     let passwords = Argon2PasswordHasher::new(&settings.password);
     info!("Password hasher initialized");
-    let signing_service = Arc::new(WeatherSigningService::new(signing_channel));
+    let signing_service = Arc::new(KeySigningService::new(signing_channel));
     info!("Signing service initialized");
     let published = publish_verification_keys(&signing_service, &redis_client).await?;
     info!("Published {} verification keys", published);
 
     info!("Auth service starting...");
-    let auth_service = WeatherAuthService::new(
+    let auth_service = DefaultAuthService::new(
         Arc::new(auth_repo),
         Arc::new(passwords),
         signing_service,
@@ -78,7 +78,7 @@ fn create_channel(endpoint: &GrpcEndpoint) -> anyhow::Result<Channel> {
 }
 
 async fn publish_verification_keys(
-    client: &WeatherSigningService,
+    client: &KeySigningService,
     redis_client: &RedisClient,
 ) -> anyhow::Result<usize> {
     let keys = client.get_verification_keys().await?;

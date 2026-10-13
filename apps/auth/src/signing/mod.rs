@@ -8,7 +8,7 @@ mod errors;
 mod key_service;
 
 pub use errors::SigningError;
-pub use key_service::WeatherSigningService;
+pub use key_service::KeySigningService;
 
 #[async_trait]
 pub trait SigningService: Debug + Send + Sync + 'static {

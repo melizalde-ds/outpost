@@ -16,14 +16,14 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub struct WeatherAuthService {
+pub struct DefaultAuthService {
     repo: Arc<dyn AuthRepository>,
     passwords: Arc<dyn PasswordHasher>,
     signing_service: Arc<dyn SigningService>,
     redis_client: Arc<RedisClient>,
 }
 
-impl WeatherAuthService {
+impl DefaultAuthService {
     pub fn new(
         repo: Arc<dyn AuthRepository>,
         passwords: Arc<dyn PasswordHasher>,

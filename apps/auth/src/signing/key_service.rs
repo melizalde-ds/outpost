@@ -13,11 +13,11 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub struct WeatherSigningService {
+pub struct KeySigningService {
     pub client: KeyServiceClient<Channel>,
 }
 
-impl WeatherSigningService {
+impl KeySigningService {
     pub fn new(channel: Channel) -> Self {
         Self {
             client: KeyServiceClient::new(channel),
@@ -26,7 +26,7 @@ impl WeatherSigningService {
 }
 
 #[async_trait]
-impl SigningService for WeatherSigningService {
+impl SigningService for KeySigningService {
     async fn sign(&self, sub: Uuid) -> Result<SignedToken, SigningError> {
         let mut stub = self.client.clone();
         let response = stub

@@ -5,17 +5,17 @@ use crate::{
         LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
         RegisterResponse, auth_service_server::AuthService,
     },
-    service::WeatherAuthService,
+    service::DefaultAuthService,
 };
 
 #[tonic::async_trait]
-impl AuthService for WeatherAuthService {
+impl AuthService for DefaultAuthService {
     async fn register(
         &self,
         request: Request<RegisterRequest>,
     ) -> Result<Response<RegisterResponse>, Status> {
         Ok(Response::new(
-            WeatherAuthService::register(self, request.into_inner()).await?,
+            DefaultAuthService::register(self, request.into_inner()).await?,
         ))
     }
 
@@ -24,7 +24,7 @@ impl AuthService for WeatherAuthService {
         request: Request<LoginRequest>,
     ) -> Result<Response<LoginResponse>, Status> {
         Ok(Response::new(
-            WeatherAuthService::login(self, request.into_inner()).await?,
+            DefaultAuthService::login(self, request.into_inner()).await?,
         ))
     }
 
@@ -33,7 +33,7 @@ impl AuthService for WeatherAuthService {
         request: Request<RefreshTokenRequest>,
     ) -> Result<Response<RefreshTokenResponse>, Status> {
         Ok(Response::new(
-            WeatherAuthService::refresh_token(self, request.into_inner()).await?,
+            DefaultAuthService::refresh_token(self, request.into_inner()).await?,
         ))
     }
 }
