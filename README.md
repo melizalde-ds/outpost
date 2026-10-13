@@ -52,52 +52,28 @@ The database blocks bad writes with two error codes:
 You need Docker, Rust, the .NET 10 SDK, [just](https://github.com/casey/just)
 and [sqlx-cli](https://crates.io/crates/sqlx-cli).
 
-1. Copy the env files and replace the `change-me` values:
+1. Create the `.env` files, then replace the `change-me` values in them:
 
    ```sh
-   cp .env.example .env
-   cp apps/auth/.env.example apps/auth/.env
-   cp apps/key-provider/.env.example apps/key-provider/.env
+   just env
    ```
 
-2. Start the databases and Redis:
+2. Set everything up. This starts the databases and Redis, saves the
+   key-provider's connection strings as user secrets, and runs the migrations:
 
    ```sh
-   docker compose up -d
+   just setup
    ```
 
-3. Set up the auth database:
+3. Start the key-provider (port 5210) and auth (port 50051):
 
    ```sh
-   just auth-migrate
+   just run
    ```
 
-4. Tell the key-provider how to reach its databases, then set them up. Use
-   the passwords from `apps/key-provider/.env`:
-
-   ```sh
-   cd apps/key-provider/src
-   dotnet user-secrets set "ConnectionStrings:KeyProvider" "Host=localhost;Port=5433;Database=key_provider;Username=key_provider_app;Password=..."
-   dotnet user-secrets set "ConnectionStrings:KeyProviderMigration" "Host=localhost;Port=5433;Database=key_provider;Username=key_provider_migrator;Password=..."
-   dotnet user-secrets set "ConnectionStrings:DataProtection" "Host=localhost;Port=5433;Database=dp_key_provider;Username=dp_app;Password=..."
-   dotnet user-secrets set "ConnectionStrings:DataProtectionMigration" "Host=localhost;Port=5433;Database=dp_key_provider;Username=dp_migrator;Password=..."
-   cd ../../..
-   dotnet tool restore
-   just key-migrate
-   ```
-
-5. Start the key-provider (port 5210):
-
-   ```sh
-   dotnet run --project apps/key-provider/src
-   ```
-
-6. Start auth (port 50051):
-
-   ```sh
-   set -a; source apps/auth/.env; set +a
-   cargo run -p auth
-   ```
+`just` lists the other commands. For example, `just migrate` applies new
+migrations, `just key-run` and `just auth-run` start one service each, and
+`just down` stops the containers.
 
 Good to know:
 
@@ -105,7 +81,6 @@ Good to know:
   `SQLX_OFFLINE=true cargo build`.
 - After changing a SQL query, run `cargo sqlx prepare` in `apps/auth` with the
   database on, and commit the result.
-- Redis starts with a password, but auth can't send one yet.
 - Don't change `AUTH__PASSWORD__PEPPER` once you have users. Their passwords
   would stop working.
 

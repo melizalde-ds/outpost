@@ -2,10 +2,60 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 
 key_provider := "apps/key-provider/src"
 key_scripts := "apps/key-provider/db/scripts"
+key_port := "5210"
 generated := "apps/key-provider/src/Api/Generated examples/python-client/gen " + key_scripts
 
 default:
     @just --list
+
+[group('all')]
+setup: env up tools key-secrets migrate
+
+[group('all')]
+env:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    created=0
+    for example in apps/*/.env.example; do
+        env=${example%.example}
+        [[ -e $example && ! -e $env ]] || continue
+        cp -v "$example" "$env"
+        created=1
+    done
+    if (( created )); then echo "replace the change-me values in the new .env files before going on" >&2; exit 1; fi
+
+[group('all')]
+up:
+    docker compose up -d --wait
+
+[group('all')]
+down:
+    docker compose down
+
+[group('all')]
+tools:
+    dotnet tool restore
+
+[group('all')]
+migrate: auth-migrate key-migrate
+
+[group('all')]
+build:
+    cargo build
+    dotnet build
+
+[group('all')]
+run:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    dotnet run --project {{key_provider}} &
+    key_pid=$!
+    trap 'kill "$key_pid" 2>/dev/null || true' EXIT
+    until (exec 3<>/dev/tcp/localhost/{{key_port}}) 2>/dev/null; do
+        kill -0 "$key_pid" 2>/dev/null || exit 1
+        sleep 1
+    done
+    {{just_executable()}} auth-run
 
 [group('proto')]
 lint:
@@ -28,6 +78,28 @@ check-generated: generate key-scripts
 [working-directory('apps/auth')]
 auth-migrate:
     sqlx migrate run
+
+[group('auth')]
+auth-run:
+    set -a; source apps/auth/.env; set +a; cargo run -p auth
+
+[group('key-provider')]
+key-run:
+    dotnet run --project {{key_provider}}
+
+[group('key-provider')]
+key-secrets:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source apps/key-provider/.env
+    set_secret() {
+        dotnet user-secrets set --project {{key_provider}} "ConnectionStrings:$1" "Host=localhost;Port=5433;Database=$2;Username=$3;Password=$4" > /dev/null
+        echo "set user secret ConnectionStrings:$1"
+    }
+    set_secret KeyProvider "$POSTGRES_DB" key_provider_app "$APP_PASSWORD"
+    set_secret KeyProviderMigration "$POSTGRES_DB" key_provider_migrator "$MIGRATION_PASSWORD"
+    set_secret DataProtection "$POSTGRES_ENCRYPTION_DB" dp_app "$DP_APP_PASSWORD"
+    set_secret DataProtectionMigration "$POSTGRES_ENCRYPTION_DB" dp_migrator "$DP_MIGRATION_PASSWORD"
 
 [group('key-provider')]
 key-scripts: (_ef-script "KeyProviderDbContext" "key_provider") (_ef-script "DataProtectionDbContext" "data_protection")

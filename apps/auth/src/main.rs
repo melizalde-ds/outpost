@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
         .await?;
     info!("Connected to database");
 
-    let client = Client::open(settings.redis.get_redis_address())?;
+    let client = Client::open(settings.redis.connection_info()?)?;
     let verification_keys = RedisVerificationKeyStore::new(client).await?;
 
     let signing_channel = create_channel(&settings.grpc.key_service_client)?;
