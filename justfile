@@ -2,7 +2,7 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 
 key_provider := "apps/key-provider/src"
 key_scripts := "apps/key-provider/db/scripts"
-generated := "apps/key-provider/src/Api/Generated examples/python-client/gen"
+generated := "apps/key-provider/src/Api/Generated examples/python-client/gen " + key_scripts
 
 default:
     @just --list
@@ -20,8 +20,7 @@ breaking:
 generate:
     for t in codegen/buf.gen.*.yaml; do uv run --project examples/python-client buf generate --template "$t"; done
 
-[group('proto')]
-check-generated: generate
+check-generated: generate key-scripts
     git diff --exit-code -- {{generated}}
     test -z "$(git ls-files --others --exclude-standard -- {{generated}})"
 

@@ -131,6 +131,10 @@ just generate         # rebuild the generated code
 just check-generated  # fail if the generated code is out of date
 ```
 
+After adding a key-provider migration, run `just key-scripts` to rebuild the
+SQL scripts in `apps/key-provider/db/scripts`. `just check-generated` checks
+those too, so it also needs the .NET SDK.
+
 ## Roadmap
 
 - A JWKS endpoint (`/.well-known/jwks.json`), so apps can check tokens without

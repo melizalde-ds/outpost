@@ -132,18 +132,24 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "grpcio" },
-    { name = "mypy-protobuf" },
     { name = "protobuf" },
     { name = "pydantic" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "mypy-protobuf" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "grpcio", specifier = ">=1.84.0" },
-    { name = "mypy-protobuf", specifier = ">=5.1.0" },
     { name = "protobuf", specifier = ">=7.36.1" },
     { name = "pydantic", specifier = ">=2.13.5" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "mypy-protobuf", specifier = ">=5.1.0" }]
 
 [[package]]
 name = "types-protobuf"
