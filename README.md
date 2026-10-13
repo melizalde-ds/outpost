@@ -137,8 +137,23 @@ also needs [buf](https://buf.build) and [uv](https://docs.astral.sh/uv/).
 
 Two things to know:
 
-- sqlx checks queries against the database at compile time. To build without a
-  running database, set `SQLX_OFFLINE=true`.
+- sqlx checks queries at compile time. When `DATABASE_URL` is set it connects
+  to that database, so the build fails if Postgres is down. Set
+  `SQLX_OFFLINE=true` to build from the query data committed in
+  `apps/auth/.sqlx` instead:
+
+  ```sh
+  SQLX_OFFLINE=true cargo build
+  ```
+
+- After changing a query, start the database and refresh that data, then
+  commit the result:
+
+  ```sh
+  cd apps/auth
+  cargo sqlx prepare
+  ```
+
 - The compose file starts Redis with a password, but auth has no setting for a
   Redis password yet (`AUTH__REDIS__*` is host and port only).
 
