@@ -219,7 +219,8 @@ Workspace roots live at the top: `Cargo.toml`, `pyproject.toml` (uv) and
   without access to Redis.
 - Per-app audiences.
 - Refresh tokens.
-- Published container images for auth and the key-provider.
+- Tests and CI.
+- Published Docker images.
 
 ## License
 
