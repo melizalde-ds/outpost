@@ -1,24 +1,18 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
-use crate::refresh_token::RefreshTokenError;
-
 pub struct RefreshToken {
-    pub id: Uuid,
+    pub hash: [u8; 32],
     pub user_id: Uuid,
     pub exp: DateTime<Utc>,
 }
 
 impl RefreshToken {
-    pub fn new(user_id: Uuid, exp: DateTime<Utc>) -> Self {
+    pub fn generate(user_id: Uuid, exp: DateTime<Utc>) -> (String, Self) {
         todo!()
     }
 
-    pub fn encode(&self) -> String {
-        todo!()
-    }
-
-    pub fn decode_id(token: &str) -> Result<Uuid, RefreshTokenError> {
+    pub fn hash_token(token: &str) -> [u8; 32] {
         todo!()
     }
 }

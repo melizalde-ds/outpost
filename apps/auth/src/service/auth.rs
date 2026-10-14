@@ -121,7 +121,10 @@ impl DefaultAuthService {
         Ok(signed.token)
     }
 
-    async fn issue_refresh_token(&self, user_id: Uuid) -> Result<RefreshToken, AuthServiceError> {
+    async fn issue_refresh_token(
+        &self,
+        user_id: Uuid,
+    ) -> Result<(String, RefreshToken), AuthServiceError> {
         todo!()
     }
 

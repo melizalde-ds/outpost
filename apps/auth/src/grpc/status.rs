@@ -8,8 +8,7 @@ impl From<AuthServiceError> for Status {
         match err {
             e @ (AuthServiceError::InvalidCredentials(_)
             | AuthServiceError::UserNotActive(_)
-            | AuthServiceError::InvalidRefreshToken
-            | AuthServiceError::RefreshToken(_)) => {
+            | AuthServiceError::InvalidRefreshToken) => {
                 info!(error = %e, "rejecting authentication");
                 Status::unauthenticated("invalid credentials")
             }

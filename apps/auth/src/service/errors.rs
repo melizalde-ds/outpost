@@ -4,7 +4,7 @@ use uuid::Uuid;
 use crate::{
     jwk_cache::{JwkCacheError, JwkRecordError},
     password::PasswordError,
-    refresh_token::{RefreshTokenError, RefreshTokenStoreError},
+    refresh_token::RefreshTokenStoreError,
     repository::RepositoryError,
     signing::SigningError,
 };
@@ -31,8 +31,6 @@ pub enum AuthServiceError {
     JwkRecord(#[from] JwkRecordError),
     #[error("JWK cache error: {0}")]
     JwkCache(#[from] JwkCacheError),
-    #[error("Refresh token error: {0}")]
-    RefreshToken(#[from] RefreshTokenError),
     #[error("Refresh token store error: {0}")]
     RefreshTokenStore(#[from] RefreshTokenStoreError),
     #[error("Unexpected error occurred: {0}")]
