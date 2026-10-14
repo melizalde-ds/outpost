@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 use async_trait::async_trait;
 
@@ -12,13 +12,31 @@ pub use errors::RepositoryError;
 pub use token_family::PostgresTokenFamilyRepository;
 pub use user::PostgresUserRepository;
 
-#[derive(Debug, sqlx::Type)]
+#[derive(Debug, Clone, Copy, sqlx::Type, PartialEq, Eq)]
 #[sqlx(transparent)]
 pub struct UserId(pub Uuid);
 
-#[derive(Debug, Clone, Copy, sqlx::Type)]
+impl From<Uuid> for UserId {
+    fn from(id: Uuid) -> Self {
+        UserId(id)
+    }
+}
+
+#[derive(Debug, Clone, Copy, sqlx::Type, PartialEq, Eq)]
 #[sqlx(transparent)]
 pub struct TokenFamilyId(pub Uuid);
+
+impl From<Uuid> for TokenFamilyId {
+    fn from(id: Uuid) -> Self {
+        TokenFamilyId(id)
+    }
+}
+
+impl Display for TokenFamilyId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 #[derive(Debug, Clone, Copy)]
 pub enum RevocationReason {

@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use chrono::{DateTime, Utc};
+use prost_types::Timestamp;
 use secrecy::SecretSlice;
 use uuid::Uuid;
 
@@ -10,31 +12,31 @@ use crate::{
         LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
         RegisterResponse, TokenPair,
     },
-    refresh_token::{RefreshToken, RefreshTokenStore},
-    repository::{RepositoryError, UserRepository},
+    refresh_token::RefreshTokenService,
+    repository::{RepositoryError, RevocationReason, UserRepository},
     service::AuthServiceError,
     signing::SigningService,
 };
 
 #[derive(Debug)]
 pub struct DefaultAuthService {
-    repo: Arc<dyn UserRepository>,
+    user_repo: Arc<dyn UserRepository>,
     passwords: Arc<dyn PasswordHasher>,
     signing_service: Arc<dyn SigningService>,
     jwk_cache: Arc<dyn JwkCache>,
-    refresh_tokens: Arc<dyn RefreshTokenStore>,
+    refresh_tokens: Arc<dyn RefreshTokenService>,
 }
 
 impl DefaultAuthService {
     pub fn new(
-        repo: Arc<dyn UserRepository>,
+        user_repo: Arc<dyn UserRepository>,
         passwords: Arc<dyn PasswordHasher>,
         signing_service: Arc<dyn SigningService>,
         jwk_cache: Arc<dyn JwkCache>,
-        refresh_tokens: Arc<dyn RefreshTokenStore>,
+        refresh_tokens: Arc<dyn RefreshTokenService>,
     ) -> Self {
         Self {
-            repo,
+            user_repo,
             passwords,
             signing_service,
             jwk_cache,
@@ -50,17 +52,19 @@ impl DefaultAuthService {
         let password_hash = self.passwords.hash(password).await?;
 
         match self
-            .repo
+            .user_repo
             .insert_credentials(&req.username, password_hash)
             .await
         {
             Ok(user_id) => {
                 let token = self.issue_token(user_id.0).await?;
+                let refresh = self.refresh_tokens.issue(user_id).await?;
 
                 Ok(RegisterResponse {
                     tokens: Some(TokenPair {
                         access_token: token,
-                        ..Default::default()
+                        refresh_token: refresh.token,
+                        refresh_token_expires_at: Some(to_timestamp(refresh.exp)),
                     }),
                 })
             }
@@ -72,7 +76,7 @@ impl DefaultAuthService {
     }
 
     pub(crate) async fn login(&self, req: LoginRequest) -> Result<LoginResponse, AuthServiceError> {
-        let Some(credentials) = self.repo.get_credentials(&req.username).await? else {
+        let Some(credentials) = self.user_repo.get_credentials(&req.username).await? else {
             return Err(AuthServiceError::UserNotFound(req.username));
         };
 
@@ -89,16 +93,46 @@ impl DefaultAuthService {
         match password_matches {
             true => {
                 let token = self.issue_token(credentials.user_id).await?;
+                let refresh = self
+                    .refresh_tokens
+                    .issue(credentials.user_id.into())
+                    .await?;
 
                 Ok(LoginResponse {
                     tokens: Some(TokenPair {
                         access_token: token,
-                        ..Default::default()
+                        refresh_token: refresh.token,
+                        refresh_token_expires_at: Some(to_timestamp(refresh.exp)),
                     }),
                 })
             }
             false => Err(AuthServiceError::InvalidCredentials(req.username)),
         }
+    }
+
+    pub(crate) async fn refresh_token(
+        &self,
+        req: RefreshTokenRequest,
+    ) -> Result<RefreshTokenResponse, AuthServiceError> {
+        let session = self.refresh_tokens.validate(&req.refresh_token).await?;
+
+        if !self.user_repo.is_active(&session.user_id.0).await? {
+            self.refresh_tokens
+                .revoke(&session, RevocationReason::Inactive)
+                .await?;
+            return Err(AuthServiceError::UserNotActive(session.user_id.0));
+        }
+
+        let token = self.issue_token(session.user_id.0).await?;
+        let refresh = self.refresh_tokens.rotate(&session).await?;
+
+        Ok(RefreshTokenResponse {
+            tokens: Some(TokenPair {
+                access_token: token,
+                refresh_token: refresh.token,
+                refresh_token_expires_at: Some(to_timestamp(refresh.exp)),
+            }),
+        })
     }
 
     async fn issue_token(&self, user_id: Uuid) -> Result<String, AuthServiceError> {
@@ -120,32 +154,11 @@ impl DefaultAuthService {
 
         Ok(signed.token)
     }
+}
 
-    async fn issue_refresh_token(
-        &self,
-        user_id: Uuid,
-    ) -> Result<(String, RefreshToken), AuthServiceError> {
-        todo!()
-    }
-
-    async fn verify_refresh_token(&self, token: &str) -> Result<Uuid, AuthServiceError> {
-        todo!()
-    }
-
-    async fn revoke_refresh_token(&self, token: &str) -> Result<(), AuthServiceError> {
-        todo!()
-    }
-
-    pub(crate) async fn refresh_token(
-        &self,
-        _req: RefreshTokenRequest,
-    ) -> Result<RefreshTokenResponse, AuthServiceError> {
-        let user_id = Uuid::now_v7();
-
-        if !self.repo.is_active(&user_id).await? {
-            return Err(AuthServiceError::UserNotActive(user_id));
-        }
-
-        Ok(RefreshTokenResponse::default())
+fn to_timestamp(dt: DateTime<Utc>) -> Timestamp {
+    Timestamp {
+        seconds: dt.timestamp(),
+        nanos: dt.timestamp_subsec_nanos() as i32,
     }
 }

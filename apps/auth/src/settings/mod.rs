@@ -5,11 +5,13 @@ mod database;
 mod grpc;
 mod password;
 mod redis;
+mod refresh_token;
 
 pub use database::DatabaseSettings;
 pub use grpc::{GrpcEndpoint, GrpcSettings};
 pub use password::PasswordSettings;
 pub use redis::RedisSettings;
+pub use refresh_token::RefreshTokenSettings;
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {
@@ -19,6 +21,8 @@ pub struct Settings {
     pub grpc: GrpcSettings,
     #[serde(default)]
     pub redis: RedisSettings,
+    #[serde(default)]
+    pub refresh_token: RefreshTokenSettings,
 }
 
 impl Settings {

@@ -8,8 +8,8 @@ use crate::{
     jwk_cache::{JwkCache, JwkRecord, RedisJwkCache},
     password::Argon2PasswordHasher,
     proto::auth::v1::auth_service_server::AuthServiceServer,
-    refresh_token::RedisRefreshTokenStore,
-    repository::PostgresUserRepository,
+    refresh_token::{RedisRefreshTokenStore, token::OutpostRefreshTokenService},
+    repository::{PostgresTokenFamilyRepository, PostgresUserRepository},
     service::DefaultAuthService,
     settings::{GrpcEndpoint, Settings},
     signing::{KeySigningService, SigningService},
@@ -37,28 +37,38 @@ async fn main() -> anyhow::Result<()> {
         .await?;
     info!("connected to database");
 
-    let client = Client::open(settings.redis.connection_info()?)?;
-    let jwk_cache = RedisJwkCache::new(client.clone()).await?;
-    let refresh_tokens = RedisRefreshTokenStore::new(client).await?;
-
+    let redis_client = Client::open(settings.redis.connection_info()?)?;
     let signing_channel = create_channel(&settings.grpc.key_service_client)?;
 
-    let user_repo = PostgresUserRepository::new(db_pool);
+    let user_repo = Arc::new(PostgresUserRepository::new(db_pool.clone()));
     info!("user repository initialized");
-    let passwords = Argon2PasswordHasher::new(&settings.password);
+    let token_family_repo = Arc::new(PostgresTokenFamilyRepository::new(db_pool));
+    info!("token family repository initialized");
+    let jwk_cache = Arc::new(RedisJwkCache::new(redis_client.clone()).await?);
+    info!("JWK cache initialized");
+    let refresh_token_store = Arc::new(RedisRefreshTokenStore::new(redis_client).await?);
+    info!("refresh token store initialized");
+
+    let passwords = Arc::new(Argon2PasswordHasher::new(&settings.password));
     info!("password hasher initialized");
     let signing_service = Arc::new(KeySigningService::new(signing_channel));
     info!("signing service initialized");
+    let refresh_tokens = Arc::new(OutpostRefreshTokenService::new(
+        refresh_token_store,
+        token_family_repo,
+        &settings.refresh_token,
+    ));
+    info!("refresh token service initialized");
+
     let cached = warm_jwk_cache(&signing_service, &jwk_cache).await?;
     info!(keys = cached, "JWK cache warmed");
 
-    info!("auth service starting");
     let auth_service = DefaultAuthService::new(
-        Arc::new(user_repo),
-        Arc::new(passwords),
+        user_repo,
+        passwords,
         signing_service,
-        Arc::new(jwk_cache),
-        Arc::new(refresh_tokens),
+        jwk_cache,
+        refresh_tokens,
     );
     let addr: SocketAddr = settings.grpc.server.grpc_address().parse()?;
     info!(%addr, "auth service listening");
