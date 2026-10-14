@@ -6,7 +6,10 @@ use crate::{password::PasswordError, service::AuthServiceError, signing::Signing
 impl From<AuthServiceError> for Status {
     fn from(err: AuthServiceError) -> Self {
         match err {
-            e @ (AuthServiceError::InvalidCredentials(_) | AuthServiceError::UserNotActive(_)) => {
+            e @ (AuthServiceError::InvalidCredentials(_)
+            | AuthServiceError::UserNotActive(_)
+            | AuthServiceError::InvalidRefreshToken
+            | AuthServiceError::RefreshToken(_)) => {
                 info!(error = %e, "rejecting authentication");
                 Status::unauthenticated("invalid credentials")
             }
@@ -30,6 +33,10 @@ impl From<AuthServiceError> for Status {
             }
             e @ AuthServiceError::JwkCache(_) => {
                 warn!(error = %e, "failed to publish verification keys");
+                Status::unavailable("service unavailable, retry later")
+            }
+            e @ AuthServiceError::RefreshTokenStore(_) => {
+                warn!(error = %e, "refresh token store unavailable");
                 Status::unavailable("service unavailable, retry later")
             }
             e @ (AuthServiceError::Repository(_)

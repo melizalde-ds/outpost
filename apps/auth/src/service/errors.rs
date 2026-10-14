@@ -4,6 +4,7 @@ use uuid::Uuid;
 use crate::{
     jwk_cache::{JwkCacheError, JwkRecordError},
     password::PasswordError,
+    refresh_token::{RefreshTokenError, RefreshTokenStoreError},
     repository::RepositoryError,
     signing::SigningError,
 };
@@ -18,6 +19,8 @@ pub enum AuthServiceError {
     UserNotActive(Uuid),
     #[error("Username {0} already exists")]
     UserAlreadyExists(String),
+    #[error("Invalid refresh token")]
+    InvalidRefreshToken,
     #[error("Repository error: {0}")]
     Repository(#[from] RepositoryError),
     #[error("Password engine error: {0}")]
@@ -28,6 +31,10 @@ pub enum AuthServiceError {
     JwkRecord(#[from] JwkRecordError),
     #[error("JWK cache error: {0}")]
     JwkCache(#[from] JwkCacheError),
+    #[error("Refresh token error: {0}")]
+    RefreshToken(#[from] RefreshTokenError),
+    #[error("Refresh token store error: {0}")]
+    RefreshTokenStore(#[from] RefreshTokenStoreError),
     #[error("Unexpected error occurred: {0}")]
     UnexpectedError(#[from] anyhow::Error),
 }

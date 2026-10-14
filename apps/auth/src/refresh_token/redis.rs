@@ -1,9 +1,8 @@
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
 use redis::{AsyncCommands, Client, RedisResult, aio::ConnectionManager};
 use uuid::Uuid;
 
-use crate::refresh_token::{RefreshTokenStore, RefreshTokenStoreError};
+use crate::refresh_token::{RefreshToken, RefreshTokenStore, RefreshTokenStoreError};
 
 #[derive(Debug, Clone)]
 pub struct RedisRefreshTokenStore {
@@ -23,20 +22,15 @@ impl RedisRefreshTokenStore {
 
 #[async_trait]
 impl RefreshTokenStore for RedisRefreshTokenStore {
-    async fn insert(
-        &self,
-        id: &Uuid,
-        user_id: &Uuid,
-        exp: DateTime<Utc>,
-    ) -> Result<(), RefreshTokenStoreError> {
+    async fn insert(&self, token: &RefreshToken) -> Result<(), RefreshTokenStoreError> {
         let mut con = self.conn.clone();
-        let redis_key = Self::redis_key(id);
+        let redis_key = Self::redis_key(&token.id);
         let mut pipe = redis::pipe();
 
         pipe.atomic()
-            .set(&redis_key, user_id)
+            .set(&redis_key, token.user_id)
             .ignore()
-            .pexpire_at(&redis_key, exp.timestamp_millis())
+            .pexpire_at(&redis_key, token.exp.timestamp_millis())
             .ignore();
         pipe.query_async::<()>(&mut con).await?;
         Ok(())

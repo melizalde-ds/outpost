@@ -10,7 +10,7 @@ use crate::{
         LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
         RegisterResponse, TokenPair,
     },
-    refresh_token::RefreshTokenStore,
+    refresh_token::{RefreshToken, RefreshTokenStore},
     repository::{AuthRepository, RepositoryError},
     service::AuthServiceError,
     signing::SigningService,
@@ -119,6 +119,18 @@ impl DefaultAuthService {
         }
 
         Ok(signed.token)
+    }
+
+    async fn issue_refresh_token(&self, user_id: Uuid) -> Result<RefreshToken, AuthServiceError> {
+        todo!()
+    }
+
+    async fn verify_refresh_token(&self, token: &str) -> Result<Uuid, AuthServiceError> {
+        todo!()
+    }
+
+    async fn revoke_refresh_token(&self, token: &str) -> Result<(), AuthServiceError> {
+        todo!()
     }
 
     pub(crate) async fn refresh_token(
