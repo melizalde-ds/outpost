@@ -8,7 +8,7 @@ use crate::{
     jwk_cache::{JwkCache, JwkRecord, RedisJwkCache},
     password::Argon2PasswordHasher,
     proto::auth::v1::auth_service_server::AuthServiceServer,
-    refresh_token::{RedisRefreshTokenStore, token::OutpostRefreshTokenService},
+    refresh_token::RedisRefreshTokenStore,
     repository::{PostgresTokenFamilyRepository, PostgresUserRepository},
     service::DefaultAuthService,
     settings::{GrpcEndpoint, Settings},
@@ -40,35 +40,31 @@ async fn main() -> anyhow::Result<()> {
     let redis_client = Client::open(settings.redis.connection_info()?)?;
     let signing_channel = create_channel(&settings.grpc.key_service_client)?;
 
-    let user_repo = Arc::new(PostgresUserRepository::new(db_pool.clone()));
+    let users = Arc::new(PostgresUserRepository::new(db_pool.clone()));
     info!("user repository initialized");
-    let token_family_repo = Arc::new(PostgresTokenFamilyRepository::new(db_pool));
+    let families = Arc::new(PostgresTokenFamilyRepository::new(db_pool));
     info!("token family repository initialized");
     let jwk_cache = Arc::new(RedisJwkCache::new(redis_client.clone()).await?);
     info!("JWK cache initialized");
-    let refresh_token_store = Arc::new(RedisRefreshTokenStore::new(redis_client).await?);
+    let refresh_tokens = Arc::new(RedisRefreshTokenStore::new(redis_client).await?);
     info!("refresh token store initialized");
 
     let passwords = Arc::new(Argon2PasswordHasher::new(&settings.password));
     info!("password hasher initialized");
-    let signing_service = Arc::new(KeySigningService::new(signing_channel));
+    let signer = Arc::new(KeySigningService::new(signing_channel));
     info!("signing service initialized");
-    let refresh_tokens = Arc::new(OutpostRefreshTokenService::new(
-        refresh_token_store,
-        token_family_repo,
-        &settings.refresh_token,
-    ));
-    info!("refresh token service initialized");
 
-    let cached = warm_jwk_cache(&signing_service, &jwk_cache).await?;
+    let cached = warm_jwk_cache(&signer, &jwk_cache).await?;
     info!(keys = cached, "JWK cache warmed");
 
     let auth_service = DefaultAuthService::new(
-        user_repo,
+        users,
+        families,
         passwords,
-        signing_service,
+        signer,
         jwk_cache,
         refresh_tokens,
+        &settings.refresh_token,
     );
     let addr: SocketAddr = settings.grpc.server.grpc_address().parse()?;
     info!(%addr, "auth service listening");
@@ -82,8 +78,8 @@ async fn main() -> anyhow::Result<()> {
 
 fn create_channel(endpoint: &GrpcEndpoint) -> anyhow::Result<Channel> {
     let channel_settings = &endpoint.channel_settings;
-    let connect_timeout = Duration::from_secs(channel_settings.connect_timeout);
-    let timeout = Duration::from_secs(channel_settings.timeout);
+    let connect_timeout = Duration::from_secs(channel_settings.connect_timeout_secs);
+    let timeout = Duration::from_secs(channel_settings.timeout_secs);
     let channel_endpoint = Endpoint::from_shared(endpoint.client_uri())?
         .connect_timeout(connect_timeout)
         .timeout(timeout);

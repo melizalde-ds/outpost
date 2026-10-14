@@ -2,7 +2,7 @@ use tonic::{Code, Status};
 use tracing::{error, info, warn};
 
 use crate::{
-    password::PasswordError, refresh_token::RefreshTokenError, service::AuthServiceError,
+    password::PasswordError, refresh_token::RefreshTokenStoreError, service::AuthServiceError,
     signing::SigningError,
 };
 
@@ -11,11 +11,11 @@ impl From<AuthServiceError> for Status {
         match err {
             e @ (AuthServiceError::InvalidCredentials(_)
             | AuthServiceError::UserNotActive(_)
-            | AuthServiceError::RefreshToken(RefreshTokenError::Invalid)) => {
+            | AuthServiceError::InvalidRefreshToken) => {
                 info!(error = %e, "rejecting authentication");
                 Status::unauthenticated("invalid credentials")
             }
-            AuthServiceError::RefreshToken(RefreshTokenError::Reused(family_id)) => {
+            AuthServiceError::RefreshTokenReused(family_id) => {
                 warn!(%family_id, "refresh token reuse detected");
                 Status::unauthenticated("invalid credentials")
             }
@@ -41,12 +41,13 @@ impl From<AuthServiceError> for Status {
                 warn!(error = %e, "JWK cache unavailable");
                 Status::unavailable("service unavailable, retry later")
             }
-            e @ AuthServiceError::RefreshToken(RefreshTokenError::Command(_)) => {
+            e @ AuthServiceError::RefreshTokenStore(RefreshTokenStoreError::Command(_)) => {
                 warn!(error = %e, "refresh token store unavailable");
                 Status::unavailable("service unavailable, retry later")
             }
             e @ (AuthServiceError::Repository(_)
-            | AuthServiceError::RefreshToken(_)
+            | AuthServiceError::RefreshTokenStore(_)
+            | AuthServiceError::Random(_)
             | AuthServiceError::Password(_)
             | AuthServiceError::Signing(_)
             | AuthServiceError::JwkRecord(_)

@@ -1,9 +1,11 @@
+use std::time::Duration;
+
 use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
-use std::time::Duration;
 
 #[derive(Debug, Deserialize)]
+#[serde(default)]
 pub struct DatabaseSettings {
     pub host: String,
     pub port: u16,
@@ -14,10 +16,11 @@ pub struct DatabaseSettings {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(default)]
 pub struct PoolSettings {
     pub max_connections: u32,
     pub min_connections: u32,
-    pub idle_timeout: Option<Duration>,
+    pub idle_timeout_secs: u64,
 }
 
 impl Default for DatabaseSettings {
@@ -28,11 +31,17 @@ impl Default for DatabaseSettings {
             username: "postgres".to_string(),
             password: "password".into(),
             database_name: "auth".to_string(),
-            pool: PoolSettings {
-                max_connections: 5,
-                min_connections: 0,
-                idle_timeout: Some(Duration::from_secs(60)),
-            },
+            pool: PoolSettings::default(),
+        }
+    }
+}
+
+impl Default for PoolSettings {
+    fn default() -> Self {
+        Self {
+            max_connections: 5,
+            min_connections: 0,
+            idle_timeout_secs: 60,
         }
     }
 }
@@ -51,6 +60,6 @@ impl DatabaseSettings {
         PgPoolOptions::new()
             .max_connections(self.pool.max_connections)
             .min_connections(self.pool.min_connections)
-            .idle_timeout(self.pool.idle_timeout)
+            .idle_timeout(Duration::from_secs(self.pool.idle_timeout_secs))
     }
 }

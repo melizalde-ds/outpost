@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use sqlx::{PgPool, query_as, query_scalar};
-use uuid::Uuid;
 
 use crate::repository::{Credentials, RepositoryError, UserId, UserRepository};
 
@@ -39,7 +38,7 @@ impl UserRepository for PostgresUserRepository {
     ) -> Result<Option<Credentials>, RepositoryError> {
         let query_result = query_as!(
             Credentials,
-            r#"SELECT user_id AS "user_id!", password_hash AS "password_hash!", active AS "active!" FROM public.get_credentials(p_username => $1)"#,
+            r#"SELECT user_id AS "user_id!: UserId", password_hash AS "password_hash!", active AS "active!" FROM public.get_credentials(p_username => $1)"#,
             username
         )
         .fetch_optional(&self.db_pool)
@@ -48,10 +47,10 @@ impl UserRepository for PostgresUserRepository {
         Ok(query_result)
     }
 
-    async fn is_active(&self, user_id: &Uuid) -> Result<bool, RepositoryError> {
+    async fn is_active(&self, user_id: &UserId) -> Result<bool, RepositoryError> {
         let is_active = query_scalar!(
             r#"SELECT public.is_active(p_user_id => $1) AS "active!""#,
-            user_id
+            user_id.0
         )
         .fetch_one(&self.db_pool)
         .await?;

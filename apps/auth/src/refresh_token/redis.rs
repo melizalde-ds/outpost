@@ -1,23 +1,8 @@
-use std::fmt::Debug;
-
 use async_trait::async_trait;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
-use chrono::{DateTime, Utc};
 use redis::{AsyncCommands, Client, RedisResult, aio::ConnectionManager};
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
-use crate::refresh_token::{RefreshToken, RefreshTokenError};
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "state", rename_all = "snake_case")]
-pub enum Entry {
-    Live {
-        user_id: Uuid,
-        family_exp: DateTime<Utc>,
-    },
-    Rotated,
-}
+use crate::refresh_token::{Entry, RefreshToken, RefreshTokenStore, RefreshTokenStoreError};
 
 #[derive(Debug, Clone)]
 pub struct RedisRefreshTokenStore {
@@ -34,30 +19,18 @@ impl RedisRefreshTokenStore {
         format!("refresh_token:{}", URL_SAFE_NO_PAD.encode(hash))
     }
 
-    fn decode(value: Option<String>) -> Result<Option<Entry>, RefreshTokenError> {
+    fn decode(value: Option<String>) -> Result<Option<Entry>, RefreshTokenStoreError> {
         Ok(value.map(|v| serde_json::from_str(&v)).transpose()?)
     }
 }
 
 #[async_trait]
-pub trait RefreshTokenStore: Debug + Send + Sync + 'static {
-    async fn insert(&self, token: &RefreshToken) -> Result<(), RefreshTokenError>;
-    async fn find(&self, hash: &[u8; 32]) -> Result<Option<Entry>, RefreshTokenError>;
-    async fn rotate(
-        &self,
-        old: &[u8; 32],
-        new: &RefreshToken,
-    ) -> Result<Option<Entry>, RefreshTokenError>;
-    async fn revoke(&self, hash: &[u8; 32]) -> Result<(), RefreshTokenError>;
-}
-
-#[async_trait]
 impl RefreshTokenStore for RedisRefreshTokenStore {
-    async fn insert(&self, token: &RefreshToken) -> Result<(), RefreshTokenError> {
+    async fn insert(&self, token: &RefreshToken) -> Result<(), RefreshTokenStoreError> {
         let mut con = self.conn.clone();
         let redis_key = Self::redis_key(&token.hash);
         let entry = serde_json::to_string(&Entry::Live {
-            user_id: token.user_id.0,
+            user_id: token.user_id,
             family_exp: token.family_exp,
         })?;
         let mut pipe = redis::pipe();
@@ -71,7 +44,7 @@ impl RefreshTokenStore for RedisRefreshTokenStore {
         Ok(())
     }
 
-    async fn find(&self, hash: &[u8; 32]) -> Result<Option<Entry>, RefreshTokenError> {
+    async fn find(&self, hash: &[u8; 32]) -> Result<Option<Entry>, RefreshTokenStoreError> {
         let mut con = self.conn.clone();
         Self::decode(con.get(Self::redis_key(hash)).await?)
     }
@@ -80,7 +53,7 @@ impl RefreshTokenStore for RedisRefreshTokenStore {
         &self,
         old: &[u8; 32],
         new: &RefreshToken,
-    ) -> Result<Option<Entry>, RefreshTokenError> {
+    ) -> Result<Option<Entry>, RefreshTokenStoreError> {
         let mut con = self.conn.clone();
         let rotated = serde_json::to_string(&Entry::Rotated)?;
         let previous: Option<String> = redis::cmd("SET")
@@ -99,7 +72,7 @@ impl RefreshTokenStore for RedisRefreshTokenStore {
         Ok(previous)
     }
 
-    async fn revoke(&self, hash: &[u8; 32]) -> Result<(), RefreshTokenError> {
+    async fn revoke(&self, hash: &[u8; 32]) -> Result<(), RefreshTokenStoreError> {
         let mut con = self.conn.clone();
         con.del::<_, ()>(Self::redis_key(hash)).await?;
         Ok(())

@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display};
 
 use async_trait::async_trait;
-
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 mod errors;
@@ -12,13 +12,20 @@ pub use errors::RepositoryError;
 pub use token_family::PostgresTokenFamilyRepository;
 pub use user::PostgresUserRepository;
 
-#[derive(Debug, Clone, Copy, sqlx::Type, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, sqlx::Type, PartialEq, Eq, Serialize, Deserialize)]
 #[sqlx(transparent)]
+#[serde(transparent)]
 pub struct UserId(pub Uuid);
 
 impl From<Uuid> for UserId {
     fn from(id: Uuid) -> Self {
         UserId(id)
+    }
+}
+
+impl Display for UserId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
@@ -61,7 +68,7 @@ impl RevocationReason {
 
 #[derive(Debug)]
 pub struct Credentials {
-    pub user_id: Uuid,
+    pub user_id: UserId,
     pub password_hash: String,
     pub active: bool,
 }
@@ -75,7 +82,7 @@ pub trait UserRepository: Debug + Send + Sync + 'static {
     ) -> Result<UserId, RepositoryError>;
     async fn get_credentials(&self, username: &str)
     -> Result<Option<Credentials>, RepositoryError>;
-    async fn is_active(&self, user_id: &Uuid) -> Result<bool, RepositoryError>;
+    async fn is_active(&self, user_id: &UserId) -> Result<bool, RepositoryError>;
 }
 
 #[async_trait]

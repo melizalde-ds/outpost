@@ -17,15 +17,15 @@ pub struct GrpcEndpoint {
 #[derive(Debug, Deserialize)]
 #[serde(default)]
 pub struct ChannelSettings {
-    pub connect_timeout: u64,
-    pub timeout: u64,
+    pub connect_timeout_secs: u64,
+    pub timeout_secs: u64,
 }
 
 impl Default for ChannelSettings {
     fn default() -> Self {
         Self {
-            connect_timeout: 2,
-            timeout: 3,
+            connect_timeout_secs: 2,
+            timeout_secs: 3,
         }
     }
 }

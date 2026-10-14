@@ -3,6 +3,7 @@ use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
+#[serde(default)]
 pub struct RedisSettings {
     pub host: String,
     pub port: u16,

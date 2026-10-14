@@ -1,11 +1,11 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT user_id AS \"user_id!\", password_hash AS \"password_hash!\", active AS \"active!\" FROM public.get_credentials(p_username => $1)",
+  "query": "SELECT user_id AS \"user_id!: UserId\", password_hash AS \"password_hash!\", active AS \"active!\" FROM public.get_credentials(p_username => $1)",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "user_id!",
+        "name": "user_id!: UserId",
         "type_info": "Uuid",
         "origin": "Expression"
       },
@@ -33,5 +33,5 @@
       null
     ]
   },
-  "hash": "01ff56bb404917c7c8d423e6bcce5091822e496839bca2450359aa941205eaa5"
+  "hash": "cf59723667eb2fc0e89bd9e59190a02ff116066b9baec09976bd752961414bc3"
 }
