@@ -56,20 +56,26 @@ impl RefreshTokenStore for RedisRefreshTokenStore {
     ) -> Result<Option<Entry>, RefreshTokenStoreError> {
         let mut con = self.conn.clone();
         let rotated = serde_json::to_string(&Entry::Rotated)?;
-        let previous: Option<String> = redis::cmd("SET")
+        let new_key = Self::redis_key(&new.hash);
+        let entry = serde_json::to_string(&Entry::Live {
+            user_id: new.user_id,
+            family_exp: new.family_exp,
+        })?;
+        let mut pipe = redis::pipe();
+
+        pipe.atomic()
+            .cmd("SET")
             .arg(Self::redis_key(old))
             .arg(rotated)
             .arg("XX")
             .arg("GET")
             .arg("KEEPTTL")
-            .query_async(&mut con)
-            .await?;
-        let previous = Self::decode(previous)?;
-
-        if let Some(Entry::Live { .. }) = previous {
-            self.insert(new).await?;
-        }
-        Ok(previous)
+            .set(&new_key, entry)
+            .ignore()
+            .pexpire_at(&new_key, new.exp.timestamp_millis())
+            .ignore();
+        let (previous,): (Option<String>,) = pipe.query_async(&mut con).await?;
+        Self::decode(previous)
     }
 
     async fn revoke(&self, hash: &[u8; 32]) -> Result<(), RefreshTokenStoreError> {
