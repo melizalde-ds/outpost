@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Display};
 
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -87,7 +88,11 @@ pub trait UserRepository: Debug + Send + Sync + 'static {
 
 #[async_trait]
 pub trait TokenFamilyRepository: Debug + Send + Sync + 'static {
-    async fn insert(&self, user_id: &UserId) -> Result<TokenFamilyId, RepositoryError>;
+    async fn insert(
+        &self,
+        user_id: &UserId,
+        expires_at: DateTime<Utc>,
+    ) -> Result<TokenFamilyId, RepositoryError>;
     async fn find_unrevoked_by_user_id(
         &self,
         user_id: &UserId,

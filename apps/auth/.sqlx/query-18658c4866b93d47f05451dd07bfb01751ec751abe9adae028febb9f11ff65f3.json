@@ -6,7 +6,7 @@
       {
         "ordinal": 0,
         "name": "revoked!",
-        "type_info": "Int4",
+        "type_info": "Bool",
         "origin": "Expression"
       }
     ],

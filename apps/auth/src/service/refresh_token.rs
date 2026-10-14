@@ -41,7 +41,7 @@ impl DefaultAuthService {
         let family_exp = now + self.max_age;
         let exp = (now + self.idle_timeout).min(family_exp);
 
-        let family_id = self.families.insert(&user_id).await?;
+        let family_id = self.families.insert(&user_id, family_exp).await?;
         let (token, refresh_token) = RefreshToken::generate(user_id, family_id, exp, family_exp)?;
         self.refresh_tokens.insert(&refresh_token).await?;
 

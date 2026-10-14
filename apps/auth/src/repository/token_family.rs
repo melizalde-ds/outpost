@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use sqlx::{PgPool, query_scalar};
 
 use crate::repository::{
@@ -18,10 +19,15 @@ impl PostgresTokenFamilyRepository {
 
 #[async_trait]
 impl TokenFamilyRepository for PostgresTokenFamilyRepository {
-    async fn insert(&self, user_id: &UserId) -> Result<TokenFamilyId, RepositoryError> {
+    async fn insert(
+        &self,
+        user_id: &UserId,
+        expires_at: DateTime<Utc>,
+    ) -> Result<TokenFamilyId, RepositoryError> {
         let family_id: TokenFamilyId = query_scalar!(
-            r#"SELECT public.create_token_family(p_user_id => $1) AS "id!: TokenFamilyId""#,
-            user_id.0
+            r#"SELECT public.create_token_family(p_user_id => $1, p_expires_at => $2) AS "id!: TokenFamilyId""#,
+            user_id.0,
+            expires_at
         )
         .fetch_one(&self.db_pool)
         .await?;
@@ -56,7 +62,7 @@ impl TokenFamilyRepository for PostgresTokenFamilyRepository {
         .fetch_one(&self.db_pool)
         .await?;
 
-        Ok(revoked == 1)
+        Ok(revoked)
     }
 
     async fn revoke_all(

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT public.create_token_family(p_user_id => $1) AS \"id!: TokenFamilyId\"",
+  "query": "SELECT public.create_token_family(p_user_id => $1, p_expires_at => $2) AS \"id!: TokenFamilyId\"",
   "describe": {
     "columns": [
       {
@@ -12,12 +12,13 @@
     ],
     "parameters": {
       "Left": [
-        "Uuid"
+        "Uuid",
+        "Timestamptz"
       ]
     },
     "nullable": [
       null
     ]
   },
-  "hash": "5ea1bcf8ec6bef4250f2d60e9da12bebc2f0a9dc60d6ebe97042b689d26521a4"
+  "hash": "a231a0fb8f74edc096246b5274e919dc05247f1731465f3bf2adea22c03685de"
 }
