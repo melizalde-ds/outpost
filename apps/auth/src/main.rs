@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
         .pool_options()
         .connect_with(settings.database.connection_options())
         .await?;
-    info!("Connected to database");
+    info!("connected to database");
 
     let client = Client::open(settings.redis.connection_info()?)?;
     let jwk_cache = RedisJwkCache::new(client.clone()).await?;
@@ -44,15 +44,15 @@ async fn main() -> anyhow::Result<()> {
     let signing_channel = create_channel(&settings.grpc.key_service_client)?;
 
     let auth_repo = PostgresAuthRepository::new(db_pool);
-    info!("Auth repository initialized");
+    info!("auth repository initialized");
     let passwords = Argon2PasswordHasher::new(&settings.password);
-    info!("Password hasher initialized");
+    info!("password hasher initialized");
     let signing_service = Arc::new(KeySigningService::new(signing_channel));
-    info!("Signing service initialized");
-    let published = warm_jwk_cache(&signing_service, &jwk_cache).await?;
-    info!("Published {} verification keys", published);
+    info!("signing service initialized");
+    let cached = warm_jwk_cache(&signing_service, &jwk_cache).await?;
+    info!(keys = cached, "JWK cache warmed");
 
-    info!("Auth service starting...");
+    info!("auth service starting");
     let auth_service = DefaultAuthService::new(
         Arc::new(auth_repo),
         Arc::new(passwords),
@@ -60,8 +60,8 @@ async fn main() -> anyhow::Result<()> {
         Arc::new(jwk_cache),
         Arc::new(refresh_tokens),
     );
-    let addr: SocketAddr = settings.grpc.server.get_grpc_address().parse()?;
-    info!("Auth service listening on {}", addr);
+    let addr: SocketAddr = settings.grpc.server.grpc_address().parse()?;
+    info!(%addr, "auth service listening");
     Server::builder()
         .add_service(AuthServiceServer::new(auth_service))
         .serve(addr)

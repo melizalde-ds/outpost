@@ -32,7 +32,7 @@ impl From<AuthServiceError> for Status {
                 Status::unavailable("service unavailable, retry later")
             }
             e @ AuthServiceError::JwkCache(_) => {
-                warn!(error = %e, "failed to publish verification keys");
+                warn!(error = %e, "JWK cache unavailable");
                 Status::unavailable("service unavailable, retry later")
             }
             e @ AuthServiceError::RefreshTokenStore(_) => {

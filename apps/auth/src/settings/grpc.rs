@@ -31,7 +31,7 @@ impl Default for ChannelSettings {
 }
 
 impl GrpcEndpoint {
-    pub fn get_grpc_address(&self) -> String {
+    pub fn grpc_address(&self) -> String {
         format!("{}:{}", self.host, self.port)
     }
 

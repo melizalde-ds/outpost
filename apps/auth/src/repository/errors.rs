@@ -2,9 +2,9 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum RepositoryError {
-    #[error("unique constraint violated: {0}")]
+    #[error("Unique constraint violated: {0}")]
     UniqueViolation(String),
-    #[error("database error: {0}")]
+    #[error("Database error: {0}")]
     Database(#[source] sqlx::Error),
 }
 

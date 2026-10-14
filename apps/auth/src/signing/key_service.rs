@@ -1,6 +1,7 @@
+use async_trait::async_trait;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use chrono::DateTime;
-use tonic::{async_trait, transport::Channel};
+use tonic::transport::Channel;
 use tracing::error;
 use uuid::Uuid;
 
@@ -14,7 +15,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct KeySigningService {
-    pub client: KeyServiceClient<Channel>,
+    client: KeyServiceClient<Channel>,
 }
 
 impl KeySigningService {
@@ -62,7 +63,7 @@ impl SigningService for KeySigningService {
             .filter_map(|k| {
                 PublicKey::try_from(k)
                     .map_err(|e| {
-                        error!("Failed to convert verification key: {}", e);
+                        error!(error = %e, "failed to convert verification key");
                         e
                     })
                     .ok()
