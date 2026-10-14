@@ -13,4 +13,5 @@ pub use errors::PasswordError;
 pub trait PasswordHasher: Debug + Send + Sync + 'static {
     async fn hash(&self, password: SecretSlice<u8>) -> Result<String, PasswordError>;
     async fn verify(&self, password: SecretSlice<u8>, hash: String) -> Result<bool, PasswordError>;
+    async fn verify_dummy(&self, password: SecretSlice<u8>) -> Result<(), PasswordError>;
 }

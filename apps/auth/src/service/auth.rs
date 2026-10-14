@@ -33,6 +33,7 @@ impl DefaultAuthService {
         password: SecretSlice<u8>,
     ) -> Result<Tokens, AuthServiceError> {
         let Some(credentials) = self.users.get_credentials(&username).await? else {
+            self.passwords.verify_dummy(password).await?;
             return Err(AuthServiceError::UserNotFound(username));
         };
 

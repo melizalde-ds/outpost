@@ -15,14 +15,26 @@ use crate::{
 pub struct Argon2PasswordHasher {
     pepper: Arc<SecretString>,
     permits: Arc<Semaphore>,
+    dummy_hash: String,
 }
 
 impl Argon2PasswordHasher {
-    pub fn new(settings: &PasswordSettings) -> Self {
-        Self {
-            pepper: Arc::new(settings.pepper.expose_secret().into()),
+    pub fn new(settings: &PasswordSettings) -> Result<Self, PasswordError> {
+        let pepper: SecretString = settings.pepper.expose_secret().into();
+        let dummy_hash = Argon2::new_with_secret(
+            pepper.expose_secret().as_bytes(),
+            argon2::Algorithm::default(),
+            argon2::Version::default(),
+            argon2::Params::default(),
+        )?
+        .hash_password(b"dummy password")?
+        .to_string();
+
+        Ok(Self {
+            pepper: Arc::new(pepper),
             permits: Arc::new(Semaphore::new(settings.concurrency_limit)),
-        }
+            dummy_hash,
+        })
     }
 }
 
@@ -75,5 +87,10 @@ impl PasswordHasher for Argon2PasswordHasher {
         .map_err(PasswordError::from)??;
 
         Ok(is_valid)
+    }
+
+    async fn verify_dummy(&self, password: SecretSlice<u8>) -> Result<(), PasswordError> {
+        self.verify(password, self.dummy_hash.clone()).await?;
+        Ok(())
     }
 }

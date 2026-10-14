@@ -49,7 +49,7 @@ async fn main() -> anyhow::Result<()> {
     let refresh_tokens = Arc::new(RedisRefreshTokenStore::new(redis_client).await?);
     info!("refresh token store initialized");
 
-    let passwords = Arc::new(Argon2PasswordHasher::new(&settings.password));
+    let passwords = Arc::new(Argon2PasswordHasher::new(&settings.password)?);
     info!("password hasher initialized");
     let signer = Arc::new(KeySigningService::new(signing_channel));
     info!("signing service initialized");

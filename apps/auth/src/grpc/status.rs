@@ -9,7 +9,8 @@ use crate::{
 impl From<AuthServiceError> for Status {
     fn from(err: AuthServiceError) -> Self {
         match err {
-            e @ (AuthServiceError::InvalidCredentials(_)
+            e @ (AuthServiceError::UserNotFound(_)
+            | AuthServiceError::InvalidCredentials(_)
             | AuthServiceError::UserNotActive(_)
             | AuthServiceError::InvalidRefreshToken) => {
                 info!(error = %e, "rejecting authentication");
@@ -22,10 +23,6 @@ impl From<AuthServiceError> for Status {
             e @ AuthServiceError::UserAlreadyExists(_) => {
                 info!(error = %e, "username taken");
                 Status::already_exists("username unavailable")
-            }
-            e @ AuthServiceError::UserNotFound(_) => {
-                info!(error = %e, "user not found");
-                Status::not_found("user not found")
             }
             e @ AuthServiceError::Password(PasswordError::ShutDown(_)) => {
                 warn!(error = %e, "password service shutting down");
