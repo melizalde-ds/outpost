@@ -4,15 +4,16 @@ use secrecy::SecretSlice;
 use uuid::Uuid;
 
 use crate::{
+    jwk_cache::{JwkCache, JwkRecord},
     password::PasswordHasher,
     proto::auth::v1::{
         LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
         RegisterResponse, TokenPair,
     },
+    refresh_token::RefreshTokenStore,
     repository::{AuthRepository, RepositoryError},
     service::AuthServiceError,
     signing::SigningService,
-    verification_keys::{JwkRecord, VerificationKeyStore},
 };
 
 #[derive(Debug)]
@@ -20,7 +21,8 @@ pub struct DefaultAuthService {
     repo: Arc<dyn AuthRepository>,
     passwords: Arc<dyn PasswordHasher>,
     signing_service: Arc<dyn SigningService>,
-    verification_keys: Arc<dyn VerificationKeyStore>,
+    jwk_cache: Arc<dyn JwkCache>,
+    refresh_tokens: Arc<dyn RefreshTokenStore>,
 }
 
 impl DefaultAuthService {
@@ -28,13 +30,15 @@ impl DefaultAuthService {
         repo: Arc<dyn AuthRepository>,
         passwords: Arc<dyn PasswordHasher>,
         signing_service: Arc<dyn SigningService>,
-        verification_keys: Arc<dyn VerificationKeyStore>,
+        jwk_cache: Arc<dyn JwkCache>,
+        refresh_tokens: Arc<dyn RefreshTokenStore>,
     ) -> Self {
         Self {
             repo,
             passwords,
             signing_service,
-            verification_keys,
+            jwk_cache,
+            refresh_tokens,
         }
     }
 
@@ -102,14 +106,8 @@ impl DefaultAuthService {
 
         if let Some(key) = signed.new_key {
             let record = JwkRecord::try_from(key)?;
-            self.verification_keys
-                .push_verification_key(&record)
-                .await?;
-        } else if !self
-            .verification_keys
-            .has_verification_key(&signed.key_id)
-            .await?
-        {
+            self.jwk_cache.insert(&record).await?;
+        } else if !self.jwk_cache.contains(&signed.key_id).await? {
             let records = self
                 .signing_service
                 .get_verification_keys()
@@ -117,9 +115,7 @@ impl DefaultAuthService {
                 .into_iter()
                 .map(JwkRecord::try_from)
                 .collect::<Result<Vec<_>, _>>()?;
-            self.verification_keys
-                .push_multiple_verification_keys(&records)
-                .await?;
+            self.jwk_cache.insert_many(&records).await?;
         }
 
         Ok(signed.token)

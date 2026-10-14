@@ -4,14 +4,14 @@ use async_trait::async_trait;
 use redis::{AsyncCommands, Client, RedisResult, aio::ConnectionManager};
 use uuid::Uuid;
 
-use crate::verification_keys::{JwkRecord, VerificationKeyStore, VerificationKeyStoreError};
+use crate::jwk_cache::{JwkCache, JwkCacheError, JwkRecord};
 
 #[derive(Debug, Clone)]
-pub struct RedisVerificationKeyStore {
+pub struct RedisJwkCache {
     conn: ConnectionManager,
 }
 
-impl RedisVerificationKeyStore {
+impl RedisJwkCache {
     pub async fn new(client: Client) -> RedisResult<Self> {
         let conn: ConnectionManager = client.get_connection_manager().await?;
         Ok(Self { conn })
@@ -23,24 +23,17 @@ impl RedisVerificationKeyStore {
 }
 
 #[async_trait]
-impl VerificationKeyStore for RedisVerificationKeyStore {
-    async fn has_verification_key(&self, kid: &Uuid) -> Result<bool, VerificationKeyStoreError> {
+impl JwkCache for RedisJwkCache {
+    async fn contains(&self, kid: &Uuid) -> Result<bool, JwkCacheError> {
         let mut con = self.conn.clone();
         Ok(con.exists(Self::redis_key(kid)).await?)
     }
 
-    async fn push_verification_key(
-        &self,
-        key: &JwkRecord,
-    ) -> Result<(), VerificationKeyStoreError> {
-        self.push_multiple_verification_keys(slice::from_ref(key))
-            .await
+    async fn insert(&self, key: &JwkRecord) -> Result<(), JwkCacheError> {
+        self.insert_many(slice::from_ref(key)).await
     }
 
-    async fn push_multiple_verification_keys(
-        &self,
-        keys: &[JwkRecord],
-    ) -> Result<(), VerificationKeyStoreError> {
+    async fn insert_many(&self, keys: &[JwkRecord]) -> Result<(), JwkCacheError> {
         let mut con = self.conn.clone();
         let mut pipe = redis::pipe();
 

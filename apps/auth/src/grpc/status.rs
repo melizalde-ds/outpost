@@ -28,14 +28,14 @@ impl From<AuthServiceError> for Status {
                 warn!(error = %status, "key service unavailable");
                 Status::unavailable("service unavailable, retry later")
             }
-            e @ AuthServiceError::VerificationKeyStore(_) => {
+            e @ AuthServiceError::JwkCache(_) => {
                 warn!(error = %e, "failed to publish verification keys");
                 Status::unavailable("service unavailable, retry later")
             }
             e @ (AuthServiceError::Repository(_)
             | AuthServiceError::Password(_)
             | AuthServiceError::Signing(_)
-            | AuthServiceError::Record(_)
+            | AuthServiceError::JwkRecord(_)
             | AuthServiceError::UnexpectedError(_)) => {
                 error!(error = ?e, "internal failure");
                 Status::internal("internal error")

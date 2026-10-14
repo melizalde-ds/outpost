@@ -5,23 +5,25 @@ use tonic::transport::{Channel, Endpoint, Server};
 use tracing::info;
 
 use crate::{
+    jwk_cache::{JwkCache, JwkRecord, RedisJwkCache},
     password::Argon2PasswordHasher,
     proto::auth::v1::auth_service_server::AuthServiceServer,
+    refresh_token::RedisRefreshTokenStore,
     repository::PostgresAuthRepository,
     service::DefaultAuthService,
     settings::{GrpcEndpoint, Settings},
     signing::{KeySigningService, SigningService},
-    verification_keys::{JwkRecord, RedisVerificationKeyStore, VerificationKeyStore},
 };
 
 mod grpc;
+mod jwk_cache;
 mod password;
 mod proto;
+mod refresh_token;
 mod repository;
 mod service;
 mod settings;
 mod signing;
-mod verification_keys;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -36,7 +38,8 @@ async fn main() -> anyhow::Result<()> {
     info!("Connected to database");
 
     let client = Client::open(settings.redis.connection_info()?)?;
-    let verification_keys = RedisVerificationKeyStore::new(client).await?;
+    let jwk_cache = RedisJwkCache::new(client.clone()).await?;
+    let refresh_tokens = RedisRefreshTokenStore::new(client).await?;
 
     let signing_channel = create_channel(&settings.grpc.key_service_client)?;
 
@@ -46,7 +49,7 @@ async fn main() -> anyhow::Result<()> {
     info!("Password hasher initialized");
     let signing_service = Arc::new(KeySigningService::new(signing_channel));
     info!("Signing service initialized");
-    let published = publish_verification_keys(&signing_service, &verification_keys).await?;
+    let published = warm_jwk_cache(&signing_service, &jwk_cache).await?;
     info!("Published {} verification keys", published);
 
     info!("Auth service starting...");
@@ -54,7 +57,8 @@ async fn main() -> anyhow::Result<()> {
         Arc::new(auth_repo),
         Arc::new(passwords),
         signing_service,
-        Arc::new(verification_keys),
+        Arc::new(jwk_cache),
+        Arc::new(refresh_tokens),
     );
     let addr: SocketAddr = settings.grpc.server.get_grpc_address().parse()?;
     info!("Auth service listening on {}", addr);
@@ -77,17 +81,15 @@ fn create_channel(endpoint: &GrpcEndpoint) -> anyhow::Result<Channel> {
     Ok(channel_endpoint.connect_lazy())
 }
 
-async fn publish_verification_keys(
+async fn warm_jwk_cache(
     client: &KeySigningService,
-    verification_keys: &RedisVerificationKeyStore,
+    jwk_cache: &RedisJwkCache,
 ) -> anyhow::Result<usize> {
     let keys = client.get_verification_keys().await?;
     let records = keys
         .into_iter()
         .map(JwkRecord::try_from)
         .collect::<Result<Vec<_>, _>>()?;
-    verification_keys
-        .push_multiple_verification_keys(&records)
-        .await?;
+    jwk_cache.insert_many(&records).await?;
     Ok(records.len())
 }

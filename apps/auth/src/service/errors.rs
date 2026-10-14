@@ -2,10 +2,10 @@ use thiserror::Error;
 use uuid::Uuid;
 
 use crate::{
+    jwk_cache::{JwkCacheError, JwkRecordError},
     password::PasswordError,
     repository::RepositoryError,
     signing::SigningError,
-    verification_keys::{RecordError, VerificationKeyStoreError},
 };
 
 #[derive(Error, Debug)]
@@ -24,10 +24,10 @@ pub enum AuthServiceError {
     Password(#[from] PasswordError),
     #[error("Signing error: {0}")]
     Signing(#[from] SigningError),
-    #[error("Verification key record error: {0}")]
-    Record(#[from] RecordError),
-    #[error("Verification key store error: {0}")]
-    VerificationKeyStore(#[from] VerificationKeyStoreError),
+    #[error("JWK record error: {0}")]
+    JwkRecord(#[from] JwkRecordError),
+    #[error("JWK cache error: {0}")]
+    JwkCache(#[from] JwkCacheError),
     #[error("Unexpected error occurred: {0}")]
     UnexpectedError(#[from] anyhow::Error),
 }
