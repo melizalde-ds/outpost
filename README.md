@@ -1,123 +1,52 @@
 # Outpost
 
-Backend services you host yourself. You deploy them once and point your apps
-at them, like you would with Supabase. Each service runs in its own container.
+Outpost is a set of backend services you host yourself, so your apps don't
+have to build the same pieces over and over. The first one is **auth**: it
+handles sign-up, login and staying logged in.
 
-Auth is the first service.
+Your app talks to auth over gRPC. Auth gives back a short-lived access token
+your app can check on its own, and a refresh token to get a new one.
 
-## What auth does
+## Status
 
-- **Register** creates a user and returns an access token.
-- **Login** checks the password and returns an access token.
-- **Refresh** is not built yet.
+Outpost is early and still changing. It isn't ready for production yet: there
+are no tests, and connections aren't encrypted.
 
-Apps talk to it over gRPC. The access token is a signed JWT that lasts 5
-minutes by default. The API is in
-[`proto/outpost/auth/v1/auth.proto`](proto/outpost/auth/v1/auth.proto).
+## What auth can do
 
-## How it works
+- Sign up and log in with a username and password
+- Keep users logged in with refresh tokens that change on every use
+- End a session if an old refresh token is used again
+- Log out on one device, or on all of them
+- Rotate its signing keys on a schedule
 
-```
-your app ──> auth ──> key-provider
-              │
-              └──> Redis
-```
-
-- **auth** (Rust) stores users and checks passwords.
-- **key-provider** (.NET) holds the signing keys and signs the tokens.
-- **Redis** holds the public keys, so apps can check that a token is real.
-
-Auth and the key-provider each have their own Postgres database.
-
-## How it stays safe
-
-- Passwords are hashed with Argon2, plus a secret (the pepper) that is not
-  stored in the database.
-- Passwords, tokens and keys are kept out of the logs.
-- The running services use database users with limited rights. Migrations use
-  a separate user.
-- Signing keys can be added but never changed or deleted. The database itself
-  blocks it.
-- Private keys are encrypted before they are stored.
-- Signing keys are replaced on a schedule (every 8 hours by default), with
-  retries if it fails.
-
-The database blocks bad writes with two error codes:
-
-- `OPA01`: something tried to change or delete a key record.
-- `OPA02`: something tried to save a key whose rotation did not succeed.
-
-## Run it locally
+## Quick start
 
 You need Docker, Rust, the .NET 10 SDK, [just](https://github.com/casey/just)
 and [sqlx-cli](https://crates.io/crates/sqlx-cli).
 
-1. Create the `.env` files, then replace the `change-me` values in them:
-
-   ```sh
-   just env
-   ```
-
-2. Set everything up. This starts the databases and Redis, saves the
-   key-provider's connection strings as user secrets, and runs the migrations:
-
-   ```sh
-   just setup
-   ```
-
-3. Start the key-provider (port 5210) and auth (port 50051):
-
-   ```sh
-   just run
-   ```
-
-`just` lists the other commands. For example, `just migrate` applies new
-migrations, `just key-run` and `just auth-run` start one service each, and
-`just down` stops the containers.
-
-Good to know:
-
-- If the build fails because the database is off, run
-  `SQLX_OFFLINE=true cargo build`.
-- After changing a SQL query, run `cargo sqlx prepare` in `apps/auth` with the
-  database on, and commit the result.
-- Don't change `AUTH__PASSWORD__PEPPER` once you have users. Their passwords
-  would stop working.
-
-## Use it from your app
-
-1. Run auth and the key-provider. Docker images are not published yet, so run
-   them from source for now.
-2. Fill in the settings listed in the `.env.example` files.
-3. Generate a gRPC client from `proto/`. See
-   [`examples/python-client`](examples/python-client).
-4. Check tokens. The token header has a `kid`. Get the public key from Redis
-   at `jwk:<kid>`, check the signature, and check the token has not expired.
-   The user id is in `sub`. `iss` and `aud` are both `Outpost` by default.
-
-## Working on the code
-
-After changing a proto file, you also need [buf](https://buf.build) and
-[uv](https://docs.astral.sh/uv/):
-
 ```sh
-just lint             # check the proto files
-just generate         # rebuild the generated code
-just check-generated  # fail if the generated code is out of date
+just env     # create the .env files, then fill in the change-me values
+just setup   # start the databases and Redis, and run the migrations
+just run     # start the services
 ```
 
-After adding a key-provider migration, run `just key-scripts` to rebuild the
-SQL scripts in `apps/key-provider/db/scripts`. `just check-generated` checks
-those too, so it also needs the .NET SDK.
+Auth listens on `localhost:50051`. To try it, see the
+[Python example](examples/python-client).
 
-## Roadmap
+## Using it from your app
 
-- A JWKS endpoint (`/.well-known/jwks.json`), so apps can check tokens without
-  Redis.
-- Per-app audiences.
-- Refresh tokens.
-- Tests and CI.
-- Published Docker images.
+1. Generate a gRPC client from [`auth.proto`](proto/outpost/auth/v1/auth.proto).
+2. Call `Register` or `Login` to get tokens, and `RefreshToken` when the
+   access token runs out.
+3. To check an access token, read the public key from Redis at `jwk:<kid>`
+   (the `kid` is in the token header) and check the signature and expiry.
+
+## Working on Outpost
+
+Run `just` to see every command. If you change a proto file, you'll also need
+[buf](https://buf.build) and [uv](https://docs.astral.sh/uv/), then run
+`just generate`.
 
 ## License
 
