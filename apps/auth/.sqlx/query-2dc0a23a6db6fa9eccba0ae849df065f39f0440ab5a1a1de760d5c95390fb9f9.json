@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT family_id AS \"id!: TokenFamilyId\" FROM public.get_user_token_families(p_user_id => $1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!: TokenFamilyId",
+        "type_info": "Uuid",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "2dc0a23a6db6fa9eccba0ae849df065f39f0440ab5a1a1de760d5c95390fb9f9"
+}

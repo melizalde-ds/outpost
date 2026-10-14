@@ -2,21 +2,21 @@ use async_trait::async_trait;
 use sqlx::{PgPool, query_as, query_scalar};
 use uuid::Uuid;
 
-use crate::repository::{AuthRepository, Credentials, RepositoryError, UserId};
+use crate::repository::{Credentials, RepositoryError, UserId, UserRepository};
 
 #[derive(Debug)]
-pub struct PostgresAuthRepository {
+pub struct PostgresUserRepository {
     db_pool: PgPool,
 }
 
-impl PostgresAuthRepository {
+impl PostgresUserRepository {
     pub fn new(db_pool: PgPool) -> Self {
         Self { db_pool }
     }
 }
 
 #[async_trait]
-impl AuthRepository for PostgresAuthRepository {
+impl UserRepository for PostgresUserRepository {
     async fn insert_credentials(
         &self,
         username: &str,

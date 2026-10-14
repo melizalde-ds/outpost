@@ -9,7 +9,7 @@ use crate::{
     password::Argon2PasswordHasher,
     proto::auth::v1::auth_service_server::AuthServiceServer,
     refresh_token::RedisRefreshTokenStore,
-    repository::PostgresAuthRepository,
+    repository::PostgresUserRepository,
     service::DefaultAuthService,
     settings::{GrpcEndpoint, Settings},
     signing::{KeySigningService, SigningService},
@@ -43,8 +43,8 @@ async fn main() -> anyhow::Result<()> {
 
     let signing_channel = create_channel(&settings.grpc.key_service_client)?;
 
-    let auth_repo = PostgresAuthRepository::new(db_pool);
-    info!("auth repository initialized");
+    let user_repo = PostgresUserRepository::new(db_pool);
+    info!("user repository initialized");
     let passwords = Argon2PasswordHasher::new(&settings.password);
     info!("password hasher initialized");
     let signing_service = Arc::new(KeySigningService::new(signing_channel));
@@ -54,7 +54,7 @@ async fn main() -> anyhow::Result<()> {
 
     info!("auth service starting");
     let auth_service = DefaultAuthService::new(
-        Arc::new(auth_repo),
+        Arc::new(user_repo),
         Arc::new(passwords),
         signing_service,
         Arc::new(jwk_cache),

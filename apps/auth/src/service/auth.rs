@@ -11,14 +11,14 @@ use crate::{
         RegisterResponse, TokenPair,
     },
     refresh_token::{RefreshToken, RefreshTokenStore},
-    repository::{AuthRepository, RepositoryError},
+    repository::{RepositoryError, UserRepository},
     service::AuthServiceError,
     signing::SigningService,
 };
 
 #[derive(Debug)]
 pub struct DefaultAuthService {
-    repo: Arc<dyn AuthRepository>,
+    repo: Arc<dyn UserRepository>,
     passwords: Arc<dyn PasswordHasher>,
     signing_service: Arc<dyn SigningService>,
     jwk_cache: Arc<dyn JwkCache>,
@@ -27,7 +27,7 @@ pub struct DefaultAuthService {
 
 impl DefaultAuthService {
     pub fn new(
-        repo: Arc<dyn AuthRepository>,
+        repo: Arc<dyn UserRepository>,
         passwords: Arc<dyn PasswordHasher>,
         signing_service: Arc<dyn SigningService>,
         jwk_cache: Arc<dyn JwkCache>,
