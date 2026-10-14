@@ -5,7 +5,8 @@ use tonic::{Request, Response, Status};
 
 use crate::{
     proto::auth::v1::{
-        LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
+        LoginRequest, LoginResponse, LogoutAllRequest, LogoutAllResponse, LogoutRequest,
+        LogoutResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest,
         RegisterResponse, TokenPair, auth_service_server::AuthService,
     },
     service::{DefaultAuthService, Tokens},
@@ -48,6 +49,24 @@ impl AuthService for DefaultAuthService {
         Ok(Response::new(RefreshTokenResponse {
             tokens: Some(tokens.into()),
         }))
+    }
+
+    async fn logout(
+        &self,
+        request: Request<LogoutRequest>,
+    ) -> Result<Response<LogoutResponse>, Status> {
+        DefaultAuthService::logout(self, &request.into_inner().refresh_token).await?;
+
+        Ok(Response::new(LogoutResponse {}))
+    }
+
+    async fn logout_all(
+        &self,
+        request: Request<LogoutAllRequest>,
+    ) -> Result<Response<LogoutAllResponse>, Status> {
+        DefaultAuthService::logout_all(self, &request.into_inner().refresh_token).await?;
+
+        Ok(Response::new(LogoutAllResponse {}))
     }
 }
 

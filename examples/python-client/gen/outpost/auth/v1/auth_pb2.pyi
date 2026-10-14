@@ -165,3 +165,71 @@ class RefreshTokenResponse(_message.Message):
     def WhichOneof(self, oneof_group: _Never) -> None: ...
 
 Global___RefreshTokenResponse: _TypeAlias = RefreshTokenResponse  # noqa: Y015
+
+@_typing.final
+class LogoutRequest(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    REFRESH_TOKEN_FIELD_NUMBER: _builtins.int
+    refresh_token: _builtins.str
+    def __init__(
+        self,
+        *,
+        refresh_token: _builtins.str = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["refresh_token", b"refresh_token"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___LogoutRequest: _TypeAlias = LogoutRequest  # noqa: Y015
+
+@_typing.final
+class LogoutResponse(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    def __init__(
+        self,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___LogoutResponse: _TypeAlias = LogoutResponse  # noqa: Y015
+
+@_typing.final
+class LogoutAllRequest(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    REFRESH_TOKEN_FIELD_NUMBER: _builtins.int
+    refresh_token: _builtins.str
+    def __init__(
+        self,
+        *,
+        refresh_token: _builtins.str = ...,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["refresh_token", b"refresh_token"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___LogoutAllRequest: _TypeAlias = LogoutAllRequest  # noqa: Y015
+
+@_typing.final
+class LogoutAllResponse(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    def __init__(
+        self,
+    ) -> None: ...
+    _HasFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def HasField(self, field_name: _HasFieldArgType) -> _builtins.bool: ...
+    _ClearFieldArgType: _TypeAlias = _Never  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+    def WhichOneof(self, oneof_group: _Never) -> None: ...
+
+Global___LogoutAllResponse: _TypeAlias = LogoutAllResponse  # noqa: Y015

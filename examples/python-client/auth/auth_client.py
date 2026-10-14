@@ -10,6 +10,10 @@ from pydantic import BaseModel, Field, HttpUrl, IPvAnyAddress
 from outpost.auth.v1.auth_pb2 import (
     LoginRequest,
     LoginResponse,
+    LogoutAllRequest,
+    LogoutAllResponse,
+    LogoutRequest,
+    LogoutResponse,
     RefreshTokenRequest,
     RefreshTokenResponse,
     RegisterRequest,
@@ -88,6 +92,18 @@ class AuthClient:
         stub = self._next()
         request = RefreshTokenRequest(refresh_token=token)
         result: RefreshTokenResponse = stub.RefreshToken(request)
+        return result
+
+    def logout(self, token: str) -> LogoutResponse:
+        stub = self._next()
+        request = LogoutRequest(refresh_token=token)
+        result: LogoutResponse = stub.Logout(request)
+        return result
+
+    def logout_all(self, token: str) -> LogoutAllResponse:
+        stub = self._next()
+        request = LogoutAllRequest(refresh_token=token)
+        result: LogoutAllResponse = stub.LogoutAll(request)
         return result
 
 

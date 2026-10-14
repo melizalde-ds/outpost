@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use tracing::warn;
 
 use crate::{
     refresh_token::{Entry, RefreshToken},
@@ -31,6 +32,39 @@ impl DefaultAuthService {
             refresh_token,
             refresh_token_expires_at,
         })
+    }
+
+    pub(crate) async fn logout(&self, token: &str) -> Result<(), AuthServiceError> {
+        let Some((family_id, hash)) = RefreshToken::parse(token) else {
+            return Ok(());
+        };
+
+        match self.refresh_tokens.find(&hash).await? {
+            None => {}
+            Some(Entry::Rotated) => {
+                warn!(%family_id, "rotated refresh token used to log out");
+                self.families
+                    .revoke(&family_id, RevocationReason::Reuse)
+                    .await?;
+            }
+            Some(Entry::Live { .. }) => {
+                self.families
+                    .revoke(&family_id, RevocationReason::Logout)
+                    .await?;
+                self.refresh_tokens.revoke(&hash).await?;
+            }
+        }
+        Ok(())
+    }
+
+    pub(crate) async fn logout_all(&self, token: &str) -> Result<(), AuthServiceError> {
+        let session = self.validate_refresh_token(token).await?;
+
+        self.families
+            .revoke_all(&session.user_id, RevocationReason::LogoutAll)
+            .await?;
+        self.refresh_tokens.revoke(&session.hash).await?;
+        Ok(())
     }
 
     pub(super) async fn issue_refresh_token(

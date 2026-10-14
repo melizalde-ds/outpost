@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aoutpost/auth/v1/auth.proto\x12\x0foutpost.auth.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"N\n\x0fRegisterRequest\x12\x1a\n\x08username\x18\x01 \x01(\tR\x08username\x12\x1f\n\x08password\x18\x02 \x01(\tB\x03\x80\x01\x01R\x08password\"\xb2\x01\n\tTokenPair\x12&\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\tB\x03\x80\x01\x01R\x0b\x61\x63\x63\x65ssToken\x12(\n\rrefresh_token\x18\x02 \x01(\tB\x03\x80\x01\x01R\x0crefreshToken\x12S\n\x18refresh_token_expires_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\x15refreshTokenExpiresAt\"F\n\x10RegisterResponse\x12\x32\n\x06tokens\x18\x01 \x01(\x0b\x32\x1a.outpost.auth.v1.TokenPairR\x06tokens\"K\n\x0cLoginRequest\x12\x1a\n\x08username\x18\x01 \x01(\tR\x08username\x12\x1f\n\x08password\x18\x02 \x01(\tB\x03\x80\x01\x01R\x08password\"C\n\rLoginResponse\x12\x32\n\x06tokens\x18\x01 \x01(\x0b\x32\x1a.outpost.auth.v1.TokenPairR\x06tokens\"?\n\x13RefreshTokenRequest\x12(\n\rrefresh_token\x18\x01 \x01(\tB\x03\x80\x01\x01R\x0crefreshToken\"J\n\x14RefreshTokenResponse\x12\x32\n\x06tokens\x18\x01 \x01(\x0b\x32\x1a.outpost.auth.v1.TokenPairR\x06tokens2\x83\x02\n\x0b\x41uthService\x12O\n\x08Register\x12 .outpost.auth.v1.RegisterRequest\x1a!.outpost.auth.v1.RegisterResponse\x12\x46\n\x05Login\x12\x1d.outpost.auth.v1.LoginRequest\x1a\x1e.outpost.auth.v1.LoginResponse\x12[\n\x0cRefreshToken\x12$.outpost.auth.v1.RefreshTokenRequest\x1a%.outpost.auth.v1.RefreshTokenResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1aoutpost/auth/v1/auth.proto\x12\x0foutpost.auth.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"N\n\x0fRegisterRequest\x12\x1a\n\x08username\x18\x01 \x01(\tR\x08username\x12\x1f\n\x08password\x18\x02 \x01(\tB\x03\x80\x01\x01R\x08password\"\xb2\x01\n\tTokenPair\x12&\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\tB\x03\x80\x01\x01R\x0b\x61\x63\x63\x65ssToken\x12(\n\rrefresh_token\x18\x02 \x01(\tB\x03\x80\x01\x01R\x0crefreshToken\x12S\n\x18refresh_token_expires_at\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\x15refreshTokenExpiresAt\"F\n\x10RegisterResponse\x12\x32\n\x06tokens\x18\x01 \x01(\x0b\x32\x1a.outpost.auth.v1.TokenPairR\x06tokens\"K\n\x0cLoginRequest\x12\x1a\n\x08username\x18\x01 \x01(\tR\x08username\x12\x1f\n\x08password\x18\x02 \x01(\tB\x03\x80\x01\x01R\x08password\"C\n\rLoginResponse\x12\x32\n\x06tokens\x18\x01 \x01(\x0b\x32\x1a.outpost.auth.v1.TokenPairR\x06tokens\"?\n\x13RefreshTokenRequest\x12(\n\rrefresh_token\x18\x01 \x01(\tB\x03\x80\x01\x01R\x0crefreshToken\"J\n\x14RefreshTokenResponse\x12\x32\n\x06tokens\x18\x01 \x01(\x0b\x32\x1a.outpost.auth.v1.TokenPairR\x06tokens\"9\n\rLogoutRequest\x12(\n\rrefresh_token\x18\x01 \x01(\tB\x03\x80\x01\x01R\x0crefreshToken\"\x10\n\x0eLogoutResponse\"<\n\x10LogoutAllRequest\x12(\n\rrefresh_token\x18\x01 \x01(\tB\x03\x80\x01\x01R\x0crefreshToken\"\x13\n\x11LogoutAllResponse2\xa2\x03\n\x0b\x41uthService\x12O\n\x08Register\x12 .outpost.auth.v1.RegisterRequest\x1a!.outpost.auth.v1.RegisterResponse\x12\x46\n\x05Login\x12\x1d.outpost.auth.v1.LoginRequest\x1a\x1e.outpost.auth.v1.LoginResponse\x12[\n\x0cRefreshToken\x12$.outpost.auth.v1.RefreshTokenRequest\x1a%.outpost.auth.v1.RefreshTokenResponse\x12I\n\x06Logout\x12\x1e.outpost.auth.v1.LogoutRequest\x1a\x1f.outpost.auth.v1.LogoutResponse\x12R\n\tLogoutAll\x12!.outpost.auth.v1.LogoutAllRequest\x1a\".outpost.auth.v1.LogoutAllResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -42,6 +42,10 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_LOGINREQUEST'].fields_by_name['password']._serialized_options = b'\200\001\001'
   _globals['_REFRESHTOKENREQUEST'].fields_by_name['refresh_token']._loaded_options = None
   _globals['_REFRESHTOKENREQUEST'].fields_by_name['refresh_token']._serialized_options = b'\200\001\001'
+  _globals['_LOGOUTREQUEST'].fields_by_name['refresh_token']._loaded_options = None
+  _globals['_LOGOUTREQUEST'].fields_by_name['refresh_token']._serialized_options = b'\200\001\001'
+  _globals['_LOGOUTALLREQUEST'].fields_by_name['refresh_token']._loaded_options = None
+  _globals['_LOGOUTALLREQUEST'].fields_by_name['refresh_token']._serialized_options = b'\200\001\001'
   _globals['_REGISTERREQUEST']._serialized_start=80
   _globals['_REGISTERREQUEST']._serialized_end=158
   _globals['_TOKENPAIR']._serialized_start=161
@@ -56,6 +60,14 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_REFRESHTOKENREQUEST']._serialized_end=622
   _globals['_REFRESHTOKENRESPONSE']._serialized_start=624
   _globals['_REFRESHTOKENRESPONSE']._serialized_end=698
-  _globals['_AUTHSERVICE']._serialized_start=701
-  _globals['_AUTHSERVICE']._serialized_end=960
+  _globals['_LOGOUTREQUEST']._serialized_start=700
+  _globals['_LOGOUTREQUEST']._serialized_end=757
+  _globals['_LOGOUTRESPONSE']._serialized_start=759
+  _globals['_LOGOUTRESPONSE']._serialized_end=775
+  _globals['_LOGOUTALLREQUEST']._serialized_start=777
+  _globals['_LOGOUTALLREQUEST']._serialized_end=837
+  _globals['_LOGOUTALLRESPONSE']._serialized_start=839
+  _globals['_LOGOUTALLRESPONSE']._serialized_end=858
+  _globals['_AUTHSERVICE']._serialized_start=861
+  _globals['_AUTHSERVICE']._serialized_end=1279
 # @@protoc_insertion_point(module_scope)

@@ -34,6 +34,8 @@ class AuthServiceStub:
     Register: _grpc.UnaryUnaryMultiCallable[_auth_pb2.RegisterRequest, _auth_pb2.RegisterResponse]
     Login: _grpc.UnaryUnaryMultiCallable[_auth_pb2.LoginRequest, _auth_pb2.LoginResponse]
     RefreshToken: _grpc.UnaryUnaryMultiCallable[_auth_pb2.RefreshTokenRequest, _auth_pb2.RefreshTokenResponse]
+    Logout: _grpc.UnaryUnaryMultiCallable[_auth_pb2.LogoutRequest, _auth_pb2.LogoutResponse]
+    LogoutAll: _grpc.UnaryUnaryMultiCallable[_auth_pb2.LogoutAllRequest, _auth_pb2.LogoutAllResponse]
 
 @_typing.type_check_only
 class AuthServiceAsyncStub(AuthServiceStub):
@@ -41,6 +43,8 @@ class AuthServiceAsyncStub(AuthServiceStub):
     Register: _aio.UnaryUnaryMultiCallable[_auth_pb2.RegisterRequest, _auth_pb2.RegisterResponse]  # type: ignore[assignment]
     Login: _aio.UnaryUnaryMultiCallable[_auth_pb2.LoginRequest, _auth_pb2.LoginResponse]  # type: ignore[assignment]
     RefreshToken: _aio.UnaryUnaryMultiCallable[_auth_pb2.RefreshTokenRequest, _auth_pb2.RefreshTokenResponse]  # type: ignore[assignment]
+    Logout: _aio.UnaryUnaryMultiCallable[_auth_pb2.LogoutRequest, _auth_pb2.LogoutResponse]  # type: ignore[assignment]
+    LogoutAll: _aio.UnaryUnaryMultiCallable[_auth_pb2.LogoutAllRequest, _auth_pb2.LogoutAllResponse]  # type: ignore[assignment]
 
 class AuthServiceServicer(metaclass=_abc_1.ABCMeta):
     @_abc_1.abstractmethod
@@ -63,5 +67,19 @@ class AuthServiceServicer(metaclass=_abc_1.ABCMeta):
         request: _auth_pb2.RefreshTokenRequest,
         context: _ServicerContext,
     ) -> _typing.Union[_auth_pb2.RefreshTokenResponse, _abc.Awaitable[_auth_pb2.RefreshTokenResponse]]: ...
+
+    @_abc_1.abstractmethod
+    def Logout(
+        self,
+        request: _auth_pb2.LogoutRequest,
+        context: _ServicerContext,
+    ) -> _typing.Union[_auth_pb2.LogoutResponse, _abc.Awaitable[_auth_pb2.LogoutResponse]]: ...
+
+    @_abc_1.abstractmethod
+    def LogoutAll(
+        self,
+        request: _auth_pb2.LogoutAllRequest,
+        context: _ServicerContext,
+    ) -> _typing.Union[_auth_pb2.LogoutAllResponse, _abc.Awaitable[_auth_pb2.LogoutAllResponse]]: ...
 
 def add_AuthServiceServicer_to_server(servicer: AuthServiceServicer, server: _typing.Union[_grpc.Server, _aio.Server]) -> None: ...
