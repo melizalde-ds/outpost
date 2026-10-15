@@ -4,6 +4,7 @@ using KeyProvider.KeyRotation;
 using KeyProvider.SigningKeys;
 
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,8 @@ using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
 using Org.BouncyCastle.Crypto.Parameters;
+
+using Outpost.EntityFrameworkCore.AppendOnly;
 
 using Shouldly;
 
@@ -95,6 +98,47 @@ public sealed class KeyRotationServiceTests : IDisposable
         byte[] privateKey = protector.Unprotect(saved.PrivateKey);
         saved.PrivateKey.ShouldNotBe(privateKey);
         new Ed25519PrivateKeyParameters(privateKey).GeneratePublicKey().GetEncoded().ShouldBe(saved.PublicKey);
+    }
+
+    [Fact]
+    public async Task RotateAsync_StoreAcceptsTheKey_SavesASuccessfulJobLinkedToTheKey()
+    {
+        // Act
+        await _sut.RotateAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        KeyPairRecord saved = _savedKey.ShouldNotBeNull();
+        saved.RotationJob.Success.ShouldBeTrue();
+        saved.RotationJob.StartedAt.ShouldBe(Now);
+        saved.KeyPairRotationJobId.ShouldBe(saved.RotationJob.KeyPairRotationJobId);
+    }
+
+    [Fact]
+    public async Task RotateAsync_TransientDatabaseErrorInsideDbUpdateException_ReturnsAFailureWorthRetrying()
+    {
+        // Arrange
+        SavingKeysFailsWith(new DbUpdateException("save failed",
+            new TestDbException("connection reset", isTransient: true)));
+
+        // Act
+        KeyRotationResult result = await _sut.RotateAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.ShouldBeOfType<KeyRotationFailed>().IsTransient.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task RotateAsync_AppendOnlyViolationCausedByTransientError_ReturnsAFailureNotWorthRetrying()
+    {
+        // Arrange
+        SavingKeysFailsWith(new AppendOnlyViolationException("append-only",
+            new TestDbException("connection reset", isTransient: true)));
+
+        // Act
+        KeyRotationResult result = await _sut.RotateAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.ShouldBeOfType<KeyRotationFailed>().IsTransient.ShouldBeFalse();
     }
 
     [Fact]
