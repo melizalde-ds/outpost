@@ -78,6 +78,9 @@ impl fmt::Debug for key::v1::SignTokenResponse {
 
 #[cfg(test)]
 mod tests {
+    use pretty_assertions::assert_eq;
+    use prost_reflect::DescriptorPool;
+
     use super::{
         auth::v1::{
             LoginRequest, LogoutAllRequest, LogoutRequest, RefreshTokenRequest, RegisterRequest,
@@ -86,7 +89,48 @@ mod tests {
         key::v1::SignTokenResponse,
     };
 
+    include!("redacted_messages.rs");
+
+    const DESCRIPTOR_SETS: [&[u8]; 2] = [
+        include_bytes!(concat!(env!("OUT_DIR"), "/auth_descriptors.bin")),
+        include_bytes!(concat!(env!("OUT_DIR"), "/key_descriptors.bin")),
+    ];
+
     const PASSWORD: &str = "hunter2";
+
+    fn messages_with_debug_redact_fields() -> Vec<String> {
+        let mut names: Vec<String> = DESCRIPTOR_SETS
+            .iter()
+            .map(|bytes| DescriptorPool::decode(*bytes).unwrap())
+            .flat_map(|pool| pool.all_messages().collect::<Vec<_>>())
+            .filter(|message| {
+                message.fields().any(|field| {
+                    field
+                        .options()
+                        .get_field_by_name("debug_redact")
+                        .is_some_and(|value| value.as_bool() == Some(true))
+                })
+            })
+            .map(|message| format!(".{}", message.full_name()))
+            .collect();
+        names.sort();
+        names
+    }
+
+    fn sorted(names: &[&str]) -> Vec<String> {
+        let mut names: Vec<String> = names.iter().map(|name| name.to_string()).collect();
+        names.sort();
+        names
+    }
+
+    #[test]
+    fn redacted_messages_match_the_debug_redact_fields_in_the_protos() {
+        // Act
+        let marked = messages_with_debug_redact_fields();
+
+        // Assert
+        assert_eq!(sorted(REDACTED_MESSAGES), marked);
+    }
     const ACCESS_TOKEN: &str = "access-token-value";
     const REFRESH_TOKEN: &str = "refresh-token-value";
 
