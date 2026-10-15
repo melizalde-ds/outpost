@@ -1,6 +1,7 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
 key_provider := "apps/key-provider/src"
+key_tests := "apps/key-provider/tests/KeyProvider.UnitTests"
 key_scripts := "apps/key-provider/db/scripts"
 key_port := "5210"
 generated := "apps/key-provider/src/Api/Generated examples/python-client/gen " + key_scripts
@@ -45,6 +46,9 @@ build:
     dotnet build
 
 [group('all')]
+test: auth-test key-test
+
+[group('all')]
 run:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -83,9 +87,17 @@ auth-migrate:
 auth-run:
     set -a; source apps/auth/.env; set +a; cargo run -p auth
 
+[group('auth')]
+auth-test:
+    SQLX_OFFLINE=true cargo test -p auth
+
 [group('key-provider')]
 key-run:
     dotnet run --project {{key_provider}}
+
+[group('key-provider')]
+key-test:
+    dotnet test --project {{key_tests}}
 
 [group('key-provider')]
 key-secrets:
