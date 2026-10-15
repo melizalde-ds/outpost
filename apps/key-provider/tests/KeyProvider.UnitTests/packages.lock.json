@@ -17,6 +17,15 @@
           "Castle.Core": "5.1.1"
         }
       },
+      "Polly.Testing": {
+        "type": "Direct",
+        "requested": "[8.8.0, )",
+        "resolved": "8.8.0",
+        "contentHash": "D4wzO2oyfVBDQ+RpXOBEnwZJ/3xdE0/erKAG82neQlVS5kFcEC71a4V4i2QNMPBnUlEUr7Q9Uw/0f4y5knY3/Q==",
+        "dependencies": {
+          "Polly.Core": "8.8.0"
+        }
+      },
       "Shouldly": {
         "type": "Direct",
         "requested": "[4.3.0, )",

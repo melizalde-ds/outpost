@@ -1,5 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
+using Polly;
+using Polly.Retry;
+using Polly.Timeout;
+
 namespace KeyProvider.KeyRotation;
 
 public sealed record RotationRetryOptions
@@ -16,4 +20,21 @@ public sealed record RotationRetryOptions
 
     [Range(typeof(TimeSpan), "00:00:01", "00:10:00")]
     public TimeSpan AttemptTimeout { get; init; } = TimeSpan.FromSeconds(30);
+
+    internal void ConfigurePipeline(ResiliencePipelineBuilder<KeyRotationResult> builder)
+    {
+        builder
+            .AddRetry(new RetryStrategyOptions<KeyRotationResult>
+            {
+                ShouldHandle = new PredicateBuilder<KeyRotationResult>()
+                    .HandleResult(r => r is KeyRotationFailed { IsTransient: true })
+                    .Handle<TimeoutRejectedException>(),
+                MaxRetryAttempts = MaxRetryAttempts,
+                BackoffType = DelayBackoffType.Exponential,
+                UseJitter = true,
+                Delay = BaseDelay,
+                MaxDelay = MaxDelay
+            })
+            .AddTimeout(AttemptTimeout);
+    }
 }

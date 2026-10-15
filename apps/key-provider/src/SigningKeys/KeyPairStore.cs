@@ -46,15 +46,15 @@ internal sealed class KeyPairStore(
             throw new DatabaseUnavailableException(e);
         }
 
-        if (record is null)
-        {
-            return null;
-        }
+        return record is null ? null : Decode(record, _protector);
+    }
 
+    internal static SigningKeyPair Decode(KeyPairRecord record, IDataProtector protector)
+    {
         byte[] privateKeyBytes;
         try
         {
-            privateKeyBytes = _protector.Unprotect(record.PrivateKey);
+            privateKeyBytes = protector.Unprotect(record.PrivateKey);
         }
         catch (CryptographicException e)
         {

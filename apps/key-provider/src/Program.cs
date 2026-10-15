@@ -8,8 +8,6 @@ using KeyProvider.SigningKeys;
 using Microsoft.Extensions.Options;
 
 using Polly;
-using Polly.Retry;
-using Polly.Timeout;
 
 WebApplicationBuilder build = WebApplication.CreateBuilder(args);
 
@@ -40,20 +38,7 @@ build.Services.AddResiliencePipeline<string, KeyRotationResult>(RotationRetryOpt
             .Value;
 
         builder.TimeProvider = context.ServiceProvider.GetRequiredService<TimeProvider>();
-
-        builder
-            .AddRetry(new RetryStrategyOptions<KeyRotationResult>
-            {
-                ShouldHandle = new PredicateBuilder<KeyRotationResult>()
-                    .HandleResult(r => r is KeyRotationFailed { IsTransient: true })
-                    .Handle<TimeoutRejectedException>(),
-                MaxRetryAttempts = retry.MaxRetryAttempts,
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                Delay = retry.BaseDelay,
-                MaxDelay = retry.MaxDelay
-            })
-            .AddTimeout(retry.AttemptTimeout);
+        retry.ConfigurePipeline(builder);
     });
 
 build.Services.AddOptionsWithValidateOnStart<RotationScheduleOptions>().BindConfiguration("KeyRotation:Schedule")

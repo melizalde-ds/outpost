@@ -8,117 +8,207 @@ using NSubstitute;
 
 using Polly;
 using Polly.Registry;
+using Polly.Timeout;
 
 using Shouldly;
 
 namespace KeyProvider.UnitTests.KeyRotation;
 
-public sealed class RotationWorkerTests : IDisposable
+public sealed class RotationWorkerTests
 {
+    private const string EveryEightHours = "0 */8 * * *";
+    private const string NeverFires = "0 0 30 2 *"; // February 30th
     private static readonly DateTimeOffset Now = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
-    private static readonly TimeSpan WaitLimit = TimeSpan.FromSeconds(5);
-    private static readonly TimeSpan ClockStep = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan MaxCheckDelay = TimeSpan.FromHours(1);
+    private static readonly TimeSpan FailureRetryDelay = TimeSpan.FromMinutes(10);
 
     private readonly IKeyRotationService _rotation = Substitute.For<IKeyRotationService>();
     private readonly FakeTimeProvider _clock = new(Now);
-    private readonly TaskCompletionSource _secondCheck = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    private readonly TaskCompletionSource _rotated = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    private readonly RotationWorker _worker;
 
     public RotationWorkerTests()
     {
+        RotationReturns(new KeyRotationSucceeded(Now, Now, Guid.Empty));
+    }
+
+    private RotationWorker CreateWorker(string expression = EveryEightHours, TimeSpan? failureRetryDelay = null)
+    {
         ResiliencePipelineProvider<string> pipelines = Substitute.For<ResiliencePipelineProvider<string>>();
-        pipelines.GetPipeline<KeyRotationResult>(Arg.Any<string>()).Returns(ResiliencePipeline<KeyRotationResult>.Empty);
+        pipelines.GetPipeline<KeyRotationResult>(Arg.Any<string>())
+            .Returns(ResiliencePipeline<KeyRotationResult>.Empty);
 
-        _rotation.RotateAsync(Arg.Any<CancellationToken>()).Returns(_ =>
-        {
-            _rotated.TrySetResult();
-            return new KeyRotationSucceeded(Now, Now, Guid.Empty);
-        });
-
-        _worker = new RotationWorker(
+        return new RotationWorker(
             _rotation,
             pipelines,
-            Options.Create(new RotationScheduleOptions { Expression = "0 */8 * * *" }),
+            Options.Create(new RotationScheduleOptions
+            {
+                Expression = expression,
+                MaxCheckDelay = MaxCheckDelay,
+                FailureRetryDelay = failureRetryDelay ?? FailureRetryDelay
+            }),
             NullLogger<RotationWorker>.Instance,
             _clock);
     }
 
-    public void Dispose()
+    private void LastRotationFinishedAt(DateTimeOffset finishedAt)
     {
-        _worker.Dispose();
-    }
-
-    private void LastRotationFinishedAt(DateTimeOffset? finishedAt)
-    {
-        KeyRotationJob? job = finishedAt is { } at
-            ? new KeyRotationJob { KeyPairRotationJobId = Guid.Empty, StartedAt = at, FinishedAt = at, Success = true }
-            : null;
-
-        int checks = 0;
-        _rotation.GetLatestSuccessfulJobAsync(Arg.Any<CancellationToken>()).Returns(_ =>
+        _rotation.GetLatestSuccessfulJobAsync(Arg.Any<CancellationToken>()).Returns(new KeyRotationJob
         {
-            if (Interlocked.Increment(ref checks) == 2)
-            {
-                _secondCheck.TrySetResult();
-            }
-
-            return job;
+            KeyPairRotationJobId = Guid.Empty, StartedAt = finishedAt, FinishedAt = finishedAt, Success = true
         });
     }
 
-    private async Task RunUntilTheSecondCheckAsync()
+    private void RotationReturns(KeyRotationResult result)
     {
-        CancellationToken ct = TestContext.Current.CancellationToken;
-        await _worker.StartAsync(ct);
-
-        using CancellationTokenSource limit = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        limit.CancelAfter(WaitLimit);
-        while (!_secondCheck.Task.IsCompleted)
-        {
-            _clock.Advance(ClockStep);
-            await Task.Delay(TimeSpan.FromMilliseconds(20), limit.Token);
-        }
-
-        await _worker.StopAsync(ct);
+        _rotation.RotateAsync(Arg.Any<CancellationToken>()).Returns(result);
     }
 
     [Fact]
-    public async Task StartAsync_NoRotationYet_RotatesRightAway()
+    public async Task RunOnceAsync_NoRotationYet_Rotates()
     {
         // Arrange
-        LastRotationFinishedAt(null);
+        RotationWorker sut = CreateWorker();
 
         // Act
-        await _worker.StartAsync(TestContext.Current.CancellationToken);
+        await sut.RunOnceAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        await _rotated.Task.WaitAsync(WaitLimit, TestContext.Current.CancellationToken);
+        await _rotation.Received(1).RotateAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task StartAsync_LastRotationBeforeTheCurrentSlot_RotatesRightAway()
+    public async Task RunOnceAsync_LastRotationBeforeTheCurrentSlot_Rotates()
     {
         // Arrange
         LastRotationFinishedAt(Now.AddMinutes(-1));
+        RotationWorker sut = CreateWorker();
 
         // Act
-        await _worker.StartAsync(TestContext.Current.CancellationToken);
+        await sut.RunOnceAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        await _rotated.Task.WaitAsync(WaitLimit, TestContext.Current.CancellationToken);
+        await _rotation.Received(1).RotateAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task StartAsync_LastRotationInTheCurrentSlot_DoesNotRotate()
+    public async Task RunOnceAsync_LastRotationInTheCurrentSlot_DoesNotRotate()
     {
         // Arrange
         LastRotationFinishedAt(Now);
+        RotationWorker sut = CreateWorker();
 
         // Act
-        await RunUntilTheSecondCheckAsync();
+        await sut.RunOnceAsync(TestContext.Current.CancellationToken);
 
         // Assert
         await _rotation.DidNotReceive().RotateAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RunOnceAsync_NextSlotFurtherAwayThanMaxCheckDelay_WaitsMaxCheckDelay()
+    {
+        // Arrange
+        LastRotationFinishedAt(Now);
+        RotationWorker sut = CreateWorker();
+
+        // Act
+        TimeSpan wait = await sut.RunOnceAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        wait.ShouldBe(MaxCheckDelay);
+    }
+
+    [Fact]
+    public async Task RunOnceAsync_NextSlotSoonerThanMaxCheckDelay_WaitsUntilTheSlot()
+    {
+        // Arrange
+        LastRotationFinishedAt(Now);
+        _clock.SetUtcNow(Now.AddHours(7.5));
+        RotationWorker sut = CreateWorker();
+
+        // Act
+        TimeSpan wait = await sut.RunOnceAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        wait.ShouldBe(TimeSpan.FromMinutes(30));
+    }
+
+    [Fact]
+    public async Task RunOnceAsync_RotationSucceeds_WaitsUntilTheNextSlot()
+    {
+        // Arrange
+        _clock.SetUtcNow(Now.AddHours(7.5));
+        RotationWorker sut = CreateWorker();
+
+        // Act
+        TimeSpan wait = await sut.RunOnceAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        wait.ShouldBe(TimeSpan.FromMinutes(30));
+    }
+
+    [Fact]
+    public async Task RunOnceAsync_RotationFails_WaitsFailureRetryDelay()
+    {
+        // Arrange
+        RotationReturns(new KeyRotationFailed(Now, Now, "failed", IsTransient: false));
+        RotationWorker sut = CreateWorker();
+
+        // Act
+        TimeSpan wait = await sut.RunOnceAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        wait.ShouldBe(FailureRetryDelay);
+    }
+
+    [Fact]
+    public async Task RunOnceAsync_RotationTimesOutOnEveryAttempt_WaitsFailureRetryDelay()
+    {
+        // Arrange
+        _rotation.RotateAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<KeyRotationResult>(new TimeoutRejectedException()));
+        RotationWorker sut = CreateWorker();
+
+        // Act
+        TimeSpan wait = await sut.RunOnceAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        wait.ShouldBe(FailureRetryDelay);
+    }
+
+    [Fact]
+    public async Task RunOnceAsync_ScheduleHasNoUpcomingSlot_WaitsMaxCheckDelay()
+    {
+        // Arrange
+        LastRotationFinishedAt(Now);
+        RotationWorker sut = CreateWorker(expression: NeverFires);
+
+        // Act
+        TimeSpan wait = await sut.RunOnceAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        wait.ShouldBe(MaxCheckDelay);
+    }
+
+    [Fact]
+    public async Task StartAsync_CheckThrows_KeepsRunningAndChecksAgain()
+    {
+        // Arrange
+        TaskCompletionSource secondCheck = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        _rotation.GetLatestSuccessfulJobAsync(Arg.Any<CancellationToken>()).Returns(
+            _ => Task.FromException<KeyRotationJob?>(new InvalidOperationException("database down")),
+            _ =>
+            {
+                secondCheck.TrySetResult();
+                return Task.FromResult<KeyRotationJob?>(null);
+            });
+        using RotationWorker sut = CreateWorker(failureRetryDelay: TimeSpan.Zero);
+
+        // Act
+        await sut.StartAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        // A crashed loop finishes ExecuteTask, so this doesn't need a timeout.
+        Task finished = await Task.WhenAny(secondCheck.Task, sut.ExecuteTask.ShouldNotBeNull());
+        finished.ShouldBe(secondCheck.Task);
     }
 }

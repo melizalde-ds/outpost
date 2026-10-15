@@ -43,7 +43,7 @@ internal sealed class RotationWorker(
         }
     }
 
-    private async Task<TimeSpan> RunOnceAsync(CancellationToken stoppingToken)
+    internal async Task<TimeSpan> RunOnceAsync(CancellationToken stoppingToken)
     {
         Guid tickId = Guid.CreateVersion7(timeProvider.GetUtcNow());
 
