@@ -16,6 +16,8 @@ pub enum AuthServiceError {
     InvalidCredentials(String),
     #[error("User with ID {0} is not active")]
     UserNotActive(UserId),
+    #[error("Username or password is empty")]
+    MissingCredentials,
     #[error("Username {0} already exists")]
     UserAlreadyExists(String),
     #[error("Invalid refresh token")]

@@ -306,6 +306,55 @@ mod tests {
         }
 
         #[tokio::test]
+        async fn empty_username_returns_invalid_argument() {
+            // Arrange
+            let auth = TestAuth::new().build();
+
+            // Act
+            let result = register(&auth, "", PASSWORD).await;
+
+            // Assert
+            expect_code(result, Code::InvalidArgument);
+        }
+
+        #[tokio::test]
+        async fn username_of_only_spaces_returns_invalid_argument() {
+            // Arrange
+            let auth = TestAuth::new().build();
+
+            // Act
+            let result = register(&auth, "   ", PASSWORD).await;
+
+            // Assert
+            expect_code(result, Code::InvalidArgument);
+        }
+
+        #[tokio::test]
+        async fn empty_password_returns_invalid_argument() {
+            // Arrange
+            let auth = TestAuth::new().build();
+
+            // Act
+            let result = register(&auth, ALICE, "").await;
+
+            // Assert
+            expect_code(result, Code::InvalidArgument);
+        }
+
+        #[tokio::test]
+        async fn username_with_surrounding_spaces_is_the_same_user() {
+            // Arrange
+            let auth = TestAuth::new().build();
+            sign_up(&auth, ALICE).await;
+
+            // Act
+            let result = register(&auth, " alice ", PASSWORD).await;
+
+            // Assert
+            expect_code(result, Code::AlreadyExists);
+        }
+
+        #[tokio::test]
         async fn idle_limit_longer_than_the_session_limit_returns_a_token_ending_with_the_session()
         {
             // Arrange
@@ -359,6 +408,19 @@ mod tests {
 
             // Assert
             expect_code(result, Code::Unauthenticated);
+        }
+
+        #[tokio::test]
+        async fn username_with_surrounding_spaces_logs_in() {
+            // Arrange
+            let auth = TestAuth::new().build();
+            sign_up(&auth, ALICE).await;
+
+            // Act
+            let result = login(&auth, " alice ", PASSWORD).await;
+
+            // Assert
+            assert!(result.is_ok());
         }
 
         #[tokio::test]
@@ -855,6 +917,22 @@ mod tests {
             signer
                 .expect_sign()
                 .returning(|_| Err(SigningError::Call(Status::unavailable("down"))));
+            let auth = TestAuth::new().with_signer(signer).build();
+
+            // Act
+            let result = register(&auth, ALICE, PASSWORD).await;
+
+            // Assert
+            expect_code(result, Code::Unavailable);
+        }
+
+        #[tokio::test]
+        async fn key_provider_timing_out_returns_unavailable() {
+            // Arrange
+            let mut signer = MockSigningService::new();
+            signer
+                .expect_sign()
+                .returning(|_| Err(SigningError::Call(Status::cancelled("Timeout expired"))));
             let auth = TestAuth::new().with_signer(signer).build();
 
             // Act

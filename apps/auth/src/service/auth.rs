@@ -1,4 +1,4 @@
-use secrecy::SecretSlice;
+use secrecy::{ExposeSecret, SecretSlice};
 
 use crate::{
     jwk_cache::JwkRecord,
@@ -12,6 +12,10 @@ impl DefaultAuthService {
         username: String,
         password: SecretSlice<u8>,
     ) -> Result<Tokens, AuthServiceError> {
+        let username = username.trim().to_owned();
+        if username.is_empty() || password.expose_secret().is_empty() {
+            return Err(AuthServiceError::MissingCredentials);
+        }
         let password_hash = self.passwords.hash(password).await?;
 
         match self
@@ -35,6 +39,7 @@ impl DefaultAuthService {
         username: String,
         password: SecretSlice<u8>,
     ) -> Result<Tokens, AuthServiceError> {
+        let username = username.trim().to_owned();
         let Some(credentials) = self.users.get_credentials(&username).await? else {
             self.passwords.verify_dummy(password).await?;
             return Err(AuthServiceError::UserNotFound(username));

@@ -28,6 +28,10 @@ impl From<AuthServiceError> for Status {
                 info!(%user_id, "account created, but signing in failed");
                 Status::unavailable("account created, but sign-in failed; please log in")
             }
+            e @ AuthServiceError::MissingCredentials => {
+                info!(error = %e, "rejecting registration");
+                Status::invalid_argument("username and password are required")
+            }
             e @ AuthServiceError::UserAlreadyExists(_) => {
                 info!(error = %e, "username taken");
                 Status::already_exists("username unavailable")
@@ -37,7 +41,10 @@ impl From<AuthServiceError> for Status {
                 Status::unavailable("service unavailable, retry later")
             }
             AuthServiceError::Signing(SigningError::Call(status))
-                if matches!(status.code(), Code::Unavailable | Code::DeadlineExceeded) =>
+                if matches!(
+                    status.code(),
+                    Code::Unavailable | Code::DeadlineExceeded | Code::Cancelled
+                ) =>
             {
                 warn!(error = %status, "key service unavailable");
                 Status::unavailable("service unavailable, retry later")

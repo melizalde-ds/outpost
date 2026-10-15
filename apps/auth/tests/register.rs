@@ -143,7 +143,6 @@ async fn key_provider_down_still_lets_the_user_log_in_once_it_is_back() {
 }
 
 #[tokio::test]
-#[ignore = "bug: Register accepts an empty username"]
 async fn empty_username_returns_invalid_argument() {
     // Arrange
     let auth = Auth::start().await;
@@ -156,7 +155,6 @@ async fn empty_username_returns_invalid_argument() {
 }
 
 #[tokio::test]
-#[ignore = "bug: Register accepts an empty password"]
 async fn empty_password_returns_invalid_argument() {
     // Arrange
     let auth = Auth::start().await;
@@ -169,7 +167,6 @@ async fn empty_password_returns_invalid_argument() {
 }
 
 #[tokio::test]
-#[ignore = "bug: usernames are case-sensitive, so Alice and alice are two accounts"]
 async fn username_differing_only_in_case_returns_already_exists() {
     // Arrange
     let auth = Auth::start().await;
@@ -183,7 +180,6 @@ async fn username_differing_only_in_case_returns_already_exists() {
 }
 
 #[tokio::test]
-#[ignore = "bug: spaces around a username are kept, so \" alice \" and alice are two accounts"]
 async fn username_with_surrounding_spaces_returns_already_exists() {
     // Arrange
     let auth = Auth::start().await;

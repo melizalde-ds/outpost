@@ -121,7 +121,6 @@ async fn brand_new_signing_key_is_saved_for_apps() {
 }
 
 #[tokio::test]
-#[ignore = "bug: tonic reports the timeout as Cancelled, which auth turns into Internal"]
 async fn key_provider_that_never_answers_returns_unavailable_after_the_timeout() {
     // Arrange
     let auth = Auth::start_with(

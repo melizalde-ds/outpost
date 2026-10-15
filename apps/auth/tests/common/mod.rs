@@ -73,6 +73,7 @@ async fn start_infra() -> Infra {
         .await
         .expect("run migrations");
     migrator.close().await.unwrap();
+    wait_for_redis(redis_port).await;
 
     Infra {
         _postgres: postgres,
@@ -88,6 +89,22 @@ async fn connect_with_retry(url: &str) -> PgConnection {
         match PgConnection::connect(url).await {
             Ok(conn) => return conn,
             Err(e) if tokio::time::Instant::now() > deadline => panic!("postgres not ready: {e}"),
+            Err(_) => tokio::time::sleep(Duration::from_millis(100)).await,
+        }
+    }
+}
+
+async fn wait_for_redis(port: u16) {
+    let client = redis::Client::open(format!("redis://127.0.0.1:{port}")).unwrap();
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(30);
+    loop {
+        let pong = match client.get_multiplexed_async_connection().await {
+            Ok(mut conn) => redis::cmd("PING").query_async::<String>(&mut conn).await,
+            Err(e) => Err(e),
+        };
+        match pong {
+            Ok(_) => return,
+            Err(e) if tokio::time::Instant::now() > deadline => panic!("redis not ready: {e}"),
             Err(_) => tokio::time::sleep(Duration::from_millis(100)).await,
         }
     }
