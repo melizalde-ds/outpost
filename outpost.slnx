@@ -4,6 +4,9 @@
   <Folder Name="/apps/key-provider/src/">
     <Project Path="apps/key-provider/src/KeyProvider.csproj"/>
   </Folder>
+  <Folder Name="/apps/key-provider/tests/">
+    <Project Path="apps/key-provider/tests/KeyProvider.UnitTests/KeyProvider.UnitTests.csproj"/>
+  </Folder>
   <Folder Name="/libs/"/>
   <Folder Name="/libs/efcore-extensions/">
     <Project Path="libs/efcore-extensions/Outpost.EntityFrameworkCore.csproj"/>

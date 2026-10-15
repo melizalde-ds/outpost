@@ -13,12 +13,12 @@ namespace KeyProvider.SigningKeys;
 internal sealed class KeyPairStore(
     KeyProviderDbContext context,
     TimeProvider timeProvider,
-    IDataProtectionProvider dataProtectionProvider)
+    IDataProtectionProvider dataProtectionProvider) : IKeyPairStore
 {
     private readonly IDataProtector _protector =
         dataProtectionProvider.CreateProtector(KeyPairRecord.PrivateKeyProtectionPurpose);
 
-    internal async Task SaveKeyPairAsync(KeyPairRecord record, CancellationToken ct = default)
+    public async Task SaveKeyPairAsync(KeyPairRecord record, CancellationToken ct = default)
     {
         if (!record.RotationJob.Success)
         {
@@ -31,7 +31,7 @@ internal sealed class KeyPairStore(
         await context.SaveChangesAsync(ct);
     }
 
-    internal async Task<SigningKeyPair?> GetLatestKeyPairAsync(CancellationToken ct = default)
+    public async Task<SigningKeyPair?> GetLatestKeyPairAsync(CancellationToken ct = default)
     {
         KeyPairRecord? record;
         try
@@ -81,7 +81,7 @@ internal sealed class KeyPairStore(
         return new SigningKeyPair(privateKey, publicKey);
     }
 
-    internal async Task<PublicSigningKey[]> GetVerificationKeysAsync(CancellationToken ct = default)
+    public async Task<PublicSigningKey[]> GetVerificationKeysAsync(CancellationToken ct = default)
     {
         try
         {

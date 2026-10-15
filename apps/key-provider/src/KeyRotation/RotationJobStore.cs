@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeyProvider.KeyRotation;
 
-internal sealed class RotationJobStore(KeyProviderDbContext context)
+internal sealed class RotationJobStore(KeyProviderDbContext context) : IRotationJobStore
 {
-    internal async Task SaveFailedRotationAsync(KeyRotationJob job, CancellationToken ct = default)
+    public async Task SaveFailedRotationAsync(KeyRotationJob job, CancellationToken ct = default)
     {
         if (job.Success)
         {
@@ -18,7 +18,7 @@ internal sealed class RotationJobStore(KeyProviderDbContext context)
         await context.SaveChangesAsync(ct);
     }
 
-    internal Task<KeyRotationJob?> GetLatestSuccessfulJobAsync(CancellationToken ct = default)
+    public Task<KeyRotationJob?> GetLatestSuccessfulJobAsync(CancellationToken ct = default)
     {
         return context.KeyRotationJobs
             .AsNoTracking()

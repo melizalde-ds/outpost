@@ -45,7 +45,7 @@ internal sealed class KeyApiService(
     {
         logger.LogInformation("Getting verification keys...");
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-        KeyPairStore keyPairStore = scope.ServiceProvider.GetRequiredService<KeyPairStore>();
+        IKeyPairStore keyPairStore = scope.ServiceProvider.GetRequiredService<IKeyPairStore>();
 
         PublicSigningKey[] sourceKeys = await keyPairStore.GetVerificationKeysAsync(context.CancellationToken);
 

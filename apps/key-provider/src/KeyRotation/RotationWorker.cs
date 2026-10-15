@@ -9,7 +9,7 @@ using Polly.Timeout;
 namespace KeyProvider.KeyRotation;
 
 internal sealed class RotationWorker(
-    KeyRotationService rotationService,
+    IKeyRotationService rotationService,
     ResiliencePipelineProvider<string> pipelineProvider,
     IOptions<RotationScheduleOptions> options,
     ILogger<RotationWorker> logger,

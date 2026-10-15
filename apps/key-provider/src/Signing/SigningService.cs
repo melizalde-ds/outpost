@@ -91,7 +91,7 @@ internal sealed class SigningService(
             }
 
             await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-            KeyPairStore keyPairStore = scope.ServiceProvider.GetRequiredService<KeyPairStore>();
+            IKeyPairStore keyPairStore = scope.ServiceProvider.GetRequiredService<IKeyPairStore>();
 
             SigningKeyPair fresh = await keyPairStore.GetLatestKeyPairAsync(ct)
                                    ?? throw new SigningKeyNotFoundException();

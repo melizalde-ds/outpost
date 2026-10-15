@@ -20,8 +20,8 @@ build.Services.AddDataProtectionDbContext(build.Configuration);
 
 build.Services.AddSingleton<Ed25519KeyGenerator>();
 
-build.Services.AddScoped<KeyPairStore>();
-build.Services.AddScoped<RotationJobStore>();
+build.Services.AddScoped<IKeyPairStore, KeyPairStore>();
+build.Services.AddScoped<IRotationJobStore, RotationJobStore>();
 
 build.Services.AddOptionsWithValidateOnStart<SigningOptions>().BindConfiguration("Signing")
     .ValidateDataAnnotations();
@@ -29,7 +29,7 @@ build.Services.AddSingleton<SigningService>();
 
 build.Services.AddOptionsWithValidateOnStart<KeyRotationOptions>().BindConfiguration("KeyRotation")
     .ValidateDataAnnotations();
-build.Services.AddSingleton<KeyRotationService>();
+build.Services.AddSingleton<IKeyRotationService, KeyRotationService>();
 
 build.Services.AddOptionsWithValidateOnStart<RotationRetryOptions>().BindConfiguration("KeyRotation:Retry")
     .ValidateDataAnnotations();

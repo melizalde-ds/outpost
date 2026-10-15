@@ -10,10 +10,15 @@
     <PackageReference Include="Grpc.AspNetCore.Server"/>
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore"/>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational"/>
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens"/>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"/>
     <PackageReference Include="Polly.Core"/>
     <PackageReference Include="Polly.Extensions"/>
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="KeyProvider.UnitTests"/>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\libs\efcore-extensions\Outpost.EntityFrameworkCore.csproj"/>

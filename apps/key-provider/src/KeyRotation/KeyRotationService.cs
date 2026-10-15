@@ -19,7 +19,7 @@ internal sealed class KeyRotationService(
     Ed25519KeyGenerator keyGenerator,
     IServiceScopeFactory scopeFactory,
     TimeProvider timeProvider,
-    IDataProtectionProvider dataProtectionProvider)
+    IDataProtectionProvider dataProtectionProvider) : IKeyRotationService
 {
     private const int MaxErrorMessageLength = 512;
     private readonly KeyRotationOptions _options = options.Value;
@@ -27,7 +27,7 @@ internal sealed class KeyRotationService(
     private readonly IDataProtector _protector =
         dataProtectionProvider.CreateProtector(KeyPairRecord.PrivateKeyProtectionPurpose);
 
-    internal async Task<KeyRotationResult> RotateAsync(CancellationToken ct = default)
+    public async Task<KeyRotationResult> RotateAsync(CancellationToken ct = default)
     {
         DateTimeOffset startTime = timeProvider.GetUtcNow();
         Guid jobId = Guid.CreateVersion7(startTime);
@@ -39,7 +39,7 @@ internal sealed class KeyRotationService(
             logger.LogInformation("[{JobId}] - Keypair generated", jobId);
 
             await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-            KeyPairStore keyPairStore = scope.ServiceProvider.GetRequiredService<KeyPairStore>();
+            IKeyPairStore keyPairStore = scope.ServiceProvider.GetRequiredService<IKeyPairStore>();
 
             KeyRotationJob job = new() { KeyPairRotationJobId = jobId, StartedAt = startTime, Success = true };
 
@@ -107,7 +107,7 @@ internal sealed class KeyRotationService(
         try
         {
             await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-            RotationJobStore jobStore = scope.ServiceProvider.GetRequiredService<RotationJobStore>();
+            IRotationJobStore jobStore = scope.ServiceProvider.GetRequiredService<IRotationJobStore>();
 
             string errorMessage = Describe(error);
             KeyRotationJob job = new()
@@ -128,10 +128,10 @@ internal sealed class KeyRotationService(
         }
     }
 
-    internal async Task<KeyRotationJob?> GetLatestSuccessfulJobAsync(CancellationToken ct)
+    public async Task<KeyRotationJob?> GetLatestSuccessfulJobAsync(CancellationToken ct)
     {
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
-        RotationJobStore jobStore = scope.ServiceProvider.GetRequiredService<RotationJobStore>();
+        IRotationJobStore jobStore = scope.ServiceProvider.GetRequiredService<IRotationJobStore>();
 
         return await jobStore.GetLatestSuccessfulJobAsync(ct);
     }
