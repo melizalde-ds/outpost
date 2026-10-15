@@ -74,6 +74,7 @@ pub struct Credentials {
     pub active: bool,
 }
 
+#[cfg_attr(test, mockall::automock)]
 #[async_trait]
 pub trait UserRepository: Debug + Send + Sync + 'static {
     async fn insert_credentials(
@@ -86,6 +87,7 @@ pub trait UserRepository: Debug + Send + Sync + 'static {
     async fn is_active(&self, user_id: &UserId) -> Result<bool, RepositoryError>;
 }
 
+#[cfg_attr(test, mockall::automock)]
 #[async_trait]
 pub trait TokenFamilyRepository: Debug + Send + Sync + 'static {
     async fn insert(

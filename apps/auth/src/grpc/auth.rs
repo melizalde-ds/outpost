@@ -101,7 +101,12 @@ mod tests {
     use crate::{
         jwk_cache::{JwkCacheError, MockJwkCache},
         password::MockPasswordHasher,
-        repository::UserId,
+        refresh_token::{Entry, MockRefreshTokenStore, RefreshToken, RefreshTokenStoreError},
+        repository::{
+            MockTokenFamilyRepository, MockUserRepository, RepositoryError, RevocationReason,
+            TokenFamilyId, UserId,
+        },
+        settings::RefreshTokenSettings,
         signing::{MockSigningService, PublicKey, SignedToken, SigningError},
         test_support::{
             BuiltAuth, FakeSigner, InMemoryJwkCache, SIGNING_KEY_ID, TestAuth, start_time,
@@ -113,6 +118,8 @@ mod tests {
     const PASSWORD: &str = "correct horse";
     const WRONG_PASSWORD: &str = "wrong horse";
     const GARBAGE_TOKEN: &str = "not-a-refresh-token";
+    const USER: UserId = UserId(Uuid::from_u128(1));
+    const FAMILY: TokenFamilyId = TokenFamilyId(Uuid::from_u128(1));
 
     async fn register(
         auth: &BuiltAuth,
@@ -202,6 +209,54 @@ mod tests {
         signer
     }
 
+    fn session_token() -> String {
+        let (token, _) = RefreshToken::generate(
+            USER,
+            FAMILY,
+            start_time() + Duration::days(7),
+            start_time() + Duration::days(30),
+        )
+        .unwrap();
+        token
+    }
+
+    fn live_session() -> Entry {
+        Entry::Live {
+            user_id: USER,
+            family_exp: start_time() + Duration::days(30),
+        }
+    }
+
+    fn store_finding(entry: Entry) -> MockRefreshTokenStore {
+        let mut store = MockRefreshTokenStore::new();
+        store
+            .expect_find()
+            .returning(move |_| Ok(Some(entry.clone())));
+        store
+    }
+
+    fn families_with_the_session() -> MockTokenFamilyRepository {
+        let mut families = MockTokenFamilyRepository::new();
+        families
+            .expect_find_unrevoked_by_user_id()
+            .returning(|_| Ok(vec![FAMILY]));
+        families
+    }
+
+    fn active_user() -> MockUserRepository {
+        let mut users = MockUserRepository::new();
+        users.expect_is_active().returning(|_| Ok(true));
+        users
+    }
+
+    fn redis_down() -> RedisError {
+        RedisError::from((ErrorKind::Io, "down"))
+    }
+
+    fn database_down() -> RepositoryError {
+        RepositoryError::Database(sqlx::Error::PoolTimedOut)
+    }
+
     mod register {
         use pretty_assertions::assert_eq;
 
@@ -248,6 +303,27 @@ mod tests {
 
             // Assert
             expect_code(result, Code::AlreadyExists);
+        }
+
+        #[tokio::test]
+        async fn idle_limit_longer_than_the_session_limit_returns_a_token_ending_with_the_session()
+        {
+            // Arrange
+            let auth = TestAuth::new()
+                .with_refresh_settings(RefreshTokenSettings {
+                    idle_timeout_secs: 40 * 24 * 60 * 60,
+                    max_age_secs: 30 * 24 * 60 * 60,
+                })
+                .build();
+
+            // Act
+            let tokens = register(&auth, ALICE, PASSWORD).await.unwrap();
+
+            // Assert
+            assert_eq!(
+                tokens.refresh_token_expires_at,
+                Some(to_timestamp(start_time() + Duration::days(30)))
+            );
         }
     }
 
@@ -504,6 +580,54 @@ mod tests {
             // Assert
             expect_code(result, Code::Unauthenticated);
         }
+
+        #[tokio::test]
+        async fn token_swapped_by_another_refresh_at_the_same_time_ends_the_session() {
+            // Arrange
+            let mut store = store_finding(live_session());
+            store
+                .expect_rotate()
+                .returning(|_, _| Ok(Some(Entry::Rotated)));
+            let mut families = families_with_the_session();
+            families
+                .expect_revoke()
+                .withf(|family_id, reason| {
+                    *family_id == FAMILY && matches!(reason, RevocationReason::Reuse)
+                })
+                .times(1)
+                .returning(|_, _| Ok(true));
+            let auth = TestAuth::new()
+                .with_users(active_user())
+                .with_families(families)
+                .with_refresh_tokens(store)
+                .build();
+
+            // Act
+            let result = refresh(&auth, &session_token()).await;
+
+            // Assert
+            expect_code(result, Code::Unauthenticated);
+        }
+
+        #[tokio::test]
+        async fn token_expiring_during_the_refresh_is_refused_without_ending_the_session() {
+            // Arrange
+            let mut store = store_finding(live_session());
+            store.expect_rotate().returning(|_, _| Ok(None));
+            let mut families = families_with_the_session();
+            families.expect_revoke().never();
+            let auth = TestAuth::new()
+                .with_users(active_user())
+                .with_families(families)
+                .with_refresh_tokens(store)
+                .build();
+
+            // Act
+            let result = refresh(&auth, &session_token()).await;
+
+            // Assert
+            expect_code(result, Code::Unauthenticated);
+        }
     }
 
     mod logout {
@@ -755,6 +879,75 @@ mod tests {
 
             // Assert
             expect_code(result, Code::Unavailable);
+        }
+
+        #[tokio::test]
+        async fn database_unreachable_on_register_returns_internal() {
+            // Arrange
+            let mut users = MockUserRepository::new();
+            users
+                .expect_insert_credentials()
+                .returning(|_, _| Err(database_down()));
+            let auth = TestAuth::new().with_users(users).build();
+
+            // Act
+            let result = register(&auth, ALICE, PASSWORD).await;
+
+            // Assert
+            expect_code(result, Code::Internal);
+        }
+
+        #[tokio::test]
+        async fn refresh_token_store_unreachable_returns_unavailable() {
+            // Arrange
+            let mut store = MockRefreshTokenStore::new();
+            store
+                .expect_find()
+                .returning(|_| Err(RefreshTokenStoreError::Command(redis_down())));
+            let auth = TestAuth::new().with_refresh_tokens(store).build();
+
+            // Act
+            let result = refresh(&auth, &session_token()).await;
+
+            // Assert
+            expect_code(result, Code::Unavailable);
+        }
+
+        #[tokio::test]
+        async fn database_unreachable_when_checking_the_user_on_refresh_returns_internal() {
+            // Arrange
+            let mut users = MockUserRepository::new();
+            users.expect_is_active().returning(|_| Err(database_down()));
+            let auth = TestAuth::new()
+                .with_users(users)
+                .with_families(families_with_the_session())
+                .with_refresh_tokens(store_finding(live_session()))
+                .build();
+
+            // Act
+            let result = refresh(&auth, &session_token()).await;
+
+            // Assert
+            expect_code(result, Code::Internal);
+        }
+
+        #[tokio::test]
+        async fn database_unreachable_when_ending_a_reused_session_returns_internal() {
+            // Arrange
+            let mut families = MockTokenFamilyRepository::new();
+            families
+                .expect_revoke()
+                .returning(|_, _| Err(database_down()));
+            let auth = TestAuth::new()
+                .with_families(families)
+                .with_refresh_tokens(store_finding(Entry::Rotated))
+                .build();
+
+            // Act
+            let result = refresh(&auth, &session_token()).await;
+
+            // Assert
+            expect_code(result, Code::Internal);
         }
     }
 }

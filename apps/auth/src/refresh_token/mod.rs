@@ -24,6 +24,7 @@ pub enum Entry {
     Rotated,
 }
 
+#[cfg_attr(test, mockall::automock)]
 #[async_trait]
 pub trait RefreshTokenStore: Debug + Send + Sync + 'static {
     async fn insert(&self, token: &RefreshToken) -> Result<(), RefreshTokenStoreError>;

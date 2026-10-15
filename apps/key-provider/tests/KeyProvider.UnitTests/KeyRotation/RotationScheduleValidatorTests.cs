@@ -28,7 +28,8 @@ public sealed class RotationScheduleValidatorTests
         AttemptTimeout = TimeSpan.FromSeconds(10)
     };
 
-    private static readonly TimeSpan MinimumProductionLifespan = new(8, 14, 30);
+    // 8h gap + 5m failure retry delay + 4 tries x 30s + 3 waits x 1m + 5m token lifetime
+    private static readonly TimeSpan MinimumProductionLifespan = new(8, 15, 0);
 
     private static ValidateOptionsResult Validate(
         RotationScheduleOptions schedule, TimeSpan lifespan, RotationRetryOptions retry)
@@ -126,5 +127,18 @@ public sealed class RotationScheduleValidatorTests
 
         // Assert
         result.Succeeded.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Validate_ScheduleWithALongGapAfterManyQuickSlots_Fails()
+    {
+        // Arrange
+        RotationScheduleOptions schedule = new() { Expression = "* 0 * * *" };
+
+        // Act
+        ValidateOptionsResult result = Validate(schedule, TimeSpan.FromHours(1), ProductionRetry);
+
+        // Assert
+        result.Failed.ShouldBeTrue();
     }
 }

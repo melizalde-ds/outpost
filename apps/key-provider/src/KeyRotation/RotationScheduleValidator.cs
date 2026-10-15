@@ -13,8 +13,6 @@ internal sealed class RotationScheduleValidator(
     TimeProvider timeProvider)
     : IValidateOptions<RotationScheduleOptions>
 {
-    private const int SampledOccurrences = 50;
-
     public ValidateOptionsResult Validate(string? name, RotationScheduleOptions options)
     {
         if (string.IsNullOrWhiteSpace(options.Expression))
@@ -34,7 +32,9 @@ internal sealed class RotationScheduleValidator(
         }
 
         RotationRetryOptions retry = retryOptions.Value;
-        TimeSpan worstCaseRetry = retry.MaxRetryAttempts * (retry.AttemptTimeout + retry.MaxDelay);
+        // The first try plus MaxRetryAttempts retries, with a wait before each retry.
+        TimeSpan worstCaseRetry = (retry.MaxRetryAttempts + 1) * retry.AttemptTimeout
+                                  + retry.MaxDelay * retry.MaxRetryAttempts;
         TimeSpan tokenLifetime = signingOptions.Value.TokenLifetime;
 
         TimeSpan lifespan = rotationOptions.Value.Lifespan;
@@ -52,9 +52,12 @@ internal sealed class RotationScheduleValidator(
     private TimeSpan GetMaxGap(CronExpression expression)
     {
         TimeSpan maxGap = TimeSpan.Zero;
-        DateTimeOffset? previous = expression.GetNextOccurrence(timeProvider.GetUtcNow(), TimeZoneInfo.Utc);
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        // shortcut: checks one year of slots, so odd patterns like "Friday the 13th" may hide a longer gap later; fine for rotation schedules.
+        DateTimeOffset end = now.AddYears(1);
+        DateTimeOffset? previous = expression.GetNextOccurrence(now, TimeZoneInfo.Utc);
 
-        for (int i = 0; i < SampledOccurrences && previous is not null; i++)
+        while (previous is not null && previous <= end)
         {
             DateTimeOffset? next = expression.GetNextOccurrence(previous.Value, TimeZoneInfo.Utc);
             if (next is null)

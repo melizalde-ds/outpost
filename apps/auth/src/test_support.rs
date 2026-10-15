@@ -373,6 +373,10 @@ impl JwkCache for InMemoryJwkCache {
 pub struct TestAuth {
     clock: Arc<ManualClock>,
     users: Arc<InMemoryUsers>,
+    user_repo: Arc<dyn UserRepository>,
+    families: Arc<dyn TokenFamilyRepository>,
+    refresh_tokens: Arc<dyn RefreshTokenStore>,
+    refresh_settings: RefreshTokenSettings,
     jwk_cache: Arc<dyn JwkCache>,
     passwords: Arc<dyn PasswordHasher>,
     signer: Arc<dyn SigningService>,
@@ -387,13 +391,38 @@ pub struct BuiltAuth {
 impl TestAuth {
     pub fn new() -> Self {
         let clock = Arc::new(ManualClock::new(start_time()));
+        let users = Arc::new(InMemoryUsers::default());
         Self {
-            users: Arc::default(),
+            user_repo: users.clone(),
+            users,
+            families: Arc::new(InMemoryFamilies::new(clock.clone())),
+            refresh_tokens: Arc::new(InMemoryRefreshTokens::new(clock.clone())),
+            refresh_settings: RefreshTokenSettings::default(),
             jwk_cache: Arc::new(InMemoryJwkCache::default()),
             passwords: Arc::new(PlainHasher),
             signer: Arc::new(FakeSigner::new(clock.clone())),
             clock,
         }
+    }
+
+    pub fn with_users(mut self, users: impl UserRepository) -> Self {
+        self.user_repo = Arc::new(users);
+        self
+    }
+
+    pub fn with_families(mut self, families: impl TokenFamilyRepository) -> Self {
+        self.families = Arc::new(families);
+        self
+    }
+
+    pub fn with_refresh_tokens(mut self, refresh_tokens: impl RefreshTokenStore) -> Self {
+        self.refresh_tokens = Arc::new(refresh_tokens);
+        self
+    }
+
+    pub fn with_refresh_settings(mut self, settings: RefreshTokenSettings) -> Self {
+        self.refresh_settings = settings;
+        self
     }
 
     pub fn with_passwords(mut self, passwords: impl PasswordHasher) -> Self {
@@ -413,13 +442,13 @@ impl TestAuth {
 
     pub fn build(self) -> BuiltAuth {
         let service = DefaultAuthService::new(
-            self.users.clone(),
-            Arc::new(InMemoryFamilies::new(self.clock.clone())),
+            self.user_repo,
+            self.families,
             self.passwords,
             self.signer,
             self.jwk_cache,
-            Arc::new(InMemoryRefreshTokens::new(self.clock.clone())),
-            &RefreshTokenSettings::default(),
+            self.refresh_tokens,
+            &self.refresh_settings,
         )
         .with_clock(self.clock.clone());
         BuiltAuth {
