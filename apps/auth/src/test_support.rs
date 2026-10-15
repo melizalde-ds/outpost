@@ -1,5 +1,3 @@
-#![expect(dead_code, reason = "test helpers not yet used by any test")]
-
 use std::{
     collections::{HashMap, HashSet},
     sync::{Arc, Mutex},
@@ -61,10 +59,19 @@ struct StoredUser {
 pub struct InMemoryUsers(Mutex<Vec<StoredUser>>);
 
 impl InMemoryUsers {
-    pub fn deactivate(&self, username: &str) {
+    pub fn set_active(&self, username: &str, active: bool) {
         let mut users = self.0.lock().unwrap();
         let user = users.iter_mut().find(|u| u.username == username).unwrap();
-        user.active = false;
+        user.active = active;
+    }
+
+    pub fn user_id(&self, username: &str) -> UserId {
+        let users = self.0.lock().unwrap();
+        users
+            .iter()
+            .find(|u| u.username == username)
+            .unwrap()
+            .user_id
     }
 }
 
@@ -305,6 +312,10 @@ impl FakeSigner {
         Self { clock }
     }
 
+    pub fn token_for(user_id: UserId) -> String {
+        format!("access-token-for-{user_id}")
+    }
+
     fn signing_key(&self) -> PublicKey {
         PublicKey {
             kid: SIGNING_KEY_ID,
@@ -318,7 +329,7 @@ impl FakeSigner {
 impl SigningService for FakeSigner {
     async fn sign(&self, sub: Uuid) -> Result<SignedToken, SigningError> {
         Ok(SignedToken {
-            token: format!("access-token-for-{sub}"),
+            token: Self::token_for(UserId(sub)),
             key_id: SIGNING_KEY_ID,
             new_key: None,
         })
@@ -333,6 +344,10 @@ impl SigningService for FakeSigner {
 pub struct InMemoryJwkCache(Mutex<HashSet<Uuid>>);
 
 impl InMemoryJwkCache {
+    pub fn with_key(kid: Uuid) -> Self {
+        Self(Mutex::new(HashSet::from([kid])))
+    }
+
     pub fn has_key(&self, kid: &Uuid) -> bool {
         self.0.lock().unwrap().contains(kid)
     }
