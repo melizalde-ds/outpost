@@ -28,7 +28,6 @@ public sealed class RotationScheduleValidatorTests
         AttemptTimeout = TimeSpan.FromSeconds(10)
     };
 
-    // 8h gap + 5m failure retry delay + 4 tries x 30s + 3 waits x 1m + 5m token lifetime
     private static readonly TimeSpan MinimumProductionLifespan = new(8, 15, 0);
 
     private static ValidateOptionsResult Validate(

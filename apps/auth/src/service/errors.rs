@@ -20,6 +20,8 @@ pub enum AuthServiceError {
     UserAlreadyExists(String),
     #[error("Invalid refresh token")]
     InvalidRefreshToken,
+    #[error("Account {0} was created, but signing in failed: {1}")]
+    SignInAfterRegister(UserId, #[source] Box<AuthServiceError>),
     #[error("Refresh token reused in family {0}")]
     RefreshTokenReused(TokenFamilyId),
     #[error("Repository error: {0}")]

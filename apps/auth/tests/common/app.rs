@@ -1,38 +1,45 @@
-use std::{net::SocketAddr, process::Stdio, time::Duration};
+use std::{
+    net::{Ipv4Addr, SocketAddr},
+    process::{ExitStatus, Stdio},
+    time::Duration,
+};
 
 use tokio::{
     io::{AsyncBufReadExt, AsyncRead, BufReader},
     process::{Child, Command},
 };
 use tonic::transport::Channel;
+use uuid::Uuid;
 
 use super::{
-    APP_PASSWORD, APP_USER, infra, proto::auth::v1::auth_service_client::AuthServiceClient,
+    APP_PASSWORD, APP_USER, infra,
+    proto::auth::v1::{LogoutRequest, auth_service_client::AuthServiceClient},
 };
 
 pub const PEPPER: &str = "test-pepper";
 
 pub struct App {
     _child: Child,
-    addr: SocketAddr,
+    client: AuthServiceClient<Channel>,
 }
 
 impl App {
     pub async fn start(db: &str, key_provider: SocketAddr) -> Self {
-        let addr = free_port();
-        let mut child = spawn(db, key_provider, addr).await;
+        Self::start_with(db, key_provider, &[]).await
+    }
+
+    pub async fn start_with(db: &str, key_provider: SocketAddr, settings: &[(&str, &str)]) -> Self {
+        let addr = free_address();
+        let mut child = spawn(db, key_provider, addr, settings).await;
         let deadline = tokio::time::Instant::now() + Duration::from_secs(30);
         loop {
             if let Some(status) = child.try_wait().unwrap() {
                 panic!("auth exited before it was ready: {status}");
             }
-            if AuthServiceClient::connect(format!("http://{addr}"))
-                .await
-                .is_ok()
-            {
+            if let Some(client) = answering_client(addr).await {
                 return Self {
                     _child: child,
-                    addr,
+                    client,
                 };
             }
             assert!(
@@ -43,14 +50,34 @@ impl App {
         }
     }
 
-    pub async fn client(&self) -> AuthServiceClient<Channel> {
-        AuthServiceClient::connect(format!("http://{}", self.addr))
+    pub async fn exit_status(db: &str, key_provider: SocketAddr) -> ExitStatus {
+        let mut child = spawn(db, key_provider, free_address(), &[]).await;
+        tokio::time::timeout(Duration::from_secs(30), child.wait())
             .await
+            .expect("auth still running after 30s")
             .unwrap()
+    }
+
+    pub fn client(&self) -> AuthServiceClient<Channel> {
+        self.client.clone()
     }
 }
 
-async fn spawn(db: &str, key_provider: SocketAddr, addr: SocketAddr) -> Child {
+// A connection alone can be a false positive, so require a real answer: auth accepts any logout.
+async fn answering_client(addr: SocketAddr) -> Option<AuthServiceClient<Channel>> {
+    let mut client = AuthServiceClient::connect(format!("http://{addr}"))
+        .await
+        .ok()?;
+    client.logout(LogoutRequest::default()).await.ok()?;
+    Some(client)
+}
+
+async fn spawn(
+    db: &str,
+    key_provider: SocketAddr,
+    addr: SocketAddr,
+    settings: &[(&str, &str)],
+) -> Child {
     let infra = infra().await;
     let mut child = Command::new(env!("CARGO_BIN_EXE_auth"))
         .env_clear()
@@ -73,6 +100,7 @@ async fn spawn(db: &str, key_provider: SocketAddr, addr: SocketAddr) -> Child {
             "AUTH__GRPC__KEY_SERVICE_CLIENT__PORT",
             key_provider.port().to_string(),
         )
+        .envs(settings.iter().copied())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .kill_on_drop(true)
@@ -92,8 +120,10 @@ fn forward_output(stream: impl AsyncRead + Unpin + Send + 'static) {
     });
 }
 
-fn free_port() -> SocketAddr {
-    std::net::TcpListener::bind("127.0.0.1:0")
+// Each auth gets its own loopback address, so a port picked here can't be taken by another test's server.
+pub fn free_address() -> SocketAddr {
+    let [a, b, c, ..] = *Uuid::new_v4().as_bytes();
+    std::net::TcpListener::bind((Ipv4Addr::new(127, a, b, c.max(1)), 0))
         .unwrap()
         .local_addr()
         .unwrap()

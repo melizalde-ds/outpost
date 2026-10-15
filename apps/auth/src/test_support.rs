@@ -208,7 +208,6 @@ impl TokenFamilyRepository for InMemoryFamilies {
 
 type StoredEntry = (Entry, DateTime<Utc>);
 
-// Like the Redis store, rotate marks the old token used and saves the new one in one step.
 #[derive(Debug)]
 pub struct InMemoryRefreshTokens {
     clock: Arc<ManualClock>,

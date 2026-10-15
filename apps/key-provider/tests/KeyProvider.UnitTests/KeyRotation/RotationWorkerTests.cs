@@ -53,7 +53,10 @@ public sealed class RotationWorkerTests
     {
         _rotation.GetLatestSuccessfulJobAsync(Arg.Any<CancellationToken>()).Returns(new KeyRotationJob
         {
-            KeyPairRotationJobId = Guid.Empty, StartedAt = finishedAt, FinishedAt = finishedAt, Success = true
+            KeyPairRotationJobId = Guid.Empty,
+            StartedAt = finishedAt,
+            FinishedAt = finishedAt,
+            Success = true
         });
     }
 
@@ -207,7 +210,6 @@ public sealed class RotationWorkerTests
         await sut.StartAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        // A crashed loop finishes ExecuteTask, so this doesn't need a timeout.
         Task finished = await Task.WhenAny(secondCheck.Task, sut.ExecuteTask.ShouldNotBeNull());
         finished.ShouldBe(secondCheck.Task);
     }

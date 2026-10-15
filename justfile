@@ -91,7 +91,6 @@ auth-run:
 auth-test:
     SQLX_OFFLINE=true cargo test -p auth
 
-# Integration tests: needs Docker. Removes the test containers afterwards, since the tests can't.
 [group('auth')]
 auth-it:
     #!/usr/bin/env bash

@@ -1,10 +1,13 @@
-use std::{net::SocketAddr, sync::Arc};
+use std::{
+    net::SocketAddr,
+    sync::{Arc, Mutex},
+};
 
 use jsonwebtoken::{Algorithm, EncodingKey, Header, get_current_timestamp};
 use prost_types::Timestamp;
 use serde::Serialize;
 use tokio_stream::wrappers::TcpListenerStream;
-use tonic::{Request, Response, Status, transport::Server};
+use tonic::{Code, Request, Response, Status, transport::Server};
 use uuid::Uuid;
 
 use super::proto::key::v1::{
@@ -29,6 +32,9 @@ pub const AUDIENCE: &str = "Outpost";
 pub struct KeyStubConfig {
     pub key_id: Uuid,
     pub listed_keys: Vec<VerificationKey>,
+    pub new_key: Option<VerificationKey>,
+    pub sign_error: Option<Code>,
+    pub sign_hangs: bool,
 }
 
 impl Default for KeyStubConfig {
@@ -37,6 +43,9 @@ impl Default for KeyStubConfig {
         Self {
             key_id,
             listed_keys: vec![verification_key(key_id)],
+            new_key: None,
+            sign_error: None,
+            sign_hangs: false,
         }
     }
 }
@@ -62,7 +71,7 @@ struct Claims<'a> {
 }
 
 struct Stub {
-    config: KeyStubConfig,
+    config: Arc<Mutex<KeyStubConfig>>,
     signing_key: EncodingKey,
 }
 
@@ -72,9 +81,16 @@ impl KeyService for Stub {
         &self,
         request: Request<SignTokenRequest>,
     ) -> Result<Response<SignTokenResponse>, Status> {
+        let config = self.config.lock().unwrap().clone();
+        if config.sign_hangs {
+            std::future::pending::<()>().await;
+        }
+        if let Some(code) = config.sign_error {
+            return Err(Status::new(code, "key stub failure"));
+        }
         let subject = request.into_inner().subject;
         let mut header = Header::new(Algorithm::EdDSA);
-        header.kid = Some(self.config.key_id.to_string());
+        header.kid = Some(config.key_id.to_string());
         let now = get_current_timestamp();
         let claims = Claims {
             sub: &subject,
@@ -87,8 +103,8 @@ impl KeyService for Stub {
 
         Ok(Response::new(SignTokenResponse {
             token,
-            key_id: self.config.key_id.to_string(),
-            verification_key: None,
+            key_id: config.key_id.to_string(),
+            verification_key: config.new_key,
         }))
     }
 
@@ -97,21 +113,23 @@ impl KeyService for Stub {
         _request: Request<GetVerificationKeysRequest>,
     ) -> Result<Response<GetVerificationKeysResponse>, Status> {
         Ok(Response::new(GetVerificationKeysResponse {
-            keys: self.config.listed_keys.clone(),
+            keys: self.config.lock().unwrap().listed_keys.clone(),
         }))
     }
 }
 
 pub struct KeyStub {
     pub addr: SocketAddr,
+    config: Arc<Mutex<KeyStubConfig>>,
 }
 
 impl KeyStub {
     pub async fn start(config: KeyStubConfig) -> Self {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let addr = listener.local_addr().unwrap();
+        let config = Arc::new(Mutex::new(config));
         let stub = Arc::new(Stub {
-            config,
+            config: config.clone(),
             signing_key: EncodingKey::from_ed_pem(PRIVATE_KEY_PEM.as_bytes()).unwrap(),
         });
         tokio::spawn(
@@ -119,6 +137,10 @@ impl KeyStub {
                 .add_service(KeyServiceServer::from_arc(stub))
                 .serve_with_incoming(TcpListenerStream::new(listener)),
         );
-        Self { addr }
+        Self { addr, config }
+    }
+
+    pub fn set_sign_error(&self, code: Option<Code>) {
+        self.config.lock().unwrap().sign_error = code;
     }
 }

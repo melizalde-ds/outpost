@@ -2,6 +2,5 @@
 resolver = "3"
 members = ["apps/auth"]
 
-# Tests use the real argon2 settings, which are too slow without optimizing.
 [profile.dev.package.argon2]
 opt-level = 3

@@ -20,6 +20,14 @@ impl From<AuthServiceError> for Status {
                 warn!(%family_id, "refresh token reuse detected");
                 Status::unauthenticated("invalid credentials")
             }
+            AuthServiceError::SignInAfterRegister(user_id, err) => {
+                let status = Status::from(*err);
+                if status.code() != Code::Unavailable {
+                    return status;
+                }
+                info!(%user_id, "account created, but signing in failed");
+                Status::unavailable("account created, but sign-in failed; please log in")
+            }
             e @ AuthServiceError::UserAlreadyExists(_) => {
                 info!(error = %e, "username taken");
                 Status::already_exists("username unavailable")

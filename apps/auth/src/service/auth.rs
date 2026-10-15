@@ -19,7 +19,10 @@ impl DefaultAuthService {
             .insert_credentials(&username, password_hash)
             .await
         {
-            Ok(user_id) => self.issue_tokens(user_id).await,
+            Ok(user_id) => self
+                .issue_tokens(user_id)
+                .await
+                .map_err(|e| AuthServiceError::SignInAfterRegister(user_id, Box::new(e))),
             Err(RepositoryError::UniqueViolation(_)) => {
                 Err(AuthServiceError::UserAlreadyExists(username))
             }

@@ -32,7 +32,6 @@ internal sealed class RotationScheduleValidator(
         }
 
         RotationRetryOptions retry = retryOptions.Value;
-        // The first try plus MaxRetryAttempts retries, with a wait before each retry.
         TimeSpan worstCaseRetry = (retry.MaxRetryAttempts + 1) * retry.AttemptTimeout
                                   + retry.MaxDelay * retry.MaxRetryAttempts;
         TimeSpan tokenLifetime = signingOptions.Value.TokenLifetime;
@@ -53,7 +52,6 @@ internal sealed class RotationScheduleValidator(
     {
         TimeSpan maxGap = TimeSpan.Zero;
         DateTimeOffset now = timeProvider.GetUtcNow();
-        // shortcut: checks one year of slots, so odd patterns like "Friday the 13th" may hide a longer gap later; fine for rotation schedules.
         DateTimeOffset end = now.AddYears(1);
         DateTimeOffset? previous = expression.GetNextOccurrence(now, TimeZoneInfo.Utc);
 

@@ -844,6 +844,8 @@ mod tests {
     }
 
     mod outages {
+        use pretty_assertions::assert_eq;
+
         use super::*;
 
         #[tokio::test]
@@ -860,6 +862,25 @@ mod tests {
 
             // Assert
             expect_code(result, Code::Unavailable);
+        }
+
+        #[tokio::test]
+        async fn key_provider_unreachable_on_register_tells_the_user_to_log_in() {
+            // Arrange
+            let mut signer = MockSigningService::new();
+            signer
+                .expect_sign()
+                .returning(|_| Err(SigningError::Call(Status::unavailable("down"))));
+            let auth = TestAuth::new().with_signer(signer).build();
+
+            // Act
+            let status = register(&auth, ALICE, PASSWORD).await.unwrap_err();
+
+            // Assert
+            assert_eq!(
+                status.message(),
+                "account created, but sign-in failed; please log in"
+            );
         }
 
         #[tokio::test]
