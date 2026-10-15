@@ -8,10 +8,10 @@ fn main() -> anyhow::Result<()> {
 
     let out_dir = PathBuf::from(env::var("OUT_DIR")?);
 
-    // auth: server only
+    // auth: server, plus a client for the integration tests
     tonic_prost_build::configure()
         .build_server(true)
-        .build_client(false)
+        .build_client(true)
         .skip_debug(REDACTED_MESSAGES)
         .file_descriptor_set_path(out_dir.join("auth_descriptors.bin"))
         .compile_protos(
@@ -19,9 +19,9 @@ fn main() -> anyhow::Result<()> {
             &["../../proto"],
         )?;
 
-    // key: client only
+    // key: client, plus a server for the integration tests' stub
     tonic_prost_build::configure()
-        .build_server(false)
+        .build_server(true)
         .build_client(true)
         .skip_debug(REDACTED_MESSAGES)
         .file_descriptor_set_path(out_dir.join("key_descriptors.bin"))

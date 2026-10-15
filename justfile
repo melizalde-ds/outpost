@@ -91,6 +91,14 @@ auth-run:
 auth-test:
     SQLX_OFFLINE=true cargo test -p auth
 
+# Integration tests: needs Docker. Removes the test containers afterwards, since the tests can't.
+[group('auth')]
+auth-it:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    trap 'docker rm -f $(docker ps -aq --filter label=outpost.tests=auth) >/dev/null 2>&1 || true' EXIT
+    SQLX_OFFLINE=true cargo test -p auth --test '*'
+
 [group('key-provider')]
 key-run:
     dotnet run --project {{key_provider}}

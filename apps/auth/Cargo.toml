@@ -36,7 +36,10 @@ pretty_assertions = "1.4.1"
 proptest = "1.12.0"
 prost-reflect = "0.16"
 rstest = "0.27.0"
+sqlx = { version = "0.9.0", default-features = false, features = ["migrate"] }
+testcontainers-modules = { version = "0.15.0", default-features = false, features = ["aws-lc-rs", "postgres", "redis"] }
 tokio = { version = "1.53.1", features = ["test-util"] }
+tokio-stream = { version = "0.1.19", features = ["net"] }
 
 [build-dependencies]
 anyhow = "1.0.104"
