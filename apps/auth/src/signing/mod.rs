@@ -10,6 +10,7 @@ mod key_service;
 pub use errors::SigningError;
 pub use key_service::KeySigningService;
 
+#[cfg_attr(test, mockall::automock)]
 #[async_trait]
 pub trait SigningService: Debug + Send + Sync + 'static {
     async fn sign(&self, sub: Uuid) -> Result<SignedToken, SigningError>;

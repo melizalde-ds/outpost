@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 
-use argon2::{Argon2, PasswordHash, PasswordHasher as Argon2Hasher, PasswordVerifier};
+use argon2::{Argon2, Params, PasswordHash, PasswordHasher as Argon2Hasher, PasswordVerifier};
 use secrecy::{ExposeSecret, SecretSlice, SecretString};
 use tokio::sync::Semaphore;
 
@@ -15,17 +15,22 @@ use crate::{
 pub struct Argon2PasswordHasher {
     pepper: Arc<SecretString>,
     permits: Arc<Semaphore>,
+    params: Params,
     dummy_hash: String,
 }
 
 impl Argon2PasswordHasher {
     pub fn new(settings: &PasswordSettings) -> Result<Self, PasswordError> {
+        Self::with_params(settings, Params::default())
+    }
+
+    pub fn with_params(settings: &PasswordSettings, params: Params) -> Result<Self, PasswordError> {
         let pepper: SecretString = settings.pepper.expose_secret().into();
         let dummy_hash = Argon2::new_with_secret(
             pepper.expose_secret().as_bytes(),
             argon2::Algorithm::default(),
             argon2::Version::default(),
-            argon2::Params::default(),
+            params.clone(),
         )?
         .hash_password(b"dummy password")?
         .to_string();
@@ -33,6 +38,7 @@ impl Argon2PasswordHasher {
         Ok(Self {
             pepper: Arc::new(pepper),
             permits: Arc::new(Semaphore::new(settings.concurrency_limit)),
+            params,
             dummy_hash,
         })
     }
@@ -43,6 +49,7 @@ impl PasswordHasher for Argon2PasswordHasher {
     async fn hash(&self, password: SecretSlice<u8>) -> Result<String, PasswordError> {
         let _permit = self.permits.acquire().await?;
         let pepper = self.pepper.clone();
+        let params = self.params.clone();
 
         let password_hash: String =
             tokio::task::spawn_blocking(move || -> Result<String, PasswordError> {
@@ -50,7 +57,7 @@ impl PasswordHasher for Argon2PasswordHasher {
                     pepper.expose_secret().as_bytes(),
                     argon2::Algorithm::default(),
                     argon2::Version::default(),
-                    argon2::Params::default(),
+                    params,
                 )?;
 
                 let password_hash = argon2
@@ -69,13 +76,14 @@ impl PasswordHasher for Argon2PasswordHasher {
     async fn verify(&self, password: SecretSlice<u8>, hash: String) -> Result<bool, PasswordError> {
         let _permit = self.permits.acquire().await?;
         let pepper = self.pepper.clone();
+        let params = self.params.clone();
 
         let is_valid: bool = tokio::task::spawn_blocking(move || -> Result<bool, PasswordError> {
             let argon2 = Argon2::new_with_secret(
                 pepper.expose_secret().as_bytes(),
                 argon2::Algorithm::default(),
                 argon2::Version::default(),
-                argon2::Params::default(),
+                params,
             )?;
 
             let hash = PasswordHash::new(&hash).map_err(PasswordError::from)?;

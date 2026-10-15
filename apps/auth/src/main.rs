@@ -15,6 +15,7 @@ use crate::{
     signing::{KeySigningService, SigningService},
 };
 
+mod clock;
 mod grpc;
 mod jwk_cache;
 mod password;
@@ -24,6 +25,8 @@ mod repository;
 mod service;
 mod settings;
 mod signing;
+#[cfg(test)]
+mod test_support;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

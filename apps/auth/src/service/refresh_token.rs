@@ -71,7 +71,7 @@ impl DefaultAuthService {
         &self,
         user_id: UserId,
     ) -> Result<(String, DateTime<Utc>), AuthServiceError> {
-        let now = Utc::now();
+        let now = self.clock.now();
         let family_exp = now + self.max_age;
         let exp = (now + self.idle_timeout).min(family_exp);
 
@@ -112,7 +112,7 @@ impl DefaultAuthService {
         &self,
         session: &Session,
     ) -> Result<(String, DateTime<Utc>), AuthServiceError> {
-        let exp = (Utc::now() + self.idle_timeout).min(session.family_exp);
+        let exp = (self.clock.now() + self.idle_timeout).min(session.family_exp);
         let (token, refresh_token) =
             RefreshToken::generate(session.user_id, session.family_id, exp, session.family_exp)?;
 

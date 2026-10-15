@@ -3,6 +3,7 @@ use std::sync::Arc;
 use chrono::{DateTime, Duration, Utc};
 
 use crate::{
+    clock::{Clock, SystemClock},
     jwk_cache::JwkCache,
     password::PasswordHasher,
     refresh_token::RefreshTokenStore,
@@ -31,6 +32,7 @@ pub struct DefaultAuthService {
     signer: Arc<dyn SigningService>,
     jwk_cache: Arc<dyn JwkCache>,
     refresh_tokens: Arc<dyn RefreshTokenStore>,
+    clock: Arc<dyn Clock>,
     idle_timeout: Duration,
     max_age: Duration,
 }
@@ -52,8 +54,14 @@ impl DefaultAuthService {
             signer,
             jwk_cache,
             refresh_tokens,
+            clock: Arc::new(SystemClock),
             idle_timeout: Duration::seconds(settings.idle_timeout_secs as i64),
             max_age: Duration::seconds(settings.max_age_secs as i64),
         }
+    }
+    #[cfg(test)]
+    pub fn with_clock(mut self, clock: Arc<dyn Clock>) -> Self {
+        self.clock = clock;
+        self
     }
 }

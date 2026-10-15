@@ -11,6 +11,7 @@ pub use self::redis::RedisJwkCache;
 pub use errors::{JwkCacheError, JwkRecordError};
 pub use record::JwkRecord;
 
+#[cfg_attr(test, mockall::automock)]
 #[async_trait]
 pub trait JwkCache: Debug + Send + Sync + 'static {
     async fn contains(&self, kid: &Uuid) -> Result<bool, JwkCacheError>;
