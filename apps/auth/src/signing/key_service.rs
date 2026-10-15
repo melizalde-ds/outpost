@@ -94,3 +94,85 @@ impl TryFrom<VerificationKey> for PublicKey {
         Ok(PublicKey { kid, key, exp })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use prost_types::Timestamp;
+    use rstest::rstest;
+
+    use super::*;
+
+    const KEY_ID: &str = "00000000-0000-0000-0000-000000000001";
+    const EXPIRES_AT: i64 = 1_767_225_600;
+
+    fn verification_key(public_key: Vec<u8>, expires_at: Option<Timestamp>) -> VerificationKey {
+        VerificationKey {
+            key_id: KEY_ID.into(),
+            public_key,
+            expires_at,
+        }
+    }
+
+    fn expiry() -> Option<Timestamp> {
+        Some(Timestamp {
+            seconds: EXPIRES_AT,
+            nanos: 0,
+        })
+    }
+
+    #[test]
+    fn try_from_valid_key_returns_encoded_public_key() {
+        // Arrange
+        let key = verification_key(vec![0; 32], expiry());
+
+        // Act
+        let public_key = PublicKey::try_from(key).unwrap();
+
+        // Assert
+        assert_eq!(public_key.kid.to_string(), KEY_ID);
+        assert_eq!(public_key.key, URL_SAFE_NO_PAD.encode([0; 32]));
+        assert_eq!(public_key.exp.timestamp(), EXPIRES_AT);
+    }
+
+    #[rstest]
+    #[case::empty(0)]
+    #[case::too_short(31)]
+    #[case::too_long(33)]
+    fn try_from_key_with_wrong_length_returns_bad_key_length(#[case] length: usize) {
+        // Arrange
+        let key = verification_key(vec![0; length], expiry());
+
+        // Act
+        let result = PublicKey::try_from(key);
+
+        // Assert
+        assert!(matches!(result, Err(SigningError::BadKeyLength(_, l)) if l == length));
+    }
+
+    #[test]
+    fn try_from_key_without_expiry_returns_missing_expiry() {
+        // Arrange
+        let key = verification_key(vec![0; 32], None);
+
+        // Act
+        let result = PublicKey::try_from(key);
+
+        // Assert
+        assert!(matches!(result, Err(SigningError::MissingExpiry(_))));
+    }
+
+    #[test]
+    fn try_from_key_with_invalid_id_returns_bad_key_id() {
+        // Arrange
+        let key = VerificationKey {
+            key_id: "not-a-uuid".into(),
+            ..verification_key(vec![0; 32], expiry())
+        };
+
+        // Act
+        let result = PublicKey::try_from(key);
+
+        // Assert
+        assert!(matches!(result, Err(SigningError::BadKeyId(_))));
+    }
+}

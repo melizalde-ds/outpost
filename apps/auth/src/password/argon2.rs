@@ -102,3 +102,76 @@ impl PasswordHasher for Argon2PasswordHasher {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const PASSWORD: &str = "correct horse";
+
+    fn hasher(pepper: &str) -> Argon2PasswordHasher {
+        let settings = PasswordSettings {
+            pepper: SecretString::from(pepper),
+            concurrency_limit: 1,
+        };
+        let cheapest = Params::new(8, 1, 1, None).unwrap();
+        Argon2PasswordHasher::with_params(&settings, cheapest).unwrap()
+    }
+
+    fn secret(password: &str) -> SecretSlice<u8> {
+        SecretSlice::from(password.as_bytes().to_vec())
+    }
+
+    #[tokio::test]
+    async fn verify_right_password_returns_true() {
+        // Arrange
+        let hasher = hasher("pepper");
+        let hash = hasher.hash(secret(PASSWORD)).await.unwrap();
+
+        // Act
+        let matches = hasher.verify(secret(PASSWORD), hash).await.unwrap();
+
+        // Assert
+        assert!(matches);
+    }
+
+    #[tokio::test]
+    async fn verify_wrong_password_returns_false() {
+        // Arrange
+        let hasher = hasher("pepper");
+        let hash = hasher.hash(secret(PASSWORD)).await.unwrap();
+
+        // Act
+        let matches = hasher.verify(secret("wrong password"), hash).await.unwrap();
+
+        // Assert
+        assert!(!matches);
+    }
+
+    #[tokio::test]
+    async fn verify_with_different_pepper_returns_false() {
+        // Arrange
+        let hash = hasher("pepper").hash(secret(PASSWORD)).await.unwrap();
+
+        // Act
+        let matches = hasher("other pepper")
+            .verify(secret(PASSWORD), hash)
+            .await
+            .unwrap();
+
+        // Assert
+        assert!(!matches);
+    }
+
+    #[tokio::test]
+    async fn verify_dummy_any_password_completes() {
+        // Arrange
+        let hasher = hasher("pepper");
+
+        // Act
+        let result = hasher.verify_dummy(secret(PASSWORD)).await;
+
+        // Assert
+        assert!(result.is_ok());
+    }
+}
