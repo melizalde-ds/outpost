@@ -26,6 +26,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\KeyProvider.UnitTests\TestKeys.cs" Link="TestKeys.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\..\db\init\*.sh" LinkBase="db/init" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

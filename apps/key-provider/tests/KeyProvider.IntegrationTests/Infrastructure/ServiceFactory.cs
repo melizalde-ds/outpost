@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Time.Testing;
 using Outpost.Key.V1;
+using Shouldly;
 
 namespace KeyProvider.IntegrationTests.Infrastructure;
 
@@ -45,8 +46,11 @@ internal sealed class ServiceFactory(TestDatabases databases, bool keepRotationW
         return new KeyService.KeyServiceClient(channel);
     }
 
-    public Task<KeyRotationResult> RotateAsync(CancellationToken ct)
+    public async Task<Guid> RotateAsync(CancellationToken ct)
     {
-        return Services.GetRequiredService<IKeyRotationService>().RotateAsync(ct);
+        KeyRotationResult result = await Services
+            .GetRequiredService<IKeyRotationService>()
+            .RotateAsync(ct);
+        return result.ShouldBeOfType<KeyRotationSucceeded>().NewKeyId;
     }
 }
