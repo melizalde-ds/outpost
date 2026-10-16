@@ -2,6 +2,7 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 
 key_provider := "apps/key-provider/src"
 key_tests := "apps/key-provider/tests/KeyProvider.UnitTests"
+key_it := "apps/key-provider/tests/KeyProvider.IntegrationTests"
 key_scripts := "apps/key-provider/db/scripts"
 key_port := "5210"
 generated := "apps/key-provider/src/Api/Generated examples/python-client/gen " + key_scripts
@@ -105,6 +106,10 @@ key-run:
 [group('key-provider')]
 key-test:
     dotnet test --project {{key_tests}}
+
+[group('key-provider')]
+key-it:
+    dotnet test --project {{key_it}}
 
 [group('key-provider')]
 key-secrets:

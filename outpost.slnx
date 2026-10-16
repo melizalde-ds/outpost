@@ -5,6 +5,7 @@
     <Project Path="apps/key-provider/src/KeyProvider.csproj"/>
   </Folder>
   <Folder Name="/apps/key-provider/tests/">
+    <Project Path="apps/key-provider/tests/KeyProvider.IntegrationTests/KeyProvider.IntegrationTests.csproj"/>
     <Project Path="apps/key-provider/tests/KeyProvider.UnitTests/KeyProvider.UnitTests.csproj"/>
   </Folder>
   <Folder Name="/libs/"/>
