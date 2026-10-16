@@ -50,6 +50,9 @@ build:
 test: auth-test key-test
 
 [group('all')]
+it: auth-it key-it
+
+[group('all')]
 run:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -90,7 +93,7 @@ auth-run:
 
 [group('auth')]
 auth-test:
-    SQLX_OFFLINE=true cargo test -p auth
+    SQLX_OFFLINE=true cargo test -p auth --bins
 
 [group('auth')]
 auth-it:
