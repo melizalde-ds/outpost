@@ -53,6 +53,9 @@ test: auth-test key-test
 it: auth-it key-it
 
 [group('all')]
+mutants: auth-mutants key-mutants
+
+[group('all')]
 run:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -102,6 +105,10 @@ auth-it:
     trap 'docker rm -f $(docker ps -aq --filter label=outpost.tests=auth) >/dev/null 2>&1 || true' EXIT
     SQLX_OFFLINE=true cargo test -p auth --test '*'
 
+[group('auth')]
+auth-mutants *args:
+    SQLX_OFFLINE=true cargo mutants --package auth {{args}} -- --bins
+
 [group('key-provider')]
 key-run:
     dotnet run --project {{key_provider}}
@@ -113,6 +120,11 @@ key-test:
 [group('key-provider')]
 key-it:
     dotnet test --project {{key_it}}
+
+[group('key-provider')]
+[working-directory('apps/key-provider/tests/KeyProvider.UnitTests')]
+key-mutants *args:
+    dotnet stryker --test-runner mtp {{args}}
 
 [group('key-provider')]
 key-secrets:

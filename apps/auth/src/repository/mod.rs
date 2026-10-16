@@ -52,6 +52,7 @@ pub enum RevocationReason {
     Logout,
     LogoutAll,
     Inactive,
+    #[expect(dead_code, reason = "kept for blocking users, not built yet")]
     Blocked,
 }
 

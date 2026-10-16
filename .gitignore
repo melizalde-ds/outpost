@@ -14,6 +14,7 @@
 target/
 **/*.rs.bk
 rustc-ice-*.txt
+mutants.out*/
 
 # ===== .NET =====
 [Bb]in/
@@ -23,6 +24,7 @@ artifacts/
 *.snupkg
 *.binlog
 [Tt]est[Rr]esult*/
+StrykerOutput/
 
 # ===== Python =====
 __pycache__/

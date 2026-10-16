@@ -23,7 +23,7 @@ pub const APP_USER: &str = "auth_app";
 pub const APP_PASSWORD: &str = "app-password";
 const MIGRATOR_PASSWORD: &str = "migrator-password";
 const TEMPLATE_DB: &str = "auth";
-const LABEL: (&str, &str) = ("outpost.tests", "auth");
+pub const LABEL: (&str, &str) = ("outpost.tests", "auth");
 
 pub struct Infra {
     _postgres: ContainerAsync<Postgres>,
@@ -94,7 +94,7 @@ async fn connect_with_retry(url: &str) -> PgConnection {
     }
 }
 
-async fn wait_for_redis(port: u16) {
+pub async fn wait_for_redis(port: u16) {
     let client = redis::Client::open(format!("redis://127.0.0.1:{port}")).unwrap();
     let deadline = tokio::time::Instant::now() + Duration::from_secs(30);
     loop {

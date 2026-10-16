@@ -106,7 +106,10 @@ public sealed class KeyStorageTests(PostgresFixture postgres)
     [InlineData("UPDATE key_pair_record SET expires_at = expires_at")]
     [InlineData("DELETE FROM key_pair_record")]
     [InlineData("TRUNCATE key_pair_record")]
-    public async Task KeyPairRecord_ChangingKeyHistory_IsRefusedByTheDatabase(string sql)
+    [InlineData("UPDATE key_rotation_job SET finished_at = finished_at")]
+    [InlineData("DELETE FROM key_rotation_job")]
+    [InlineData("TRUNCATE key_rotation_job CASCADE")]
+    public async Task KeyHistory_Changing_IsRefusedByTheDatabase(string sql)
     {
         // Arrange
         TestDatabases databases = await postgres.CreateDatabasesAsync(_ct);
