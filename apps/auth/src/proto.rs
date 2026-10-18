@@ -82,6 +82,7 @@ mod tests {
     use prost_reflect::DescriptorPool;
 
     use super::{
+        REDACTED,
         auth::v1::{
             LoginRequest, LogoutAllRequest, LogoutRequest, RefreshTokenRequest, RegisterRequest,
             TokenPair,
@@ -147,6 +148,7 @@ mod tests {
 
         // Assert
         assert!(!output.contains(PASSWORD));
+        assert!(output.contains(REDACTED));
     }
 
     #[test]
@@ -162,6 +164,7 @@ mod tests {
 
         // Assert
         assert!(!output.contains(PASSWORD));
+        assert!(output.contains(REDACTED));
     }
 
     #[test]
@@ -179,6 +182,7 @@ mod tests {
         // Assert
         assert!(!output.contains(ACCESS_TOKEN));
         assert!(!output.contains(REFRESH_TOKEN));
+        assert!(output.contains(REDACTED));
     }
 
     #[test]
@@ -193,6 +197,7 @@ mod tests {
 
         // Assert
         assert!(!output.contains(REFRESH_TOKEN));
+        assert!(output.contains(REDACTED));
     }
 
     #[test]
@@ -207,6 +212,7 @@ mod tests {
 
         // Assert
         assert!(!output.contains(REFRESH_TOKEN));
+        assert!(output.contains(REDACTED));
     }
 
     #[test]
@@ -221,6 +227,7 @@ mod tests {
 
         // Assert
         assert!(!output.contains(REFRESH_TOKEN));
+        assert!(output.contains(REDACTED));
     }
 
     #[test]
@@ -237,5 +244,6 @@ mod tests {
 
         // Assert
         assert!(!output.contains(ACCESS_TOKEN));
+        assert!(output.contains(REDACTED));
     }
 }

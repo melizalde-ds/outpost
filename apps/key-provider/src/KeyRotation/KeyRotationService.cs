@@ -115,9 +115,7 @@ internal sealed class KeyRotationService(
                 KeyPairRotationJobId = jobId,
                 StartedAt = startTime,
                 Success = false,
-                ErrorMessage = errorMessage.Length > MaxErrorMessageLength
-                    ? errorMessage[..MaxErrorMessageLength]
-                    : errorMessage
+                ErrorMessage = errorMessage[..Math.Min(errorMessage.Length, MaxErrorMessageLength)]
             };
 
             await jobStore.SaveFailedRotationAsync(job, ct);

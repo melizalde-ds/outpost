@@ -82,11 +82,6 @@ internal sealed class RotationWorker(
     private TimeSpan UntilCapped(DateTimeOffset at, DateTimeOffset now)
     {
         TimeSpan delay = at - now;
-        if (delay < TimeSpan.Zero)
-        {
-            return TimeSpan.Zero;
-        }
-
         return delay > _options.MaxCheckDelay ? _options.MaxCheckDelay : delay;
     }
 

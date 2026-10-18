@@ -33,10 +33,16 @@ internal sealed class KeyPairStore(
 
     public async Task<SigningKeyPair?> GetLatestKeyPairAsync(CancellationToken ct = default)
     {
-        KeyPairRecord? record;
+        KeyPairRecord? record = await FindNewestRecordAsync(ct);
+
+        return record is null ? null : Decode(record, _protector);
+    }
+
+    private async Task<KeyPairRecord?> FindNewestRecordAsync(CancellationToken ct)
+    {
         try
         {
-            record = await context.KeyPairRecords
+            return await context.KeyPairRecords
                 .AsNoTracking()
                 .NewestFirst()
                 .FirstOrDefaultAsync(ct);
@@ -45,21 +51,11 @@ internal sealed class KeyPairStore(
         {
             throw new DatabaseUnavailableException(e);
         }
-
-        return record is null ? null : Decode(record, _protector);
     }
 
     internal static SigningKeyPair Decode(KeyPairRecord record, IDataProtector protector)
     {
-        byte[] privateKeyBytes;
-        try
-        {
-            privateKeyBytes = protector.Unprotect(record.PrivateKey);
-        }
-        catch (CryptographicException e)
-        {
-            throw new SigningKeyUndecryptableException(record.KeyPairId, e);
-        }
+        byte[] privateKeyBytes = Unprotect(record, protector);
 
         if (privateKeyBytes.Length != Ed25519PrivateKeyParameters.KeySize)
         {
@@ -81,6 +77,18 @@ internal sealed class KeyPairStore(
         return new SigningKeyPair(privateKey, publicKey);
     }
 
+    private static byte[] Unprotect(KeyPairRecord record, IDataProtector protector)
+    {
+        try
+        {
+            return protector.Unprotect(record.PrivateKey);
+        }
+        catch (CryptographicException e)
+        {
+            throw new SigningKeyUndecryptableException(record.KeyPairId, e);
+        }
+    }
+
     public async Task<PublicSigningKey[]> GetVerificationKeysAsync(CancellationToken ct = default)
     {
         try
@@ -97,17 +105,6 @@ internal sealed class KeyPairStore(
         {
             throw new DatabaseUnavailableException(e);
         }
-    }
-
-    internal Task<PublicSigningKey?> GetVerificationKeyAsync(Guid id, CancellationToken ct = default)
-    {
-        return context.KeyPairRecords
-            .AsNoTracking()
-            .Verifiable(timeProvider)
-            .Where(k => k.KeyPairId == id)
-            .Select(x =>
-                new PublicSigningKey { Id = x.KeyPairId, PublicKey = x.PublicKey, ExpirationTime = x.ExpiresAt })
-            .FirstOrDefaultAsync(ct);
     }
 
     private static bool IsTemporary(Exception e)

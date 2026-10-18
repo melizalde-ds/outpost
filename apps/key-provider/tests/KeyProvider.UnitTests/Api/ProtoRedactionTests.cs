@@ -74,4 +74,17 @@ public sealed class ProtoRedactionTests
         // Assert
         output.ShouldContain("key-id");
     }
+
+    [Fact]
+    public void SignTokenResponse_ToString_ShowsTheTokenAsRedacted()
+    {
+        // Arrange
+        SignTokenResponse response = new() { Token = Secret };
+
+        // Act
+        string output = response.ToString();
+
+        // Assert
+        output.ShouldContain("[REDACTED]");
+    }
 }

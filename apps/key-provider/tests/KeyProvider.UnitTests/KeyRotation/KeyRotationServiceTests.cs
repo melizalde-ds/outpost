@@ -65,6 +65,23 @@ public sealed class KeyRotationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task GetLatestSuccessfulJobAsync_JobInStore_ReturnsIt()
+    {
+        // Arrange
+        KeyRotationJob job = new()
+        {
+            KeyPairRotationJobId = Guid.CreateVersion7(Now), StartedAt = Now, FinishedAt = Now, Success = true
+        };
+        _jobs.GetLatestSuccessfulJobAsync(Arg.Any<CancellationToken>()).Returns(job);
+
+        // Act
+        KeyRotationJob? latest = await _sut.GetLatestSuccessfulJobAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        latest.ShouldBeSameAs(job);
+    }
+
+    [Fact]
     public async Task RotateAsync_StoreAcceptsTheKey_ReturnsSuccessWithTheSavedKeyId()
     {
         // Act
@@ -181,6 +198,20 @@ public sealed class KeyRotationServiceTests : IDisposable
         KeyRotationJob recorded = _failedRotation.ShouldNotBeNull();
         recorded.Success.ShouldBeFalse();
         recorded.ErrorMessage.ShouldNotBeNull().ShouldContain("connection reset");
+    }
+
+    [Fact]
+    public async Task RotateAsync_DatabaseRejectsTheRotationInsideDbUpdateException_RecordsTheDatabaseReason()
+    {
+        // Arrange
+        SavingKeysFailsWith(new DbUpdateException("save failed",
+            new TestDbException("rejected", isTransient: false, DatabaseErrorCodes.RotationJobNotSuccessful)));
+
+        // Act
+        await _sut.RotateAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        _failedRotation.ShouldNotBeNull().ErrorMessage.ShouldBe("TestDbException: rejected");
     }
 
     [Fact]

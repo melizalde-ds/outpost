@@ -1,4 +1,5 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
+set windows-shell := ["C:/Program Files/Git/bin/bash.exe", "-euo", "pipefail", "-c"]
 
 key_provider := "apps/key-provider/src"
 key_tests := "apps/key-provider/tests/KeyProvider.UnitTests"
@@ -15,15 +16,13 @@ setup: env up tools key-secrets migrate
 
 [group('all')]
 env:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    created=0
-    for example in apps/*/.env.example; do
-        env=${example%.example}
-        [[ -e $example && ! -e $env ]] || continue
-        cp -v "$example" "$env"
-        created=1
-    done
+    @created=0; \
+    for example in apps/*/.env.example; do \
+        env=${example%.example}; \
+        [[ -e $example && ! -e $env ]] || continue; \
+        cp -v "$example" "$env"; \
+        created=1; \
+    done; \
     if (( created )); then echo "replace the change-me values in the new .env files before going on" >&2; exit 1; fi
 
 [group('all')]
@@ -53,20 +52,29 @@ test: auth-test key-test
 it: auth-it key-it
 
 [group('all')]
-mutants: auth-mutants key-mutants
+mutants:
+    @status=0; \
+    '{{just_executable()}}' auth-mutants || status=$?; \
+    '{{just_executable()}}' key-mutants || status=$?; \
+    exit $status
+
+[group('all')]
+mutants-diff:
+    @status=0; \
+    '{{just_executable()}}' auth-mutants-diff || status=$?; \
+    '{{just_executable()}}' key-mutants-diff || status=$?; \
+    exit $status
 
 [group('all')]
 run:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    dotnet run --project {{key_provider}} &
-    key_pid=$!
-    trap 'kill "$key_pid" 2>/dev/null || true' EXIT
-    until (exec 3<>/dev/tcp/localhost/{{key_port}}) 2>/dev/null; do
-        kill -0 "$key_pid" 2>/dev/null || exit 1
-        sleep 1
-    done
-    {{just_executable()}} auth-run
+    @dotnet run --project {{key_provider}} & \
+    key_pid=$!; \
+    trap 'if [[ -e /proc/$key_pid/winpid ]]; then taskkill //F //T //PID "$(cat /proc/$key_pid/winpid)" >/dev/null 2>&1; else kill "$key_pid" 2>/dev/null; fi; true' EXIT; \
+    until (exec 3<>/dev/tcp/localhost/{{key_port}}) 2>/dev/null; do \
+        kill -0 "$key_pid" 2>/dev/null || exit 1; \
+        sleep 1; \
+    done; \
+    '{{just_executable()}}' auth-run
 
 [group('proto')]
 lint:
@@ -92,7 +100,7 @@ auth-migrate:
 
 [group('auth')]
 auth-run:
-    set -a; source apps/auth/.env; set +a; cargo run -p auth
+    set -a; source <(tr -d '\r' < apps/auth/.env); set +a; cargo run -p auth
 
 [group('auth')]
 auth-test:
@@ -100,14 +108,20 @@ auth-test:
 
 [group('auth')]
 auth-it:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    trap 'docker rm -f $(docker ps -aq --filter label=outpost.tests=auth) >/dev/null 2>&1 || true' EXIT
+    trap 'docker rm -f $(docker ps -aq --filter label=outpost.tests=auth) >/dev/null 2>&1 || true' EXIT; \
     SQLX_OFFLINE=true cargo test -p auth --test '*'
 
 [group('auth')]
 auth-mutants *args:
-    SQLX_OFFLINE=true cargo mutants --package auth {{args}} -- --bins
+    trap 'docker rm -f $(docker ps -aq --filter label=outpost.tests=auth) >/dev/null 2>&1 || true' EXIT; \
+    SQLX_OFFLINE=true cargo mutants --package auth {{args}}
+
+[group('auth')]
+auth-mutants-diff *args:
+    diff=$(mktemp); \
+    trap 'rm -f "$diff"; docker rm -f $(docker ps -aq --filter label=outpost.tests=auth) >/dev/null 2>&1 || true' EXIT; \
+    git diff main -- apps/auth > "$diff"; \
+    SQLX_OFFLINE=true cargo mutants --package auth --in-diff "$diff" {{args}}
 
 [group('key-provider')]
 key-run:
@@ -122,22 +136,27 @@ key-it:
     dotnet test --project {{key_it}}
 
 [group('key-provider')]
-[working-directory('apps/key-provider/tests/KeyProvider.UnitTests')]
+[working-directory('apps/key-provider/src')]
 key-mutants *args:
-    dotnet stryker --test-runner mtp {{args}}
+    @status=0; \
+    dotnet stryker {{args}} || status=$?; \
+    dotnet stryker --mutate "**/Database/KeyProviderDbContext.cs" {{args}} || status=$?; \
+    exit $status
+
+[group('key-provider')]
+key-mutants-diff *args:
+    '{{just_executable()}}' key-mutants --since:main {{args}}
 
 [group('key-provider')]
 key-secrets:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    source apps/key-provider/.env
-    set_secret() {
-        dotnet user-secrets set --project {{key_provider}} "ConnectionStrings:$1" "Host=localhost;Port=5433;Database=$2;Username=$3;Password=$4" > /dev/null
-        echo "set user secret ConnectionStrings:$1"
-    }
-    set_secret KeyProvider "$POSTGRES_DB" key_provider_app "$APP_PASSWORD"
-    set_secret KeyProviderMigration "$POSTGRES_DB" key_provider_migrator "$MIGRATION_PASSWORD"
-    set_secret DataProtection "$POSTGRES_ENCRYPTION_DB" dp_app "$DP_APP_PASSWORD"
+    @source <(tr -d '\r' < apps/key-provider/.env); \
+    set_secret() { \
+        dotnet user-secrets set --project {{key_provider}} "ConnectionStrings:$1" "Host=localhost;Port=5433;Database=$2;Username=$3;Password=$4" > /dev/null; \
+        echo "set user secret ConnectionStrings:$1"; \
+    }; \
+    set_secret KeyProvider "$POSTGRES_DB" key_provider_app "$APP_PASSWORD"; \
+    set_secret KeyProviderMigration "$POSTGRES_DB" key_provider_migrator "$MIGRATION_PASSWORD"; \
+    set_secret DataProtection "$POSTGRES_ENCRYPTION_DB" dp_app "$DP_APP_PASSWORD"; \
     set_secret DataProtectionMigration "$POSTGRES_ENCRYPTION_DB" dp_migrator "$DP_MIGRATION_PASSWORD"
 
 [group('key-provider')]
@@ -151,8 +170,6 @@ _ef-script context name:
     sed -i '1s/^\xEF\xBB\xBF//' {{key_scripts}}/{{name}}.sql
 
 _ef-update context secret:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    connection=$(dotnet user-secrets list --project {{key_provider}} | sed -n 's/^ConnectionStrings:{{secret}} = //p')
-    if [[ -z $connection ]]; then echo "user secret ConnectionStrings:{{secret}} is not set" >&2; exit 1; fi
+    @connection=$(dotnet user-secrets list --project {{key_provider}} | tr -d '\r' | sed -n 's/^ConnectionStrings:{{secret}} = //p'); \
+    if [[ -z $connection ]]; then echo "user secret ConnectionStrings:{{secret}} is not set" >&2; exit 1; fi; \
     dotnet ef database update --project {{key_provider}} --context {{context}} --connection "$connection"

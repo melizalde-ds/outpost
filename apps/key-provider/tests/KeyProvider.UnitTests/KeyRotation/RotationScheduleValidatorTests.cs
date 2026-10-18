@@ -73,19 +73,56 @@ public sealed class RotationScheduleValidatorTests
         result.Succeeded.ShouldBeTrue();
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("not a schedule")]
-    public void Validate_InvalidExpression_Fails(string expression)
+    [Fact]
+    public void Validate_DefaultSchedule_Succeeds()
     {
         // Arrange
-        RotationScheduleOptions schedule = new() { Expression = expression };
+        RotationScheduleOptions schedule = new();
 
         // Act
         ValidateOptionsResult result = Validate(schedule, TimeSpan.FromDays(1), ProductionRetry);
 
         // Assert
-        result.Failed.ShouldBeTrue();
+        result.Succeeded.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Validate_EmptyExpression_FailsSayingItIsRequired()
+    {
+        // Arrange
+        RotationScheduleOptions schedule = new() { Expression = "" };
+
+        // Act
+        ValidateOptionsResult result = Validate(schedule, TimeSpan.FromDays(1), ProductionRetry);
+
+        // Assert
+        result.FailureMessage.ShouldBe("KeyRotation:Schedule:Expression is required.");
+    }
+
+    [Fact]
+    public void Validate_NotACronExpression_FailsNamingTheExpression()
+    {
+        // Arrange
+        RotationScheduleOptions schedule = new() { Expression = "not a schedule" };
+
+        // Act
+        ValidateOptionsResult result = Validate(schedule, TimeSpan.FromDays(1), ProductionRetry);
+
+        // Assert
+        result.FailureMessage.ShouldBe("'not a schedule' is not a valid cron expression.");
+    }
+
+    [Fact]
+    public void Validate_ExpressionThatNeverFires_FailsSayingItMustRepeat()
+    {
+        // Arrange
+        RotationScheduleOptions schedule = new() { Expression = "0 0 30 2 *" };
+
+        // Act
+        ValidateOptionsResult result = Validate(schedule, TimeSpan.FromDays(1), ProductionRetry);
+
+        // Assert
+        result.FailureMessage.ShouldBe("'0 0 30 2 *' must fire repeatedly.");
     }
 
     [Fact]
@@ -99,6 +136,35 @@ public sealed class RotationScheduleValidatorTests
 
         // Assert
         result.Failed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Validate_KeysExpireBeforeTheNextRotation_FailsNamingEachPart()
+    {
+        // Arrange
+        RotationScheduleOptions schedule = new() { Expression = "0 */8 * * *" };
+
+        // Act
+        ValidateOptionsResult result = Validate(schedule, TimeSpan.FromHours(8), ProductionRetry);
+
+        // Assert
+        result.FailureMessage.ShouldBe(
+            "KeyRotation:Lifespan (08:00:00) must be longer than the largest gap between schedule slots " +
+            "(08:00:00) plus KeyRotation:Schedule:FailureRetryDelay (00:05:00) plus the " +
+            "worst-case retry duration (00:05:00) plus Signing:TokenLifetime (00:05:00).");
+    }
+
+    [Fact]
+    public void Validate_YearlySlotExactlyOneYearAway_Succeeds()
+    {
+        // Arrange
+        RotationScheduleOptions schedule = new() { Expression = "0 0 1 1 *" };
+
+        // Act
+        ValidateOptionsResult result = Validate(schedule, TimeSpan.FromDays(400), ProductionRetry);
+
+        // Assert
+        result.Succeeded.ShouldBeTrue();
     }
 
     [Fact]

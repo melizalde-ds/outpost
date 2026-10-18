@@ -2,7 +2,7 @@ mod common;
 
 use common::{
     app::{App, free_address},
-    auth::{Auth, PASSWORD, code_of, jwk_key, redis_expiry, redis_has, redis_json},
+    auth::{Auth, PASSWORD, code_of, jwk_key, redis_delete, redis_expiry, redis_has, redis_json},
     fresh_db,
     key_stub::{AUDIENCE, ISSUER, KEY_EXPIRES_AT, KeyStubConfig, verification_key},
 };
@@ -118,6 +118,34 @@ async fn brand_new_signing_key_is_saved_for_apps() {
 
     // Assert
     assert!(redis_has(&jwk_key(&new_key.to_string())).await);
+}
+
+#[tokio::test]
+async fn signing_key_missing_from_redis_is_saved_again_on_the_next_sign_in() {
+    // Arrange
+    let config = KeyStubConfig::default();
+    let key = jwk_key(&config.key_id.to_string());
+    let auth = Auth::start_with(config, &[]).await;
+    redis_delete(&key).await;
+
+    // Act
+    auth.register(ALICE, PASSWORD).await.unwrap();
+
+    // Assert
+    assert!(redis_has(&key).await);
+}
+
+#[tokio::test]
+async fn signing_key_already_in_redis_is_not_fetched_again() {
+    // Arrange
+    let auth = Auth::start().await;
+    let calls_at_startup = auth.key_provider.key_list_calls();
+
+    // Act
+    auth.register(ALICE, PASSWORD).await.unwrap();
+
+    // Assert
+    assert_eq!(auth.key_provider.key_list_calls(), calls_at_startup);
 }
 
 #[tokio::test]

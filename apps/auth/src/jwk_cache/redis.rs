@@ -1,10 +1,16 @@
 use core::slice;
 
 use async_trait::async_trait;
-use redis::{AsyncCommands, Client, RedisResult, aio::ConnectionManager};
+use redis::{
+    AsyncCommands, Client, RedisResult,
+    aio::{ConnectionManager, ConnectionManagerConfig},
+};
 use uuid::Uuid;
 
-use crate::jwk_cache::{JwkCache, JwkCacheError, JwkRecord};
+use crate::{
+    jwk_cache::{JwkCache, JwkCacheError, JwkRecord},
+    retry::retry_once_if_disconnected,
+};
 
 #[derive(Debug, Clone)]
 pub struct RedisJwkCache {
@@ -12,8 +18,8 @@ pub struct RedisJwkCache {
 }
 
 impl RedisJwkCache {
-    pub async fn new(client: Client) -> RedisResult<Self> {
-        let conn: ConnectionManager = client.get_connection_manager().await?;
+    pub async fn new(client: Client, config: ConnectionManagerConfig) -> RedisResult<Self> {
+        let conn = client.get_connection_manager_with_config(config).await?;
         Ok(Self { conn })
     }
 
@@ -25,8 +31,12 @@ impl RedisJwkCache {
 #[async_trait]
 impl JwkCache for RedisJwkCache {
     async fn contains(&self, kid: &Uuid) -> Result<bool, JwkCacheError> {
-        let mut con = self.conn.clone();
-        Ok(con.exists(Self::redis_key(kid)).await?)
+        let redis_key = &Self::redis_key(kid);
+        Ok(retry_once_if_disconnected(
+            &self.conn,
+            |mut con| async move { con.exists(redis_key).await },
+        )
+        .await?)
     }
 
     async fn insert(&self, key: &JwkRecord) -> Result<(), JwkCacheError> {
@@ -34,7 +44,6 @@ impl JwkCache for RedisJwkCache {
     }
 
     async fn insert_many(&self, keys: &[JwkRecord]) -> Result<(), JwkCacheError> {
-        let mut con = self.conn.clone();
         let mut pipe = redis::pipe();
 
         pipe.atomic();
@@ -48,7 +57,11 @@ impl JwkCache for RedisJwkCache {
                 .pexpire_at(&redis_key, key.exp.timestamp_millis())
                 .ignore();
         }
-        pipe.query_async::<()>(&mut con).await?;
+        let pipe = &pipe;
+        retry_once_if_disconnected(&self.conn, |mut con| async move {
+            pipe.query_async::<()>(&mut con).await
+        })
+        .await?;
         Ok(())
     }
 }

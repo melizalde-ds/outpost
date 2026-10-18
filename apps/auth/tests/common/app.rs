@@ -81,6 +81,7 @@ async fn spawn(
     let infra = infra().await;
     let mut child = Command::new(env!("CARGO_BIN_EXE_auth"))
         .env_clear()
+        .envs(std::env::var_os("SYSTEMROOT").map(|root| ("SYSTEMROOT", root)))
         .env("NO_COLOR", "1")
         .env("AUTH__DATABASE__HOST", "127.0.0.1")
         .env("AUTH__DATABASE__PORT", infra.postgres_port.to_string())

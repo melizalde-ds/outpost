@@ -257,6 +257,24 @@ mod tests {
         RepositoryError::Database(sqlx::Error::PoolTimedOut)
     }
 
+    #[test]
+    fn to_timestamp_keeps_the_seconds_and_nanoseconds() {
+        // Arrange
+        let time = DateTime::from_timestamp(1_767_225_600, 250).unwrap();
+
+        // Act
+        let timestamp = to_timestamp(time);
+
+        // Assert
+        assert_eq!(
+            timestamp,
+            Timestamp {
+                seconds: 1_767_225_600,
+                nanos: 250,
+            }
+        );
+    }
+
     mod register {
         use pretty_assertions::assert_eq;
 
@@ -940,6 +958,22 @@ mod tests {
 
             // Assert
             expect_code(result, Code::Unavailable);
+        }
+
+        #[tokio::test]
+        async fn key_provider_failing_returns_internal() {
+            // Arrange
+            let mut signer = MockSigningService::new();
+            signer
+                .expect_sign()
+                .returning(|_| Err(SigningError::Call(Status::internal("boom"))));
+            let auth = TestAuth::new().with_signer(signer).build();
+
+            // Act
+            let result = register(&auth, ALICE, PASSWORD).await;
+
+            // Assert
+            expect_code(result, Code::Internal);
         }
 
         #[tokio::test]

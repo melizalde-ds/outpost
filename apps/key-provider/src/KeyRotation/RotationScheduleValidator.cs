@@ -58,15 +58,10 @@ internal sealed class RotationScheduleValidator(
         while (previous is not null && previous <= end)
         {
             DateTimeOffset? next = expression.GetNextOccurrence(previous.Value, TimeZoneInfo.Utc);
-            if (next is null)
-            {
-                break;
-            }
-
-            TimeSpan gap = next.Value - previous.Value;
+            TimeSpan? gap = next - previous;
             if (gap > maxGap)
             {
-                maxGap = gap;
+                maxGap = gap.Value;
             }
 
             previous = next;

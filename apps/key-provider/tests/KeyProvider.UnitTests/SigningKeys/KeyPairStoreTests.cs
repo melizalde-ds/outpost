@@ -59,6 +59,7 @@ public sealed class KeyPairStoreTests
 
         // Assert
         error.ShouldBeOfType<SigningKeyUndecryptableException>().KeyId.ShouldBe(KeyId);
+        error.Message.ShouldBe($"Signing key '{KeyId}' could not be decrypted.");
     }
 
     [Fact]
@@ -86,5 +87,6 @@ public sealed class KeyPairStoreTests
 
         // Assert
         error.ShouldBeOfType<SigningKeyMalformedException>().ActualLength.ShouldBe(31);
+        error.Message.ShouldBe($"Signing key '{KeyId}' is 31 bytes long, expected 32.");
     }
 }

@@ -1,0 +1,4 @@
+exclude_re = [
+    "replace main -> ",
+    "replace .*verify_dummy -> ",
+]

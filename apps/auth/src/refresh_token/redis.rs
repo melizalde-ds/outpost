@@ -1,8 +1,14 @@
 use async_trait::async_trait;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
-use redis::{AsyncCommands, Client, RedisResult, aio::ConnectionManager};
+use redis::{
+    AsyncCommands, Client, RedisResult,
+    aio::{ConnectionManager, ConnectionManagerConfig},
+};
 
-use crate::refresh_token::{Entry, RefreshToken, RefreshTokenStore, RefreshTokenStoreError};
+use crate::{
+    refresh_token::{Entry, RefreshToken, RefreshTokenStore, RefreshTokenStoreError},
+    retry::retry_once_if_disconnected,
+};
 
 #[derive(Debug, Clone)]
 pub struct RedisRefreshTokenStore {
@@ -10,8 +16,8 @@ pub struct RedisRefreshTokenStore {
 }
 
 impl RedisRefreshTokenStore {
-    pub async fn new(client: Client) -> RedisResult<Self> {
-        let conn: ConnectionManager = client.get_connection_manager().await?;
+    pub async fn new(client: Client, config: ConnectionManagerConfig) -> RedisResult<Self> {
+        let conn = client.get_connection_manager_with_config(config).await?;
         Ok(Self { conn })
     }
 
@@ -27,7 +33,6 @@ impl RedisRefreshTokenStore {
 #[async_trait]
 impl RefreshTokenStore for RedisRefreshTokenStore {
     async fn insert(&self, token: &RefreshToken) -> Result<(), RefreshTokenStoreError> {
-        let mut con = self.conn.clone();
         let redis_key = Self::redis_key(&token.hash);
         let entry = serde_json::to_string(&Entry::Live {
             user_id: token.user_id,
@@ -40,13 +45,23 @@ impl RefreshTokenStore for RedisRefreshTokenStore {
             .ignore()
             .pexpire_at(&redis_key, token.exp.timestamp_millis())
             .ignore();
-        pipe.query_async::<()>(&mut con).await?;
+        let pipe = &pipe;
+        retry_once_if_disconnected(&self.conn, |mut con| async move {
+            pipe.query_async::<()>(&mut con).await
+        })
+        .await?;
         Ok(())
     }
 
     async fn find(&self, hash: &[u8; 32]) -> Result<Option<Entry>, RefreshTokenStoreError> {
-        let mut con = self.conn.clone();
-        Self::decode(con.get(Self::redis_key(hash)).await?)
+        let redis_key = &Self::redis_key(hash);
+        Self::decode(
+            retry_once_if_disconnected(
+                &self.conn,
+                |mut con| async move { con.get(redis_key).await },
+            )
+            .await?,
+        )
     }
 
     async fn rotate(
@@ -79,8 +94,11 @@ impl RefreshTokenStore for RedisRefreshTokenStore {
     }
 
     async fn revoke(&self, hash: &[u8; 32]) -> Result<(), RefreshTokenStoreError> {
-        let mut con = self.conn.clone();
-        con.del::<_, ()>(Self::redis_key(hash)).await?;
+        let redis_key = &Self::redis_key(hash);
+        retry_once_if_disconnected(&self.conn, |mut con| async move {
+            con.del::<_, ()>(redis_key).await
+        })
+        .await?;
         Ok(())
     }
 }

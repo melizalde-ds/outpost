@@ -227,6 +227,7 @@ public sealed class KeyApiServiceTests : IDisposable
 
         // Assert
         error.StatusCode.ShouldBe(StatusCode.Unavailable);
+        error.Status.Detail.ShouldBe("service unavailable, retry later");
     }
 
     [Fact]
@@ -254,6 +255,7 @@ public sealed class KeyApiServiceTests : IDisposable
 
         // Assert
         error.StatusCode.ShouldBe(StatusCode.Unavailable);
+        error.Status.Detail.ShouldBe("service unavailable, retry later");
     }
 
     [Fact]

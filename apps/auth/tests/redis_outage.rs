@@ -1,5 +1,7 @@
 mod common;
 
+use std::time::{Duration, Instant};
+
 use common::{
     LABEL,
     auth::{Auth, PASSWORD, code_of},
@@ -67,6 +69,26 @@ async fn redis_down_login_returns_unavailable() {
 
     // Assert
     assert_eq!(code_of(result), Code::Unavailable);
+}
+
+#[tokio::test]
+async fn redis_down_login_answers_within_3_seconds() {
+    // Arrange
+    let redis = OwnRedis::start().await;
+    let auth = redis.auth().await;
+    auth.sign_up(ALICE).await;
+    redis.crash().await;
+    let started = Instant::now();
+
+    // Act
+    let _ = auth.login(ALICE, PASSWORD).await;
+
+    // Assert
+    assert!(
+        started.elapsed() < Duration::from_secs(3),
+        "{:?}",
+        started.elapsed()
+    );
 }
 
 #[tokio::test]

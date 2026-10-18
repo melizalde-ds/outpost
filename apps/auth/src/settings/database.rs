@@ -63,3 +63,36 @@ impl DatabaseSettings {
             .idle_timeout(Duration::from_secs(self.pool.idle_timeout_secs))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use pretty_assertions::assert_eq;
+
+    use super::*;
+
+    #[test]
+    fn pool_options_use_the_pool_settings() {
+        // Arrange
+        let settings = DatabaseSettings {
+            pool: PoolSettings {
+                max_connections: 7,
+                min_connections: 2,
+                idle_timeout_secs: 30,
+            },
+            ..DatabaseSettings::default()
+        };
+
+        // Act
+        let options = settings.pool_options();
+
+        // Assert
+        assert_eq!(
+            (
+                options.get_max_connections(),
+                options.get_min_connections(),
+                options.get_idle_timeout(),
+            ),
+            (7, 2, Some(Duration::from_secs(30)))
+        );
+    }
+}

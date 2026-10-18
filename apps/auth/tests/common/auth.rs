@@ -189,6 +189,14 @@ pub async fn redis_has(key: &str) -> bool {
         .unwrap()
 }
 
+pub async fn redis_delete(key: &str) {
+    ::redis::cmd("DEL")
+        .arg(key)
+        .query_async::<()>(&mut redis().await)
+        .await
+        .unwrap();
+}
+
 pub async fn redis_json(key: &str) -> serde_json::Value {
     let json: String = ::redis::cmd("JSON.GET")
         .arg(key)

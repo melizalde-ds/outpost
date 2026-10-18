@@ -111,3 +111,36 @@ pub trait TokenFamilyRepository: Debug + Send + Sync + 'static {
         reason: RevocationReason,
     ) -> Result<Vec<TokenFamilyId>, RepositoryError>;
 }
+
+#[cfg(test)]
+mod tests {
+    use pretty_assertions::assert_eq;
+
+    use super::*;
+
+    const ID: &str = "0192f0c1-7b5e-7d3a-9a4b-1c2d3e4f5a6b";
+
+    #[test]
+    fn user_id_displays_as_its_uuid() {
+        // Arrange
+        let id = UserId(Uuid::parse_str(ID).unwrap());
+
+        // Act
+        let output = id.to_string();
+
+        // Assert
+        assert_eq!(output, ID);
+    }
+
+    #[test]
+    fn token_family_id_displays_as_its_uuid() {
+        // Arrange
+        let id = TokenFamilyId(Uuid::parse_str(ID).unwrap());
+
+        // Act
+        let output = id.to_string();
+
+        // Assert
+        assert_eq!(output, ID);
+    }
+}

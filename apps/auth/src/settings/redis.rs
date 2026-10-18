@@ -1,4 +1,7 @@
-use redis::{ConnectionAddr, ConnectionInfo, IntoConnectionInfo, RedisConnectionInfo, RedisResult};
+use redis::{
+    ConnectionAddr, ConnectionInfo, IntoConnectionInfo, RedisConnectionInfo, RedisResult,
+    aio::ConnectionManagerConfig,
+};
 use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 
@@ -29,5 +32,9 @@ impl RedisSettings {
             ),
             None => info,
         })
+    }
+
+    pub fn connection_manager_config(&self) -> ConnectionManagerConfig {
+        ConnectionManagerConfig::new().set_number_of_retries(0)
     }
 }

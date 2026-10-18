@@ -1,0 +1,12 @@
+{
+  "stryker-config": {
+    "test-runner": "mtp",
+    "concurrency": 2,
+    "test-projects": [
+      "../tests/KeyProvider.UnitTests/KeyProvider.UnitTests.csproj",
+      "../tests/KeyProvider.IntegrationTests/KeyProvider.IntegrationTests.csproj"
+    ],
+    "mutate": ["**/*.cs", "!Migrations/**/*.cs", "!Database/KeyProviderDbContext.cs"],
+    "ignore-methods": ["*.Log*"]
+  }
+}

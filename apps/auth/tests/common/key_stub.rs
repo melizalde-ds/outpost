@@ -1,6 +1,9 @@
 use std::{
     net::SocketAddr,
-    sync::{Arc, Mutex},
+    sync::{
+        Arc, Mutex,
+        atomic::{AtomicUsize, Ordering},
+    },
 };
 
 use jsonwebtoken::{Algorithm, EncodingKey, Header, get_current_timestamp};
@@ -73,6 +76,7 @@ struct Claims<'a> {
 struct Stub {
     config: Arc<Mutex<KeyStubConfig>>,
     signing_key: EncodingKey,
+    key_list_calls: Arc<AtomicUsize>,
 }
 
 #[tonic::async_trait]
@@ -112,6 +116,7 @@ impl KeyService for Stub {
         &self,
         _request: Request<GetVerificationKeysRequest>,
     ) -> Result<Response<GetVerificationKeysResponse>, Status> {
+        self.key_list_calls.fetch_add(1, Ordering::SeqCst);
         Ok(Response::new(GetVerificationKeysResponse {
             keys: self.config.lock().unwrap().listed_keys.clone(),
         }))
@@ -121,6 +126,7 @@ impl KeyService for Stub {
 pub struct KeyStub {
     pub addr: SocketAddr,
     config: Arc<Mutex<KeyStubConfig>>,
+    key_list_calls: Arc<AtomicUsize>,
 }
 
 impl KeyStub {
@@ -128,19 +134,29 @@ impl KeyStub {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let addr = listener.local_addr().unwrap();
         let config = Arc::new(Mutex::new(config));
+        let key_list_calls = Arc::new(AtomicUsize::new(0));
         let stub = Arc::new(Stub {
             config: config.clone(),
             signing_key: EncodingKey::from_ed_pem(PRIVATE_KEY_PEM.as_bytes()).unwrap(),
+            key_list_calls: key_list_calls.clone(),
         });
         tokio::spawn(
             Server::builder()
                 .add_service(KeyServiceServer::from_arc(stub))
                 .serve_with_incoming(TcpListenerStream::new(listener)),
         );
-        Self { addr, config }
+        Self {
+            addr,
+            config,
+            key_list_calls,
+        }
     }
 
     pub fn set_sign_error(&self, code: Option<Code>) {
         self.config.lock().unwrap().sign_error = code;
+    }
+
+    pub fn key_list_calls(&self) -> usize {
+        self.key_list_calls.load(Ordering::SeqCst)
     }
 }

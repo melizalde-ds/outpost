@@ -22,6 +22,7 @@ mod password;
 mod proto;
 mod refresh_token;
 mod repository;
+mod retry;
 mod service;
 mod settings;
 mod signing;
@@ -41,15 +42,16 @@ async fn main() -> anyhow::Result<()> {
     info!("connected to database");
 
     let redis_client = Client::open(settings.redis.connection_info()?)?;
+    let redis_config = settings.redis.connection_manager_config();
     let signing_channel = create_channel(&settings.grpc.key_service_client)?;
 
     let users = Arc::new(PostgresUserRepository::new(db_pool.clone()));
     info!("user repository initialized");
     let families = Arc::new(PostgresTokenFamilyRepository::new(db_pool));
     info!("token family repository initialized");
-    let jwk_cache = Arc::new(RedisJwkCache::new(redis_client.clone()).await?);
+    let jwk_cache = Arc::new(RedisJwkCache::new(redis_client.clone(), redis_config.clone()).await?);
     info!("JWK cache initialized");
-    let refresh_tokens = Arc::new(RedisRefreshTokenStore::new(redis_client).await?);
+    let refresh_tokens = Arc::new(RedisRefreshTokenStore::new(redis_client, redis_config).await?);
     info!("refresh token store initialized");
 
     let passwords = Arc::new(Argon2PasswordHasher::new(&settings.password)?);

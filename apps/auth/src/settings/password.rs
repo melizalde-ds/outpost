@@ -32,4 +32,14 @@ mod tests {
         // Assert
         assert!(!output.contains(PEPPER));
     }
+
+    #[test]
+    fn concurrency_limit_defaults_to_10() {
+        // Act
+        let settings: PasswordSettings =
+            serde_json::from_str(r#"{ "pepper": "pepper-value" }"#).unwrap();
+
+        // Assert
+        assert_eq!(settings.concurrency_limit, 10);
+    }
 }

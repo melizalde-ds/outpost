@@ -12,8 +12,11 @@ using Shouldly;
 namespace KeyProvider.IntegrationTests.Infrastructure;
 
 /// <summary>The real key provider, in memory, on its own databases and a fake clock.</summary>
-internal sealed class ServiceFactory(TestDatabases databases, bool keepRotationWorker = false)
-    : WebApplicationFactory<Program>
+internal sealed class ServiceFactory(
+    TestDatabases databases,
+    bool keepRotationWorker = false,
+    bool fakeClock = true
+) : WebApplicationFactory<Program>
 {
     public static readonly DateTimeOffset Start = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
@@ -27,7 +30,10 @@ internal sealed class ServiceFactory(TestDatabases databases, bool keepRotationW
         builder.UseSetting("ConnectionStrings:DataProtection", databases.DataProtection);
         builder.ConfigureTestServices(services =>
         {
-            services.AddSingleton<TimeProvider>(Time);
+            if (fakeClock)
+            {
+                services.AddSingleton<TimeProvider>(Time);
+            }
             if (!keepRotationWorker)
             {
                 services.Remove(

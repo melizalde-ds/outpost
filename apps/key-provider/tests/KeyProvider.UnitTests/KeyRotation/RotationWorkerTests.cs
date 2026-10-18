@@ -1,6 +1,7 @@
 using KeyProvider.KeyRotation;
 
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 
@@ -24,6 +25,7 @@ public sealed class RotationWorkerTests
 
     private readonly IKeyRotationService _rotation = Substitute.For<IKeyRotationService>();
     private readonly FakeTimeProvider _clock = new(Now);
+    private readonly FakeLogger<RotationWorker> _logger = new();
 
     public RotationWorkerTests()
     {
@@ -45,7 +47,7 @@ public sealed class RotationWorkerTests
                 MaxCheckDelay = MaxCheckDelay,
                 FailureRetryDelay = failureRetryDelay ?? FailureRetryDelay
             }),
-            NullLogger<RotationWorker>.Instance,
+            _logger,
             _clock);
     }
 
@@ -136,6 +138,20 @@ public sealed class RotationWorkerTests
     }
 
     [Fact]
+    public async Task RunOnceAsync_RotationSucceedsButNoSlotFollows_WaitsMaxCheckDelay()
+    {
+        // Arrange
+        RotationWorker sut = CreateWorker(expression: NeverFires);
+
+        // Act
+        TimeSpan wait = await sut.RunOnceAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        await _rotation.Received(1).RotateAsync(Arg.Any<CancellationToken>());
+        wait.ShouldBe(MaxCheckDelay);
+    }
+
+    [Fact]
     public async Task RunOnceAsync_RotationSucceeds_WaitsUntilTheNextSlot()
     {
         // Arrange
@@ -179,6 +195,23 @@ public sealed class RotationWorkerTests
     }
 
     [Fact]
+    public async Task RunOnceAsync_RotationTimesOutOnEveryAttempt_LogsAnError()
+    {
+        // Arrange
+        _rotation.RotateAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<KeyRotationResult>(new TimeoutRejectedException()));
+        RotationWorker sut = CreateWorker();
+
+        // Act
+        await sut.RunOnceAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        FakeLogRecord record = _logger.LatestRecord;
+        record.Level.ShouldBe(LogLevel.Error);
+        record.Exception.ShouldBeOfType<TimeoutRejectedException>();
+    }
+
+    [Fact]
     public async Task RunOnceAsync_ScheduleHasNoUpcomingSlot_WaitsMaxCheckDelay()
     {
         // Arrange
@@ -190,6 +223,33 @@ public sealed class RotationWorkerTests
 
         // Assert
         wait.ShouldBe(MaxCheckDelay);
+        await _rotation.DidNotReceive().RotateAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task StartAsync_NothingDue_WaitsBeforeCheckingAgain()
+    {
+        // Arrange
+        TaskCompletionSource firstCheck = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        int checks = 0;
+        _rotation.GetLatestSuccessfulJobAsync(Arg.Any<CancellationToken>()).Returns(_ =>
+        {
+            Interlocked.Increment(ref checks);
+            firstCheck.TrySetResult();
+            return Task.FromResult<KeyRotationJob?>(new KeyRotationJob
+            {
+                KeyPairRotationJobId = Guid.Empty, StartedAt = Now, FinishedAt = Now, Success = true
+            });
+        });
+        using RotationWorker sut = CreateWorker();
+
+        // Act
+        await sut.StartAsync(TestContext.Current.CancellationToken);
+        await firstCheck.Task;
+        await Task.Delay(TimeSpan.FromMilliseconds(50), TestContext.Current.CancellationToken);
+
+        // Assert
+        Volatile.Read(ref checks).ShouldBe(1);
     }
 
     [Fact]

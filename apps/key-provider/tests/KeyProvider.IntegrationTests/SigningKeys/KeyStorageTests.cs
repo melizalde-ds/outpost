@@ -1,5 +1,7 @@
+using Grpc.Core;
 using KeyProvider.Database;
 using KeyProvider.IntegrationTests.Infrastructure;
+using KeyProvider.KeyRotation;
 using KeyProvider.SigningKeys;
 using KeyProvider.UnitTests;
 using Microsoft.AspNetCore.DataProtection;
@@ -131,6 +133,90 @@ public sealed class KeyStorageTests(PostgresFixture postgres)
 
         // Assert
         error.SqlState.ShouldBe(AppendOnlySqlState.Violation);
+    }
+
+    [Fact]
+    public async Task SaveKeyPairAsync_RotationJobFailed_Throws()
+    {
+        // Arrange
+        await using ServiceFactory service = new(await postgres.CreateDatabasesAsync(_ct));
+        await using AsyncServiceScope scope = service.Services.CreateAsyncScope();
+        IKeyPairStore store = scope.ServiceProvider.GetRequiredService<IKeyPairStore>();
+        KeyRotationJob failedJob = new()
+        {
+            KeyPairRotationJobId = Guid.CreateVersion7(),
+            StartedAt = ServiceFactory.Start,
+            Success = false,
+            ErrorMessage = "failed",
+        };
+        KeyPairRecord record = new()
+        {
+            KeyPairId = Guid.CreateVersion7(),
+            PublicKey = new byte[Ed25519PublicKeyParameters.KeySize],
+            PrivateKey = [0],
+            ExpiresAt = ServiceFactory.Start.AddDays(1),
+            KeyPairRotationJobId = failedJob.KeyPairRotationJobId,
+            RotationJob = failedJob,
+        };
+
+        // Act
+        ArgumentException error = await Should.ThrowAsync<ArgumentException>(() =>
+            store.SaveKeyPairAsync(record, _ct)
+        );
+
+        // Assert
+        error.ParamName.ShouldBe("record");
+        error.Message.ShouldStartWith(
+            "A key pair can only be saved with a successful rotation job."
+        );
+    }
+
+    [Fact]
+    public async Task GetLatestKeyPairAsync_DatabaseUnreachable_ThrowsDatabaseUnavailable()
+    {
+        // Arrange
+        TestDatabases databases = await postgres.CreateDatabasesAsync(_ct);
+        string closedPort = new NpgsqlConnectionStringBuilder(databases.KeyProvider)
+        {
+            Host = "127.0.0.1",
+            Port = 1,
+        }.ConnectionString;
+        await using ServiceFactory service = new(databases with { KeyProvider = closedPort });
+        await using AsyncServiceScope scope = service.Services.CreateAsyncScope();
+        IKeyPairStore store = scope.ServiceProvider.GetRequiredService<IKeyPairStore>();
+
+        // Act
+        Exception error = await Should.ThrowAsync<Exception>(() =>
+            store.GetLatestKeyPairAsync(_ct)
+        );
+
+        // Assert
+        error.ShouldBeOfType<DatabaseUnavailableException>();
+        error.Message.ShouldBe("The database is temporarily unavailable.");
+    }
+
+    [Fact]
+    public async Task SignToken_DatabaseRefusesAccess_ReturnsInternal()
+    {
+        // Arrange
+        TestDatabases databases = await postgres.CreateDatabasesAsync(_ct);
+        await using NpgsqlConnection admin = await OpenAdminAsync(databases);
+        await using NpgsqlCommand revoke = new(
+            "REVOKE SELECT ON key_pair_record FROM key_provider_app",
+            admin
+        );
+        await revoke.ExecuteNonQueryAsync(_ct);
+        await using ServiceFactory service = new(databases);
+
+        // Act
+        RpcException error = await Should.ThrowAsync<RpcException>(async () =>
+            await service
+                .CreateKeyClient()
+                .SignTokenAsync(new SignTokenRequest { Subject = Subject }, cancellationToken: _ct)
+        );
+
+        // Assert
+        error.StatusCode.ShouldBe(StatusCode.Internal);
     }
 
     [Fact]
