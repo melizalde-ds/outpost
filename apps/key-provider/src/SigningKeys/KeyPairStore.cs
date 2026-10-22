@@ -1,4 +1,3 @@
-using System.Data.Common;
 using System.Security.Cryptography;
 
 using KeyProvider.Database;
@@ -31,23 +30,35 @@ internal sealed class KeyPairStore(
         await context.SaveChangesAsync(ct);
     }
 
-    public async Task<SigningKeyPair?> GetLatestKeyPairAsync(CancellationToken ct = default)
+    public Task<SigningKeyPair?> GetLatestKeyPairAsync(CancellationToken ct = default)
     {
-        KeyPairRecord? record = await FindNewestRecordAsync(ct);
+        return FindNewestAsync(context.KeyPairRecords, ct);
+    }
+
+    public Task<SigningKeyPair?> GetLatestKeyPairCreatedByAsync(DateTimeOffset createdBy,
+        CancellationToken ct = default)
+    {
+        return FindNewestAsync(context.KeyPairRecords.CreatedBy(createdBy), ct);
+    }
+
+    private async Task<SigningKeyPair?> FindNewestAsync(IQueryable<KeyPairRecord> records, CancellationToken ct)
+    {
+        KeyPairRecord? record = await FindNewestRecordAsync(records, ct);
 
         return record is null ? null : Decode(record, _protector);
     }
 
-    private async Task<KeyPairRecord?> FindNewestRecordAsync(CancellationToken ct)
+    private static async Task<KeyPairRecord?> FindNewestRecordAsync(IQueryable<KeyPairRecord> records,
+        CancellationToken ct)
     {
         try
         {
-            return await context.KeyPairRecords
+            return await records
                 .AsNoTracking()
                 .NewestFirst()
                 .FirstOrDefaultAsync(ct);
         }
-        catch (Exception e) when (IsTemporary(e))
+        catch (Exception e) when (DatabaseErrors.IsTemporary(e))
         {
             throw new DatabaseUnavailableException(e);
         }
@@ -101,22 +112,9 @@ internal sealed class KeyPairStore(
                     new PublicSigningKey { Id = x.KeyPairId, PublicKey = x.PublicKey, ExpirationTime = x.ExpiresAt })
                 .ToArrayAsync(ct);
         }
-        catch (Exception e) when (IsTemporary(e))
+        catch (Exception e) when (DatabaseErrors.IsTemporary(e))
         {
             throw new DatabaseUnavailableException(e);
         }
-    }
-
-    private static bool IsTemporary(Exception e)
-    {
-        for (Exception? current = e; current is not null; current = current.InnerException)
-        {
-            if (current is TimeoutException or DbException { IsTransient: true })
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

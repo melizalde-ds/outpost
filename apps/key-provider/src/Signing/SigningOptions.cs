@@ -14,4 +14,7 @@ public sealed record SigningOptions
 
     [Range(typeof(TimeSpan), "00:01:00", "00:15:00")]
     public TimeSpan TokenLifetime { get; init; } = TimeSpan.FromMinutes(5);
+
+    [Range(typeof(TimeSpan), "00:00:00", "01:00:00")]
+    public TimeSpan PublishDelay { get; init; } = TimeSpan.FromMinutes(3);
 }

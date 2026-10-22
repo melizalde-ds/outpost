@@ -35,14 +35,16 @@ internal sealed class RotationScheduleValidator(
         TimeSpan worstCaseRetry = (retry.MaxRetryAttempts + 1) * retry.AttemptTimeout
                                   + retry.MaxDelay * retry.MaxRetryAttempts;
         TimeSpan tokenLifetime = signingOptions.Value.TokenLifetime;
+        TimeSpan publishDelay = signingOptions.Value.PublishDelay;
 
         TimeSpan lifespan = rotationOptions.Value.Lifespan;
-        if (lifespan <= maxGap + options.FailureRetryDelay + worstCaseRetry + tokenLifetime)
+        if (lifespan <= maxGap + options.FailureRetryDelay + worstCaseRetry + tokenLifetime + publishDelay)
         {
             return ValidateOptionsResult.Fail(
                 $"KeyRotation:Lifespan ({lifespan}) must be longer than the largest gap between schedule slots " +
                 $"({maxGap}) plus KeyRotation:Schedule:FailureRetryDelay ({options.FailureRetryDelay}) plus the " +
-                $"worst-case retry duration ({worstCaseRetry}) plus Signing:TokenLifetime ({tokenLifetime}).");
+                $"worst-case retry duration ({worstCaseRetry}) plus Signing:TokenLifetime ({tokenLifetime}) plus " +
+                $"Signing:PublishDelay ({publishDelay}).");
         }
 
         return ValidateOptionsResult.Success;

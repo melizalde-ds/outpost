@@ -24,10 +24,21 @@ public sealed class QueryFiltersTests
 
     private static KeyPairRecord KeyExpiringAt(DateTimeOffset expiresAt)
     {
-        KeyRotationJob job = Job(success: true, Now);
+        return Key(Now, expiresAt);
+    }
+
+    private static KeyPairRecord KeyCreatedAt(DateTimeOffset createdAt)
+    {
+        return Key(createdAt, createdAt.AddDays(1));
+    }
+
+    private static KeyPairRecord Key(DateTimeOffset createdAt, DateTimeOffset expiresAt)
+    {
+        KeyRotationJob job = Job(success: true, createdAt);
         return new KeyPairRecord
         {
             KeyPairId = Guid.NewGuid(),
+            CreatedAt = createdAt,
             PublicKey = [],
             PrivateKey = [],
             ExpiresAt = expiresAt,
@@ -60,6 +71,32 @@ public sealed class QueryFiltersTests
 
         // Assert
         result.ShouldBe([key]);
+    }
+
+    [Fact]
+    public void CreatedBy_KeyCreatedExactlyAtTheCutoff_IsKept()
+    {
+        // Arrange
+        KeyPairRecord key = KeyCreatedAt(Now);
+
+        // Act
+        KeyPairRecord[] result = new[] { key }.AsQueryable().CreatedBy(Now).ToArray();
+
+        // Assert
+        result.ShouldBe([key]);
+    }
+
+    [Fact]
+    public void CreatedBy_KeyCreatedOneTickAfterTheCutoff_IsLeftOut()
+    {
+        // Arrange
+        KeyPairRecord[] keys = [KeyCreatedAt(Now.AddTicks(1))];
+
+        // Act
+        KeyPairRecord[] result = keys.AsQueryable().CreatedBy(Now).ToArray();
+
+        // Assert
+        result.ShouldBeEmpty();
     }
 
     [Fact]

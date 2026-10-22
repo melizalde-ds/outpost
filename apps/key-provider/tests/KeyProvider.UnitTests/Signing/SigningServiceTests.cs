@@ -16,6 +16,8 @@ public sealed class SigningServiceTests : IDisposable
     private static readonly DateTimeOffset Now = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly Guid UserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
     private static readonly Guid KeyId = Guid.Parse("00000000-0000-0000-0000-0000000000a1");
+    private static readonly Guid NewKeyId = Guid.Parse("00000000-0000-0000-0000-0000000000a2");
+    private static readonly TimeSpan PublishDelay = TimeSpan.FromMinutes(3);
 
     private readonly FakeTimeProvider _clock = new(Now);
     private readonly IKeyPairStore _store = Substitute.For<IKeyPairStore>();
@@ -84,6 +86,51 @@ public sealed class SigningServiceTests : IDisposable
         // Assert
         error.ShouldBeOfType<SigningKeyExpiredException>();
         error.Message.ShouldBe($"Signing key '{KeyId}' expires at {expiresAt:O} and can no longer sign tokens.");
+    }
+
+    [Fact]
+    public async Task GenerateTokenAsync_NewestKeyNotPublishedLongEnough_SignsWithTheOlderKey()
+    {
+        // Arrange
+        _store.GetLatestKeyPairCreatedByAsync(Now - PublishDelay, Arg.Any<CancellationToken>())
+            .Returns(TestKeys.Create(KeyId, Now.AddDays(1)));
+        _store.GetLatestKeyPairAsync(Arg.Any<CancellationToken>()).Returns(TestKeys.Create(NewKeyId, Now.AddDays(1)));
+
+        // Act
+        SignedToken token = await _signing.GenerateTokenAsync(UserId, TestContext.Current.CancellationToken);
+
+        // Assert
+        TestKeys.Header(token.Token).GetProperty("kid").GetGuid().ShouldBe(KeyId);
+    }
+
+    [Fact]
+    public async Task GenerateTokenAsync_NoKeyPublishedLongEnough_SignsWithTheNewestKey()
+    {
+        // Arrange
+        _store.GetLatestKeyPairCreatedByAsync(Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns((SigningKeyPair?)null);
+        _store.GetLatestKeyPairAsync(Arg.Any<CancellationToken>()).Returns(TestKeys.Create(NewKeyId, Now.AddDays(1)));
+
+        // Act
+        SignedToken token = await _signing.GenerateTokenAsync(UserId, TestContext.Current.CancellationToken);
+
+        // Assert
+        TestKeys.Header(token.Token).GetProperty("kid").GetGuid().ShouldBe(NewKeyId);
+    }
+
+    [Fact]
+    public async Task GenerateTokenAsync_PublishedKeyEndsWithinATokenLifetime_SignsWithTheNewestKey()
+    {
+        // Arrange
+        _store.GetLatestKeyPairCreatedByAsync(Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(TestKeys.Create(KeyId, Now.AddMinutes(1)));
+        _store.GetLatestKeyPairAsync(Arg.Any<CancellationToken>()).Returns(TestKeys.Create(NewKeyId, Now.AddDays(1)));
+
+        // Act
+        SignedToken token = await _signing.GenerateTokenAsync(UserId, TestContext.Current.CancellationToken);
+
+        // Assert
+        TestKeys.Header(token.Token).GetProperty("kid").GetGuid().ShouldBe(NewKeyId);
     }
 
     [Fact]

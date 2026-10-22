@@ -28,7 +28,7 @@ public sealed class RotationScheduleValidatorTests
         AttemptTimeout = TimeSpan.FromSeconds(10)
     };
 
-    private static readonly TimeSpan MinimumProductionLifespan = new(8, 15, 0);
+    private static readonly TimeSpan MinimumProductionLifespan = new(8, 18, 0);
 
     private static ValidateOptionsResult Validate(
         RotationScheduleOptions schedule, TimeSpan lifespan, RotationRetryOptions retry)
@@ -151,7 +151,8 @@ public sealed class RotationScheduleValidatorTests
         result.FailureMessage.ShouldBe(
             "KeyRotation:Lifespan (08:00:00) must be longer than the largest gap between schedule slots " +
             "(08:00:00) plus KeyRotation:Schedule:FailureRetryDelay (00:05:00) plus the " +
-            "worst-case retry duration (00:05:00) plus Signing:TokenLifetime (00:05:00).");
+            "worst-case retry duration (00:05:00) plus Signing:TokenLifetime (00:05:00) plus " +
+            "Signing:PublishDelay (00:03:00).");
     }
 
     [Fact]

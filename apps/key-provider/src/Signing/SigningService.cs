@@ -93,8 +93,11 @@ internal sealed class SigningService(
             await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
             IKeyPairStore keyPairStore = scope.ServiceProvider.GetRequiredService<IKeyPairStore>();
 
-            SigningKeyPair fresh = await keyPairStore.GetLatestKeyPairAsync(ct)
-                                   ?? throw new SigningKeyNotFoundException();
+            SigningKeyPair? published = await keyPairStore.GetLatestKeyPairCreatedByAsync(
+                timeProvider.GetUtcNow() - _options.PublishDelay, ct);
+            SigningKeyPair fresh = published is not null && CanSign(published.PrivateKey)
+                ? published
+                : await keyPairStore.GetLatestKeyPairAsync(ct) ?? throw new SigningKeyNotFoundException();
 
             if (!CanSign(fresh.PrivateKey))
             {
