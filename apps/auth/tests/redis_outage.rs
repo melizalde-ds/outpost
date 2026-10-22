@@ -3,10 +3,9 @@ mod common;
 use std::time::{Duration, Instant};
 
 use common::{
-    LABEL,
     auth::{Auth, PASSWORD, code_of},
     key_stub::KeyStubConfig,
-    wait_for_redis,
+    redis_image, wait_for_redis,
 };
 use testcontainers_modules::{
     redis::Redis,
@@ -28,9 +27,7 @@ impl OwnRedis {
             .local_addr()
             .unwrap()
             .port();
-        let container = Redis::default()
-            .with_tag("8")
-            .with_label(LABEL.0, LABEL.1)
+        let container = redis_image()
             .with_mapped_port(port, 6379.tcp())
             .start()
             .await

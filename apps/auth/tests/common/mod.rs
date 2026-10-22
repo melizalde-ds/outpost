@@ -6,7 +6,7 @@ use sqlx::{Connection, Executor, PgConnection, PgPool, postgres::PgPoolOptions};
 use testcontainers_modules::{
     postgres::Postgres,
     redis::Redis,
-    testcontainers::{ContainerAsync, ImageExt, runners::AsyncRunner},
+    testcontainers::{ContainerAsync, ContainerRequest, ImageExt, runners::AsyncRunner},
 };
 use tokio::sync::OnceCell;
 
@@ -25,6 +25,23 @@ pub const APP_PASSWORD: &str = "app-password";
 const MIGRATOR_PASSWORD: &str = "migrator-password";
 const TEMPLATE_DB: &str = "auth";
 pub const LABEL: (&str, &str) = ("outpost.tests", "auth");
+pub const REDIS_USER: &str = "auth";
+pub const REDIS_PASSWORD: &str = "redis-password";
+const AUTH_REDIS_RULES: &str = include_str!("../../redis/auth-user.acl");
+
+pub fn redis_image() -> ContainerRequest<Redis> {
+    let password = format!(">{REDIS_PASSWORD}");
+    let user = ["redis-server", "--user", REDIS_USER, "on", &password];
+    let cmd: Vec<String> = user
+        .into_iter()
+        .chain(AUTH_REDIS_RULES.split_whitespace())
+        .map(String::from)
+        .collect();
+    Redis::default()
+        .with_tag("8")
+        .with_label(LABEL.0, LABEL.1)
+        .with_cmd(cmd)
+}
 
 pub struct Infra {
     _postgres: ContainerAsync<Postgres>,
@@ -53,12 +70,7 @@ async fn start_infra() -> Infra {
         .start()
         .await
         .expect("start postgres");
-    let redis = Redis::default()
-        .with_tag("8")
-        .with_label(LABEL.0, LABEL.1)
-        .start()
-        .await
-        .expect("start redis");
+    let redis = redis_image().start().await.expect("start redis");
     let postgres_port = postgres.get_host_port_ipv4(5432).await.unwrap();
     let redis_port = redis.get_host_port_ipv4(6379).await.unwrap();
 
