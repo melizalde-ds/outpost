@@ -4,6 +4,7 @@ use std::{
         Arc, Mutex,
         atomic::{AtomicUsize, Ordering},
     },
+    time::Duration,
 };
 
 use jsonwebtoken::{Algorithm, EncodingKey, Header, get_current_timestamp};
@@ -38,6 +39,7 @@ pub struct KeyStubConfig {
     pub new_key: Option<VerificationKey>,
     pub sign_error: Option<Code>,
     pub sign_hangs: bool,
+    pub list_error: Option<Code>,
 }
 
 impl Default for KeyStubConfig {
@@ -49,6 +51,7 @@ impl Default for KeyStubConfig {
             new_key: None,
             sign_error: None,
             sign_hangs: false,
+            list_error: None,
         }
     }
 }
@@ -117,8 +120,12 @@ impl KeyService for Stub {
         _request: Request<GetVerificationKeysRequest>,
     ) -> Result<Response<GetVerificationKeysResponse>, Status> {
         self.key_list_calls.fetch_add(1, Ordering::SeqCst);
+        let config = self.config.lock().unwrap().clone();
+        if let Some(code) = config.list_error {
+            return Err(Status::new(code, "key stub failure"));
+        }
         Ok(Response::new(GetVerificationKeysResponse {
-            keys: self.config.lock().unwrap().listed_keys.clone(),
+            keys: config.listed_keys,
         }))
     }
 }
@@ -156,7 +163,22 @@ impl KeyStub {
         self.config.lock().unwrap().sign_error = code;
     }
 
+    pub fn set_list_error(&self, code: Option<Code>) {
+        self.config.lock().unwrap().list_error = code;
+    }
+
     pub fn key_list_calls(&self) -> usize {
         self.key_list_calls.load(Ordering::SeqCst)
+    }
+
+    pub async fn wait_for_key_list_calls(&self, calls: usize) {
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(10);
+        while self.key_list_calls() < calls {
+            assert!(
+                tokio::time::Instant::now() < deadline,
+                "fewer than {calls} key list calls after 10s"
+            );
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
     }
 }

@@ -1,5 +1,8 @@
+use std::{net::SocketAddr, time::Duration};
+
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use chrono::{DateTime, Utc};
+use hyper::StatusCode;
 use prost_types::Timestamp;
 use sha2::{Digest, Sha256};
 use sqlx::PgPool;
@@ -9,7 +12,7 @@ use uuid::Uuid;
 use super::{
     admin,
     app::App,
-    fresh_db,
+    fresh_db, http,
     key_stub::{KeyStub, KeyStubConfig},
     proto::auth::v1::{
         LoginRequest, LogoutAllRequest, LogoutRequest, RefreshTokenRequest, RegisterRequest,
@@ -19,11 +22,13 @@ use super::{
 };
 
 pub const PASSWORD: &str = "correct horse";
+pub const JWKS: &str = "/.well-known/jwks.json";
 
 pub struct Auth {
     pub key_provider: KeyStub,
     admin: PgPool,
     client: AuthServiceClient<Channel>,
+    pub http_addr: SocketAddr,
     _app: App,
 }
 
@@ -40,6 +45,7 @@ impl Auth {
             key_provider,
             admin: admin(&db).await,
             client: app.client(),
+            http_addr: app.http_addr,
             _app: app,
         }
     }
@@ -82,6 +88,17 @@ impl Auth {
             refresh_token: refresh_token.into(),
         };
         self.client.clone().logout_all(request).await.map(|_| ())
+    }
+
+    pub async fn wait_until_jwks_loaded(&self) {
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(10);
+        while http::get(self.http_addr, JWKS).await.status != StatusCode::OK {
+            assert!(
+                tokio::time::Instant::now() < deadline,
+                "JWKS not loaded after 10s"
+            );
+            tokio::time::sleep(Duration::from_millis(50)).await;
+        }
     }
 
     pub async fn sign_up(&self, username: &str) -> TokenPair {

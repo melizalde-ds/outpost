@@ -12,6 +12,7 @@ use tokio::sync::OnceCell;
 
 pub mod app;
 pub mod auth;
+pub mod http;
 pub mod key_stub;
 
 #[path = "../../src/proto.rs"]

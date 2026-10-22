@@ -1,12 +1,12 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
-use axum::http::StatusCode;
+use axum::middleware;
 use redis::Client;
 use sqlx::PgPool;
 use tokio::{net::TcpListener, signal};
 use tokio_util::sync::CancellationToken;
 use tonic::transport::{Channel, Endpoint, Server};
-use tower_http::{timeout::TimeoutLayer, trace::TraceLayer};
+use tower_http::trace::TraceLayer;
 use tracing::{info, level_filters::LevelFilter};
 use tracing_subscriber::EnvFilter;
 
@@ -139,10 +139,10 @@ async fn serve_http(
 ) -> anyhow::Result<()> {
     let listener = TcpListener::bind(settings.address()).await?;
     info!(addr = %listener.local_addr()?, "HTTP API listening");
-    // 503 like the gRPC side reports a timeout; the trace layer logs no headers, so no tokens.
+    // The trace layer logs no headers, so tokens stay out of the logs.
     let app = http::router(auth_service).layer((
         TraceLayer::new_for_http(),
-        TimeoutLayer::with_status_code(StatusCode::SERVICE_UNAVAILABLE, settings.request_timeout()),
+        middleware::from_fn_with_state(settings.request_timeout(), http::time_limit),
     ));
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown.cancelled_owned())

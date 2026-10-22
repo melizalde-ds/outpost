@@ -6,6 +6,7 @@ use std::{
 
 use tokio::{
     io::{AsyncBufReadExt, AsyncRead, BufReader},
+    net::TcpStream,
     process::{Child, Command},
 };
 use tonic::transport::Channel;
@@ -21,6 +22,7 @@ pub const PEPPER: &str = "test-pepper";
 pub struct App {
     _child: Child,
     client: AuthServiceClient<Channel>,
+    pub http_addr: SocketAddr,
 }
 
 impl App {
@@ -30,16 +32,20 @@ impl App {
 
     pub async fn start_with(db: &str, key_provider: SocketAddr, settings: &[(&str, &str)]) -> Self {
         let addr = free_address();
-        let mut child = spawn(db, key_provider, addr, settings).await;
+        let http_addr = free_address();
+        let mut child = spawn(db, key_provider, addr, http_addr, settings).await;
         let deadline = tokio::time::Instant::now() + Duration::from_secs(30);
         loop {
             if let Some(status) = child.try_wait().unwrap() {
                 panic!("auth exited before it was ready: {status}");
             }
-            if let Some(client) = answering_client(addr).await {
+            if let Some(client) = answering_client(addr).await
+                && TcpStream::connect(http_addr).await.is_ok()
+            {
                 return Self {
                     _child: child,
                     client,
+                    http_addr,
                 };
             }
             assert!(
@@ -51,7 +57,7 @@ impl App {
     }
 
     pub async fn exit_status(db: &str, key_provider: SocketAddr) -> ExitStatus {
-        let mut child = spawn(db, key_provider, free_address(), &[]).await;
+        let mut child = spawn(db, key_provider, free_address(), free_address(), &[]).await;
         tokio::time::timeout(Duration::from_secs(30), child.wait())
             .await
             .expect("auth still running after 30s")
@@ -75,6 +81,7 @@ async fn spawn(
     db: &str,
     key_provider: SocketAddr,
     addr: SocketAddr,
+    http_addr: SocketAddr,
     settings: &[(&str, &str)],
 ) -> Child {
     let infra = infra().await;
@@ -92,8 +99,8 @@ async fn spawn(
         .env("AUTH__PASSWORD__PEPPER", PEPPER)
         .env("AUTH__GRPC__SERVER__HOST", addr.ip().to_string())
         .env("AUTH__GRPC__SERVER__PORT", addr.port().to_string())
-        .env("AUTH__HTTP__HOST", addr.ip().to_string())
-        .env("AUTH__HTTP__PORT", "0")
+        .env("AUTH__HTTP__HOST", http_addr.ip().to_string())
+        .env("AUTH__HTTP__PORT", http_addr.port().to_string())
         .env(
             "AUTH__GRPC__KEY_SERVICE_CLIENT__HOST",
             key_provider.ip().to_string(),
