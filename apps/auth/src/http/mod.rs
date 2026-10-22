@@ -27,7 +27,6 @@ pub fn router(auth: Arc<DefaultAuthService>) -> Router {
         .with_state(auth)
 }
 
-/// Middleware that answers a request still running after `limit` with a 503 problem.
 pub async fn time_limit(State(limit): State<Duration>, request: Request, next: Next) -> Response {
     let path = request.uri().path().to_owned();
     match tokio::time::timeout(limit, next.run(request)).await {

@@ -44,7 +44,6 @@ mod tests {
 
     use super::*;
 
-    // Values arrive as strings, the way environment variables do.
     fn required() -> ConfigBuilder<DefaultState> {
         Config::builder()
             .set_override("host", "::1")

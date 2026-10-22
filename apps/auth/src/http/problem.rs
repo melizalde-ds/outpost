@@ -8,7 +8,6 @@ use tonic::{Code, Status};
 
 use crate::service::AuthServiceError;
 
-/// An RFC 9457 `application/problem+json` error.
 #[derive(Debug)]
 pub struct Problem {
     status: StatusCode,

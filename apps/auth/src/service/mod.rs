@@ -75,7 +75,6 @@ impl DefaultAuthService {
         self
     }
 
-    /// Public keys that haven't expired, or `None` before the first full load.
     pub(crate) fn live_jwks(&self) -> Option<Vec<JwkRecord>> {
         self.local_jwks.live(self.clock.now())
     }

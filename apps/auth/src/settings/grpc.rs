@@ -32,7 +32,6 @@ impl Default for ChannelSettings {
     }
 }
 
-/// `host:port`, with brackets around a bare IPv6 address.
 pub(super) fn host_port(host: &str, port: u16) -> String {
     match host.parse::<IpAddr>() {
         Ok(ip) => SocketAddr::new(ip, port).to_string(),
