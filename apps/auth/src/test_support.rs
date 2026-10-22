@@ -465,3 +465,56 @@ impl TestAuth {
         }
     }
 }
+
+pub struct HttpReply {
+    pub status: axum::http::StatusCode,
+    pub headers: axum::http::HeaderMap,
+    pub body: serde_json::Value,
+}
+
+pub async fn send(app: axum::Router, request: axum::http::Request<axum::body::Body>) -> HttpReply {
+    use tower::ServiceExt;
+
+    let response = app.oneshot(request).await.unwrap();
+    let status = response.status();
+    let headers = response.headers().clone();
+    let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .unwrap();
+    let body = serde_json::from_slice(&bytes).unwrap_or(serde_json::Value::Null);
+    HttpReply {
+        status,
+        headers,
+        body,
+    }
+}
+
+pub async fn get(app: axum::Router, uri: &str) -> HttpReply {
+    let request = axum::http::Request::get(uri)
+        .body(axum::body::Body::empty())
+        .unwrap();
+    send(app, request).await
+}
+
+pub async fn post(
+    app: axum::Router,
+    uri: &str,
+    content_type: Option<&str>,
+    body: &str,
+) -> HttpReply {
+    let mut request = axum::http::Request::post(uri);
+    if let Some(content_type) = content_type {
+        request = request.header(axum::http::header::CONTENT_TYPE, content_type);
+    }
+    send(
+        app,
+        request
+            .body(axum::body::Body::from(body.to_owned()))
+            .unwrap(),
+    )
+    .await
+}
+
+pub async fn post_json(app: axum::Router, uri: &str, body: serde_json::Value) -> HttpReply {
+    post(app, uri, Some("application/json"), &body.to_string()).await
+}

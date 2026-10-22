@@ -21,6 +21,7 @@ use crate::{
 
 mod clock;
 mod grpc;
+mod http;
 mod jwk_cache;
 mod password;
 mod proto;

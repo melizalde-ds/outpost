@@ -19,6 +19,8 @@ mod refresh_token;
 
 pub use errors::AuthServiceError;
 
+// Serialized as-is by the HTTP API; the field names are part of its JSON contract.
+#[derive(serde::Serialize)]
 pub struct Tokens {
     pub access_token: String,
     pub refresh_token: String,
