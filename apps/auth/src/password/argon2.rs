@@ -37,7 +37,7 @@ impl Argon2PasswordHasher {
 
         Ok(Self {
             pepper: Arc::new(pepper),
-            permits: Arc::new(Semaphore::new(settings.concurrency_limit)),
+            permits: Arc::new(Semaphore::new(settings.concurrency_limit.get())),
             params,
             dummy_hash,
         })
@@ -112,7 +112,7 @@ mod tests {
     fn hasher(pepper: &str) -> Argon2PasswordHasher {
         let settings = PasswordSettings {
             pepper: SecretString::from(pepper),
-            concurrency_limit: 1,
+            concurrency_limit: std::num::NonZeroUsize::MIN,
         };
         let cheapest = Params::new(8, 1, 1, None).unwrap();
         Argon2PasswordHasher::with_params(&settings, cheapest).unwrap()

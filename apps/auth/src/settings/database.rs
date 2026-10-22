@@ -5,13 +5,16 @@ use serde::Deserialize;
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 
 #[derive(Debug, Deserialize)]
-#[serde(default)]
 pub struct DatabaseSettings {
+    #[serde(default = "default_host")]
     pub host: String,
+    #[serde(default = "default_port")]
     pub port: u16,
     pub username: String,
     pub password: SecretString,
+    #[serde(default = "default_database_name")]
     pub database_name: String,
+    #[serde(default)]
     pub pool: PoolSettings,
 }
 
@@ -23,17 +26,16 @@ pub struct PoolSettings {
     pub idle_timeout_secs: u64,
 }
 
-impl Default for DatabaseSettings {
-    fn default() -> Self {
-        Self {
-            host: "localhost".to_string(),
-            port: 5432,
-            username: "postgres".to_string(),
-            password: "password".into(),
-            database_name: "auth".to_string(),
-            pool: PoolSettings::default(),
-        }
-    }
+fn default_host() -> String {
+    "localhost".to_string()
+}
+
+fn default_port() -> u16 {
+    5432
+}
+
+fn default_database_name() -> String {
+    "auth".to_string()
 }
 
 impl Default for PoolSettings {
@@ -67,20 +69,21 @@ impl DatabaseSettings {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
+    use rstest::rstest;
 
     use super::*;
 
     #[test]
     fn pool_options_use_the_pool_settings() {
         // Arrange
-        let settings = DatabaseSettings {
-            pool: PoolSettings {
-                max_connections: 7,
-                min_connections: 2,
-                idle_timeout_secs: 30,
-            },
-            ..DatabaseSettings::default()
-        };
+        let settings: DatabaseSettings = serde_json::from_str(
+            r#"{
+                "username": "auth_app",
+                "password": "secret",
+                "pool": { "max_connections": 7, "min_connections": 2, "idle_timeout_secs": 30 }
+            }"#,
+        )
+        .unwrap();
 
         // Act
         let options = settings.pool_options();
@@ -94,5 +97,16 @@ mod tests {
             ),
             (7, 2, Some(Duration::from_secs(30)))
         );
+    }
+
+    #[rstest]
+    #[case::missing_username(r#"{ "password": "secret" }"#)]
+    #[case::missing_password(r#"{ "username": "auth_app" }"#)]
+    fn deserialize_missing_credentials_is_rejected(#[case] json: &str) {
+        // Act
+        let result = serde_json::from_str::<DatabaseSettings>(json);
+
+        // Assert
+        assert!(result.is_err());
     }
 }

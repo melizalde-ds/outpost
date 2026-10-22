@@ -1,3 +1,5 @@
+use std::num::NonZeroUsize;
+
 use secrecy::SecretString;
 use serde::Deserialize;
 
@@ -5,11 +7,11 @@ use serde::Deserialize;
 pub struct PasswordSettings {
     pub pepper: SecretString,
     #[serde(default = "default_concurrency_limit")]
-    pub concurrency_limit: usize,
+    pub concurrency_limit: NonZeroUsize,
 }
 
-fn default_concurrency_limit() -> usize {
-    10
+fn default_concurrency_limit() -> NonZeroUsize {
+    NonZeroUsize::new(10).unwrap()
 }
 
 #[cfg(test)]
@@ -23,7 +25,7 @@ mod tests {
         // Arrange
         let settings = PasswordSettings {
             pepper: SecretString::from(PEPPER),
-            concurrency_limit: 1,
+            concurrency_limit: NonZeroUsize::MIN,
         };
 
         // Act
@@ -40,6 +42,17 @@ mod tests {
             serde_json::from_str(r#"{ "pepper": "pepper-value" }"#).unwrap();
 
         // Assert
-        assert_eq!(settings.concurrency_limit, 10);
+        assert_eq!(settings.concurrency_limit.get(), 10);
+    }
+
+    #[test]
+    fn concurrency_limit_of_zero_is_rejected() {
+        // Act
+        let result = serde_json::from_str::<PasswordSettings>(
+            r#"{ "pepper": "pepper-value", "concurrency_limit": 0 }"#,
+        );
+
+        // Assert
+        assert!(result.is_err());
     }
 }

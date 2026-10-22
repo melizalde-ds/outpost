@@ -17,12 +17,10 @@ pub use refresh_token::RefreshTokenSettings;
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {
-    #[serde(default)]
     pub database: DatabaseSettings,
     pub password: PasswordSettings,
     pub grpc: GrpcSettings,
     pub http: HttpSettings,
-    #[serde(default)]
     pub redis: RedisSettings,
     #[serde(default)]
     pub refresh_token: RefreshTokenSettings,
