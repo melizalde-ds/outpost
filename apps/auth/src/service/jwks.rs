@@ -22,7 +22,6 @@ impl DefaultAuthService {
 
     /// Reloads the local key copy now and then every `every`, until `shutdown`.
     /// A failed reload keeps the last good copy.
-    #[cfg_attr(not(test), expect(dead_code, reason = "started from main"))]
     pub(crate) async fn keep_jwks_fresh(&self, every: Duration, shutdown: CancellationToken) {
         let mut ticks = interval(every);
         ticks.set_missed_tick_behavior(MissedTickBehavior::Delay);

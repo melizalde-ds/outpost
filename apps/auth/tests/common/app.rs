@@ -92,6 +92,8 @@ async fn spawn(
         .env("AUTH__PASSWORD__PEPPER", PEPPER)
         .env("AUTH__GRPC__SERVER__HOST", addr.ip().to_string())
         .env("AUTH__GRPC__SERVER__PORT", addr.port().to_string())
+        .env("AUTH__HTTP__HOST", addr.ip().to_string())
+        .env("AUTH__HTTP__PORT", "0")
         .env(
             "AUTH__GRPC__KEY_SERVICE_CLIENT__HOST",
             key_provider.ip().to_string(),

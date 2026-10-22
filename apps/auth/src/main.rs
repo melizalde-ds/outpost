@@ -1,10 +1,12 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
+use axum::http::StatusCode;
 use redis::Client;
 use sqlx::PgPool;
-use tokio::signal;
+use tokio::{net::TcpListener, signal};
 use tokio_util::sync::CancellationToken;
 use tonic::transport::{Channel, Endpoint, Server};
+use tower_http::{timeout::TimeoutLayer, trace::TraceLayer};
 use tracing::{info, level_filters::LevelFilter};
 use tracing_subscriber::EnvFilter;
 
@@ -15,7 +17,7 @@ use crate::{
     refresh_token::RedisRefreshTokenStore,
     repository::{PostgresTokenFamilyRepository, PostgresUserRepository},
     service::DefaultAuthService,
-    settings::{DatabaseSettings, GrpcEndpoint, RedisSettings, Settings},
+    settings::{DatabaseSettings, GrpcEndpoint, HttpSettings, RedisSettings, Settings},
     signing::KeySigningService,
 };
 
@@ -42,17 +44,28 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().with_env_filter(log_filter).init();
 
     let settings = Settings::load()?;
-    let auth_service = build_auth_service(&settings).await?;
-    let grpc_shutdown = CancellationToken::new();
-    let grpc = serve_grpc(auth_service, &settings.grpc.server, grpc_shutdown.clone());
-    let shutdown = async {
+    let auth_service = Arc::new(build_auth_service(&settings).await?);
+    let shutdown = CancellationToken::new();
+    let grpc = serve_grpc(
+        auth_service.clone(),
+        &settings.grpc.server,
+        shutdown.clone(),
+    );
+    let http = serve_http(auth_service.clone(), &settings.http, shutdown.clone());
+    let jwks = async {
+        auth_service
+            .keep_jwks_fresh(settings.http.jwks_refresh(), shutdown.clone())
+            .await;
+        anyhow::Ok(())
+    };
+    let on_signal = async {
         shutdown_signal().await?;
         info!("shutdown signal received, finishing in-flight requests");
-        grpc_shutdown.cancel();
+        shutdown.cancel();
         anyhow::Ok(())
     };
 
-    tokio::try_join!(grpc, shutdown)?;
+    tokio::try_join!(grpc, http, jwks, on_signal)?;
     Ok(())
 }
 
@@ -105,19 +118,39 @@ fn create_channel(endpoint: &GrpcEndpoint) -> anyhow::Result<Channel> {
 }
 
 async fn serve_grpc(
-    auth_service: DefaultAuthService,
+    auth_service: Arc<DefaultAuthService>,
     endpoint: &GrpcEndpoint,
     shutdown: CancellationToken,
 ) -> anyhow::Result<()> {
     let addr: SocketAddr = endpoint.grpc_address().parse()?;
     info!(%addr, "auth service listening");
     Server::builder()
-        .add_service(AuthServiceServer::new(auth_service))
+        .add_service(AuthServiceServer::from_arc(auth_service))
         .serve_with_shutdown(addr, shutdown.cancelled_owned())
         .await?;
     info!("auth service stopped");
     Ok(())
 }
+
+async fn serve_http(
+    auth_service: Arc<DefaultAuthService>,
+    settings: &HttpSettings,
+    shutdown: CancellationToken,
+) -> anyhow::Result<()> {
+    let listener = TcpListener::bind(settings.address()).await?;
+    info!(addr = %listener.local_addr()?, "HTTP API listening");
+    // 503 like the gRPC side reports a timeout; the trace layer logs no headers, so no tokens.
+    let app = http::router(auth_service).layer((
+        TraceLayer::new_for_http(),
+        TimeoutLayer::with_status_code(StatusCode::SERVICE_UNAVAILABLE, settings.request_timeout()),
+    ));
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown.cancelled_owned())
+        .await?;
+    info!("HTTP API stopped");
+    Ok(())
+}
+
 async fn shutdown_signal() -> anyhow::Result<()> {
     #[cfg(unix)]
     let terminate = async {

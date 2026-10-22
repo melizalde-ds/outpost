@@ -32,12 +32,17 @@ impl Default for ChannelSettings {
     }
 }
 
+/// `host:port`, with brackets around a bare IPv6 address.
+pub(super) fn host_port(host: &str, port: u16) -> String {
+    match host.parse::<IpAddr>() {
+        Ok(ip) => SocketAddr::new(ip, port).to_string(),
+        Err(_) => format!("{host}:{port}"),
+    }
+}
+
 impl GrpcEndpoint {
     pub fn grpc_address(&self) -> String {
-        match self.host.parse::<IpAddr>() {
-            Ok(ip) => SocketAddr::new(ip, self.port).to_string(),
-            Err(_) => format!("{}:{}", self.host, self.port),
-        }
+        host_port(&self.host, self.port)
     }
 
     pub fn client_uri(&self) -> String {

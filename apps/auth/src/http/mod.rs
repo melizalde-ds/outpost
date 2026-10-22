@@ -11,7 +11,6 @@ mod auth;
 mod jwks;
 mod problem;
 
-#[cfg_attr(not(test), expect(dead_code, reason = "served from main"))]
 pub fn router(auth: Arc<DefaultAuthService>) -> Router {
     Router::new()
         .route("/v1/auth/register", post(auth::register))

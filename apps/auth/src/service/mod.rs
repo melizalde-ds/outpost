@@ -76,7 +76,6 @@ impl DefaultAuthService {
     }
 
     /// Public keys that haven't expired, or `None` before the first full load.
-    #[cfg_attr(not(test), expect(dead_code, reason = "served by the HTTP JWKS route"))]
     pub(crate) fn live_jwks(&self) -> Option<Vec<JwkRecord>> {
         self.local_jwks.live(self.clock.now())
     }
