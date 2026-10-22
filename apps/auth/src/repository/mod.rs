@@ -96,20 +96,21 @@ pub trait TokenFamilyRepository: Debug + Send + Sync + 'static {
         user_id: &UserId,
         expires_at: DateTime<Utc>,
     ) -> Result<TokenFamilyId, RepositoryError>;
-    async fn find_unrevoked_by_user_id(
+    async fn is_live(
         &self,
+        family_id: &TokenFamilyId,
         user_id: &UserId,
-    ) -> Result<Vec<TokenFamilyId>, RepositoryError>;
+    ) -> Result<bool, RepositoryError>;
     async fn revoke(
         &self,
         family_id: &TokenFamilyId,
         reason: RevocationReason,
-    ) -> Result<bool, RepositoryError>;
+    ) -> Result<(), RepositoryError>;
     async fn revoke_all(
         &self,
         user_id: &UserId,
         reason: RevocationReason,
-    ) -> Result<Vec<TokenFamilyId>, RepositoryError>;
+    ) -> Result<(), RepositoryError>;
 }
 
 #[cfg(test)]

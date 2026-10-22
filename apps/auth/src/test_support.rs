@@ -139,7 +139,7 @@ impl InMemoryFamilies {
         }
     }
 
-    fn is_live(&self, family: &StoredFamily) -> bool {
+    fn is_open(&self, family: &StoredFamily) -> bool {
         !family.revoked && family.expires_at > self.clock.now()
     }
 }
@@ -162,47 +162,42 @@ impl TokenFamilyRepository for InMemoryFamilies {
         Ok(family_id)
     }
 
-    async fn find_unrevoked_by_user_id(
+    async fn is_live(
         &self,
+        family_id: &TokenFamilyId,
         user_id: &UserId,
-    ) -> Result<Vec<TokenFamilyId>, RepositoryError> {
+    ) -> Result<bool, RepositoryError> {
         let families = self.families.lock().unwrap();
         Ok(families
             .iter()
-            .filter(|f| f.user_id == *user_id && self.is_live(f))
-            .map(|f| f.family_id)
-            .collect())
+            .any(|f| f.family_id == *family_id && f.user_id == *user_id && self.is_open(f)))
     }
 
     async fn revoke(
         &self,
         family_id: &TokenFamilyId,
         _reason: RevocationReason,
-    ) -> Result<bool, RepositoryError> {
+    ) -> Result<(), RepositoryError> {
         let mut families = self.families.lock().unwrap();
-        let Some(family) = families.iter_mut().find(|f| f.family_id == *family_id) else {
-            return Ok(false);
-        };
-        let newly_revoked = !family.revoked;
-        family.revoked = true;
-        Ok(newly_revoked)
+        if let Some(family) = families.iter_mut().find(|f| f.family_id == *family_id) {
+            family.revoked = true;
+        }
+        Ok(())
     }
 
     async fn revoke_all(
         &self,
         user_id: &UserId,
         _reason: RevocationReason,
-    ) -> Result<Vec<TokenFamilyId>, RepositoryError> {
+    ) -> Result<(), RepositoryError> {
         let now = self.clock.now();
         let mut families = self.families.lock().unwrap();
-        let mut revoked = Vec::new();
         for family in families.iter_mut() {
-            if family.user_id == *user_id && !family.revoked && family.expires_at > now {
+            if family.user_id == *user_id && family.expires_at > now {
                 family.revoked = true;
-                revoked.push(family.family_id);
             }
         }
-        Ok(revoked)
+        Ok(())
     }
 }
 

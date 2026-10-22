@@ -35,26 +35,28 @@ impl TokenFamilyRepository for PostgresTokenFamilyRepository {
         Ok(family_id)
     }
 
-    async fn find_unrevoked_by_user_id(
+    async fn is_live(
         &self,
+        family_id: &TokenFamilyId,
         user_id: &UserId,
-    ) -> Result<Vec<TokenFamilyId>, RepositoryError> {
-        let family_ids: Vec<TokenFamilyId> = query_scalar!(
-            r#"SELECT family_id AS "id!: TokenFamilyId" FROM public.get_user_token_families(p_user_id => $1)"#,
+    ) -> Result<bool, RepositoryError> {
+        let live = query_scalar!(
+            r#"SELECT public.is_token_family_live(p_family_id => $1, p_user_id => $2) AS "live!""#,
+            family_id.0,
             user_id.0
         )
-        .fetch_all(&self.db_pool)
+        .fetch_one(&self.db_pool)
         .await?;
 
-        Ok(family_ids)
+        Ok(live)
     }
 
     async fn revoke(
         &self,
         family_id: &TokenFamilyId,
         reason: RevocationReason,
-    ) -> Result<bool, RepositoryError> {
-        let revoked = query_scalar!(
+    ) -> Result<(), RepositoryError> {
+        query_scalar!(
             r#"SELECT public.revoke_token_family(p_family_id => $1, p_reason => $2) AS "revoked!""#,
             family_id.0,
             reason.as_str()
@@ -62,15 +64,15 @@ impl TokenFamilyRepository for PostgresTokenFamilyRepository {
         .fetch_one(&self.db_pool)
         .await?;
 
-        Ok(revoked)
+        Ok(())
     }
 
     async fn revoke_all(
         &self,
         user_id: &UserId,
         reason: RevocationReason,
-    ) -> Result<Vec<TokenFamilyId>, RepositoryError> {
-        let family_ids: Vec<TokenFamilyId> = query_scalar!(
+    ) -> Result<(), RepositoryError> {
+        query_scalar!(
             r#"SELECT family_id AS "id!: TokenFamilyId" FROM public.revoke_user_token_families(p_user_id => $1, p_reason => $2)"#,
             user_id.0,
             reason.as_str()
@@ -78,6 +80,6 @@ impl TokenFamilyRepository for PostgresTokenFamilyRepository {
         .fetch_all(&self.db_pool)
         .await?;
 
-        Ok(family_ids)
+        Ok(())
     }
 }

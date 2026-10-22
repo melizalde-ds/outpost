@@ -43,23 +43,21 @@ BEGIN
     RETURNING token_family_window.family_id;
 END;
 
-CREATE FUNCTION public.get_user_token_families(p_user_id uuid)
-    RETURNS TABLE
-            (
-                family_id uuid
-            )
+CREATE FUNCTION public.is_token_family_live(p_family_id uuid, p_user_id uuid)
+    RETURNS boolean
     LANGUAGE sql
     STABLE
 BEGIN
     ATOMIC
-    SELECT f.family_id
-    FROM public.token_family f
-             JOIN public.token_family_window w ON w.family_id = f.family_id
-    WHERE f.user_id = p_user_id
-      AND w.expires_at > now()
-      AND NOT EXISTS (SELECT 1
-                      FROM public.token_family_revocation r
-                      WHERE r.family_id = f.family_id);
+    SELECT EXISTS (SELECT 1
+                   FROM public.token_family f
+                            JOIN public.token_family_window w ON w.family_id = f.family_id
+                   WHERE f.family_id = p_family_id
+                     AND f.user_id = p_user_id
+                     AND w.expires_at > now()
+                     AND NOT EXISTS (SELECT 1
+                                     FROM public.token_family_revocation r
+                                     WHERE r.family_id = f.family_id));
 END;
 
 CREATE FUNCTION public.revoke_token_family(p_family_id uuid, p_reason text)
@@ -97,14 +95,14 @@ END;
 
 REVOKE ALL ON FUNCTION
     public.create_token_family(uuid, timestamptz),
-    public.get_user_token_families(uuid),
+    public.is_token_family_live(uuid, uuid),
     public.revoke_token_family(uuid, text),
     public.revoke_user_token_families(uuid, text)
     FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION
     public.create_token_family(uuid, timestamptz),
-    public.get_user_token_families(uuid),
+    public.is_token_family_live(uuid, uuid),
     public.revoke_token_family(uuid, text),
     public.revoke_user_token_families(uuid, text)
     TO auth_app;

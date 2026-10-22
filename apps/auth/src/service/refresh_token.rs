@@ -95,8 +95,7 @@ impl DefaultAuthService {
             }) => (user_id, family_exp),
         };
 
-        let families = self.families.find_unrevoked_by_user_id(&user_id).await?;
-        if !families.contains(&family_id) {
+        if !self.families.is_live(&family_id, &user_id).await? {
             return Err(AuthServiceError::InvalidRefreshToken);
         }
 
@@ -143,7 +142,7 @@ impl DefaultAuthService {
             .revoke(&family_id, RevocationReason::Reuse)
             .await
         {
-            Ok(_) => AuthServiceError::RefreshTokenReused(family_id),
+            Ok(()) => AuthServiceError::RefreshTokenReused(family_id),
             Err(e) => e.into(),
         }
     }
