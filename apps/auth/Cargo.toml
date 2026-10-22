@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.104"
+arc-swap = "1.9.2"
 argon2 = { version = "0.6.0", features = ["getrandom"] }
 async-trait = "0.1.92"
 base64 = "0.23.1"

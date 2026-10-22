@@ -4,7 +4,7 @@ use chrono::{DateTime, Duration, Utc};
 
 use crate::{
     clock::{Clock, SystemClock},
-    jwk_cache::JwkCache,
+    jwk_cache::{JwkCache, JwkRecord, LocalJwkSet},
     password::PasswordHasher,
     refresh_token::RefreshTokenStore,
     repository::{TokenFamilyRepository, UserRepository},
@@ -31,6 +31,7 @@ pub struct DefaultAuthService {
     passwords: Arc<dyn PasswordHasher>,
     signer: Arc<dyn SigningService>,
     jwk_cache: Arc<dyn JwkCache>,
+    local_jwks: Arc<LocalJwkSet>,
     refresh_tokens: Arc<dyn RefreshTokenStore>,
     clock: Arc<dyn Clock>,
     idle_timeout: Duration,
@@ -53,6 +54,7 @@ impl DefaultAuthService {
             passwords,
             signer,
             jwk_cache,
+            local_jwks: Arc::default(),
             refresh_tokens,
             clock: Arc::new(SystemClock),
             idle_timeout: Duration::seconds(settings.idle_timeout_secs as i64),
@@ -63,5 +65,16 @@ impl DefaultAuthService {
     pub fn with_clock(mut self, clock: Arc<dyn Clock>) -> Self {
         self.clock = clock;
         self
+    }
+    #[cfg(test)]
+    pub fn with_local_jwks(mut self, local_jwks: Arc<LocalJwkSet>) -> Self {
+        self.local_jwks = local_jwks;
+        self
+    }
+
+    /// Public keys that haven't expired, or `None` before the first full load.
+    #[cfg_attr(not(test), expect(dead_code, reason = "served by the HTTP JWKS route"))]
+    pub(crate) fn live_jwks(&self) -> Option<Vec<JwkRecord>> {
+        self.local_jwks.live(self.clock.now())
     }
 }

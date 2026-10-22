@@ -80,6 +80,7 @@ impl DefaultAuthService {
         if let Some(key) = signed.new_key {
             let record = JwkRecord::try_from(key)?;
             self.jwk_cache.insert(&record).await?;
+            self.local_jwks.insert(record);
         } else if !self.jwk_cache.contains(&signed.key_id).await? {
             let records = self
                 .signer
@@ -89,6 +90,7 @@ impl DefaultAuthService {
                 .map(JwkRecord::try_from)
                 .collect::<Result<Vec<_>, _>>()?;
             self.jwk_cache.insert_many(&records).await?;
+            self.local_jwks.replace(records);
         }
 
         Ok(signed.token)

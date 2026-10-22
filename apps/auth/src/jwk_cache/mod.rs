@@ -4,11 +4,13 @@ use async_trait::async_trait;
 use uuid::Uuid;
 
 mod errors;
+mod local;
 mod record;
 mod redis;
 
 pub use self::redis::RedisJwkCache;
 pub use errors::{JwkCacheError, JwkRecordError};
+pub use local::LocalJwkSet;
 pub use record::JwkRecord;
 
 #[cfg_attr(test, mockall::automock)]

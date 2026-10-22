@@ -99,7 +99,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        jwk_cache::{JwkCacheError, MockJwkCache},
+        jwk_cache::{JwkCacheError, LocalJwkSet, MockJwkCache},
         password::MockPasswordHasher,
         refresh_token::{Entry, MockRefreshTokenStore, RefreshToken, RefreshTokenStoreError},
         repository::{
@@ -873,6 +873,8 @@ mod tests {
     }
 
     mod signing_keys {
+        use pretty_assertions::assert_eq;
+
         use super::*;
 
         const NEW_KEY_ID: Uuid = Uuid::from_u128(0x7e3);
@@ -904,6 +906,41 @@ mod tests {
 
             // Assert
             assert!(keys.has_key(&NEW_KEY_ID));
+        }
+
+        fn local_kids(auth: &BuiltAuth) -> Option<Vec<Uuid>> {
+            auth.service
+                .live_jwks()
+                .map(|keys| keys.into_iter().map(|k| k.kid).collect())
+        }
+
+        #[tokio::test]
+        async fn fetched_keys_are_kept_locally() {
+            // Arrange
+            let auth = TestAuth::new().build();
+
+            // Act
+            register(&auth, ALICE, PASSWORD).await.unwrap();
+
+            // Assert
+            assert_eq!(local_kids(&auth), Some(vec![SIGNING_KEY_ID]));
+        }
+
+        #[tokio::test]
+        async fn brand_new_key_is_added_to_the_local_keys() {
+            // Arrange
+            let local_jwks = Arc::new(LocalJwkSet::default());
+            local_jwks.replace(vec![]);
+            let auth = TestAuth::new()
+                .with_signer(signer_returning(NEW_KEY_ID, Some(NEW_KEY_ID)))
+                .with_local_jwks(local_jwks)
+                .build();
+
+            // Act
+            register(&auth, ALICE, PASSWORD).await.unwrap();
+
+            // Assert
+            assert_eq!(local_kids(&auth), Some(vec![NEW_KEY_ID]));
         }
 
         #[tokio::test]

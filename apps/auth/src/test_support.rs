@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     clock::Clock,
-    jwk_cache::{JwkCache, JwkCacheError, JwkRecord},
+    jwk_cache::{JwkCache, JwkCacheError, JwkRecord, LocalJwkSet},
     password::{PasswordError, PasswordHasher},
     refresh_token::{Entry, RefreshToken, RefreshTokenStore, RefreshTokenStoreError},
     repository::{
@@ -377,6 +377,7 @@ pub struct TestAuth {
     refresh_tokens: Arc<dyn RefreshTokenStore>,
     refresh_settings: RefreshTokenSettings,
     jwk_cache: Arc<dyn JwkCache>,
+    local_jwks: Arc<LocalJwkSet>,
     passwords: Arc<dyn PasswordHasher>,
     signer: Arc<dyn SigningService>,
 }
@@ -398,6 +399,7 @@ impl TestAuth {
             refresh_tokens: Arc::new(InMemoryRefreshTokens::new(clock.clone())),
             refresh_settings: RefreshTokenSettings::default(),
             jwk_cache: Arc::new(InMemoryJwkCache::default()),
+            local_jwks: Arc::default(),
             passwords: Arc::new(PlainHasher),
             signer: Arc::new(FakeSigner::new(clock.clone())),
             clock,
@@ -439,6 +441,11 @@ impl TestAuth {
         self
     }
 
+    pub fn with_local_jwks(mut self, local_jwks: Arc<LocalJwkSet>) -> Self {
+        self.local_jwks = local_jwks;
+        self
+    }
+
     pub fn build(self) -> BuiltAuth {
         let service = DefaultAuthService::new(
             self.user_repo,
@@ -449,7 +456,8 @@ impl TestAuth {
             self.refresh_tokens,
             &self.refresh_settings,
         )
-        .with_clock(self.clock.clone());
+        .with_clock(self.clock.clone())
+        .with_local_jwks(self.local_jwks);
         BuiltAuth {
             service,
             clock: self.clock,
