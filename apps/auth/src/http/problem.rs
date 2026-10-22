@@ -1,6 +1,6 @@
 use axum::{
     extract::rejection::JsonRejection,
-    http::{StatusCode, header},
+    http::{HeaderValue, StatusCode, header},
     response::{IntoResponse, Response},
 };
 use serde_json::json;
@@ -62,12 +62,19 @@ impl IntoResponse for Problem {
             "status": self.status.as_u16(),
             "detail": self.detail,
         });
-        (
+        let mut response = (
             self.status,
             [(header::CONTENT_TYPE, "application/problem+json")],
             body.to_string(),
         )
-            .into_response()
+            .into_response();
+        // HTTP expects a challenge on every 401; Bearer is the scheme of our access tokens.
+        if self.status == StatusCode::UNAUTHORIZED {
+            response
+                .headers_mut()
+                .insert(header::WWW_AUTHENTICATE, HeaderValue::from_static("Bearer"));
+        }
+        response
     }
 }
 
@@ -90,5 +97,26 @@ mod tests {
 
         // Assert
         assert_eq!(problem.status, expected);
+    }
+
+    #[rstest]
+    #[case::unauthorized(StatusCode::UNAUTHORIZED, Some("Bearer"))]
+    #[case::bad_request(StatusCode::BAD_REQUEST, None)]
+    #[case::unavailable(StatusCode::SERVICE_UNAVAILABLE, None)]
+    fn into_response_sets_www_authenticate_only_on_401(
+        #[case] status: StatusCode,
+        #[case] expected: Option<&'static str>,
+    ) {
+        // Arrange
+        let problem = Problem::new(status, "detail");
+
+        // Act
+        let response = problem.into_response();
+
+        // Assert
+        assert_eq!(
+            response.headers().get(header::WWW_AUTHENTICATE),
+            expected.map(HeaderValue::from_static).as_ref()
+        );
     }
 }
