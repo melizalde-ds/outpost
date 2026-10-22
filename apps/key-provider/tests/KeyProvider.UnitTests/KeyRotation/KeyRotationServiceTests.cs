@@ -145,6 +145,20 @@ public sealed class KeyRotationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RotateAsync_TransientDatabaseErrorTwoLevelsDeep_ReturnsAFailureWorthRetrying()
+    {
+        // Arrange
+        SavingKeysFailsWith(new InvalidOperationException("save failed",
+            new DbUpdateException("save failed", new TestDbException("connection reset", isTransient: true))));
+
+        // Act
+        KeyRotationResult result = await _sut.RotateAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.ShouldBeOfType<KeyRotationFailed>().IsTransient.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task RotateAsync_AppendOnlyViolationCausedByTransientError_ReturnsAFailureNotWorthRetrying()
     {
         // Arrange

@@ -78,8 +78,7 @@ internal sealed class KeyRotationService(
             return false;
         }
 
-        return e is TimeoutException or DbException { IsTransient: true }
-               || e.InnerException is TimeoutException or DbException { IsTransient: true };
+        return DatabaseErrors.IsTemporary(e);
     }
 
     private static string Describe(Exception e)
