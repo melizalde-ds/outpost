@@ -19,7 +19,7 @@ fn default_jwks_refresh_secs() -> NonZeroU64 {
     NonZeroU64::new(60).unwrap()
 }
 
-fn default_request_timeout_secs() -> NonZeroU64 {
+pub(super) fn default_request_timeout_secs() -> NonZeroU64 {
     NonZeroU64::new(10).unwrap()
 }
 

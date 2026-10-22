@@ -1,11 +1,25 @@
-use std::net::{IpAddr, SocketAddr};
+use std::{
+    net::{IpAddr, SocketAddr},
+    num::NonZeroU64,
+    time::Duration,
+};
 
 use serde::Deserialize;
+
+use super::http::default_request_timeout_secs;
 
 #[derive(Debug, Deserialize)]
 pub struct GrpcSettings {
     pub server: GrpcEndpoint,
     pub key_service_client: GrpcEndpoint,
+    #[serde(default = "default_request_timeout_secs")]
+    pub request_timeout_secs: NonZeroU64,
+}
+
+impl GrpcSettings {
+    pub fn request_timeout(&self) -> Duration {
+        Duration::from_secs(self.request_timeout_secs.get())
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -54,6 +68,29 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
+
+    const ENDPOINTS: &str = r#""server": { "host": "::1", "port": 50051 },
+        "key_service_client": { "host": "::1", "port": 5210 }"#;
+
+    #[test]
+    fn deserialize_nothing_set_times_out_after_10s() {
+        // Act
+        let settings: GrpcSettings = serde_json::from_str(&format!("{{ {ENDPOINTS} }}")).unwrap();
+
+        // Assert
+        assert_eq!(settings.request_timeout(), Duration::from_secs(10));
+    }
+
+    #[test]
+    fn deserialize_zero_request_timeout_is_rejected() {
+        // Act
+        let result = serde_json::from_str::<GrpcSettings>(&format!(
+            r#"{{ {ENDPOINTS}, "request_timeout_secs": 0 }}"#
+        ));
+
+        // Assert
+        assert!(result.is_err());
+    }
 
     fn endpoint(host: &str) -> GrpcEndpoint {
         GrpcEndpoint {

@@ -26,7 +26,7 @@ fn config_listing(other_key: Uuid) -> KeyStubConfig {
 }
 
 #[tokio::test]
-async fn access_token_verifies_with_the_public_key_apps_read_from_redis() {
+async fn access_token_verifies_with_the_saved_public_key() {
     // Arrange
     let auth = Auth::start().await;
 
@@ -178,4 +178,23 @@ async fn key_provider_that_never_answers_returns_unavailable_after_the_timeout()
 
     // Assert
     assert_eq!(code_of(result), Code::Unavailable);
+}
+
+#[tokio::test]
+async fn request_longer_than_the_grpc_time_limit_returns_cancelled() {
+    // Arrange
+    let auth = Auth::start_with(
+        KeyStubConfig {
+            sign_hangs: true,
+            ..KeyStubConfig::default()
+        },
+        &[("AUTH__GRPC__REQUEST_TIMEOUT_SECS", "1")],
+    )
+    .await;
+
+    // Act
+    let result = auth.register(ALICE, PASSWORD).await;
+
+    // Assert
+    assert_eq!(code_of(result), Code::Cancelled);
 }
