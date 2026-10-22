@@ -17,7 +17,7 @@ internal sealed class KeyApiService(
 {
     public override async Task<SignTokenResponse> SignToken(SignTokenRequest request, ServerCallContext context)
     {
-        logger.LogInformation("Signing for user: {Subject}", request.Subject);
+        logger.LogDebug("Signing for user: {Subject}", request.Subject);
         if (!Guid.TryParse(request.Subject, out Guid subId))
         {
             throw new InvalidSubjectException(request.Subject);
@@ -43,7 +43,7 @@ internal sealed class KeyApiService(
     public override async Task<GetVerificationKeysResponse> GetVerificationKeys(GetVerificationKeysRequest request,
         ServerCallContext context)
     {
-        logger.LogInformation("Getting verification keys...");
+        logger.LogDebug("Getting verification keys...");
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         IKeyPairStore keyPairStore = scope.ServiceProvider.GetRequiredService<IKeyPairStore>();
 
@@ -57,7 +57,7 @@ internal sealed class KeyApiService(
             PublicKey = ByteString.CopyFrom(k.PublicKey),
             ExpiresAt = k.ExpirationTime.ToTimestamp()
         }));
-        logger.LogInformation("Sending {PublicKeyCount} verification keys...", publicKeys.Count);
+        logger.LogDebug("Sending {PublicKeyCount} verification keys...", publicKeys.Count);
         return new GetVerificationKeysResponse { Keys = { publicKeys } };
     }
 }

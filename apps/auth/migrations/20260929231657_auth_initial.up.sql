@@ -3,8 +3,7 @@ CREATE TABLE auth
     user_id       uuid PRIMARY KEY     DEFAULT uuidv7(),
     username      text        NOT NULL,
     password_hash text        NOT NULL,
-    active        boolean     NOT NULL DEFAULT true,
-    updated_at    timestamptz NOT NULL DEFAULT now()
+    active        boolean     NOT NULL DEFAULT true
 );
 
 CREATE UNIQUE INDEX auth_username_lower_key ON public.auth (lower(username));
