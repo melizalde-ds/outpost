@@ -1,6 +1,6 @@
 use std::{
     net::{Ipv4Addr, SocketAddr},
-    process::{ExitStatus, Stdio},
+    process::Stdio,
     time::Duration,
 };
 
@@ -54,14 +54,6 @@ impl App {
             );
             tokio::time::sleep(Duration::from_millis(50)).await;
         }
-    }
-
-    pub async fn exit_status(db: &str, key_provider: SocketAddr) -> ExitStatus {
-        let mut child = spawn(db, key_provider, free_address(), free_address(), &[]).await;
-        tokio::time::timeout(Duration::from_secs(30), child.wait())
-            .await
-            .expect("auth still running after 30s")
-            .unwrap()
     }
 
     pub fn client(&self) -> AuthServiceClient<Channel> {

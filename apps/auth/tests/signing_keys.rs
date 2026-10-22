@@ -5,6 +5,7 @@ use common::{
     auth::{Auth, PASSWORD, code_of, jwk_key, redis_delete, redis_expiry, redis_has, redis_json},
     fresh_db,
     key_stub::{AUDIENCE, ISSUER, KEY_EXPIRES_AT, KeyStubConfig, verification_key},
+    proto::auth::v1::RegisterRequest,
 };
 use jsonwebtoken::{Algorithm, DecodingKey, Validation, jwk::Jwk};
 use pretty_assertions::assert_eq;
@@ -13,6 +14,7 @@ use tonic::Code;
 use uuid::Uuid;
 
 const ALICE: &str = "alice";
+const BOB: &str = "bob";
 const PUBLIC_KEY_X: &str = "NajNmZvoEgf9vfp32oyfeTlb2D8mXB1XloJUarphYZw";
 
 fn config_listing(other_key: Uuid) -> KeyStubConfig {
@@ -49,12 +51,13 @@ async fn access_token_verifies_with_the_public_key_apps_read_from_redis() {
 }
 
 #[tokio::test]
-async fn startup_saves_every_listed_key_as_an_ed25519_jwk() {
+async fn first_sign_in_saves_every_listed_key_as_an_ed25519_jwk() {
     // Arrange
     let other_key = Uuid::now_v7();
+    let auth = Auth::start_with(config_listing(other_key), &[]).await;
 
     // Act
-    let _auth = Auth::start_with(config_listing(other_key), &[]).await;
+    auth.register(ALICE, PASSWORD).await.unwrap();
 
     // Assert
     assert_eq!(
@@ -71,12 +74,13 @@ async fn startup_saves_every_listed_key_as_an_ed25519_jwk() {
 }
 
 #[tokio::test]
-async fn startup_saved_key_disappears_when_the_key_expires() {
+async fn saved_key_disappears_when_the_key_expires() {
     // Arrange
     let other_key = Uuid::now_v7();
+    let auth = Auth::start_with(config_listing(other_key), &[]).await;
 
     // Act
-    let _auth = Auth::start_with(config_listing(other_key), &[]).await;
+    auth.register(ALICE, PASSWORD).await.unwrap();
 
     // Assert
     assert_eq!(
@@ -86,16 +90,21 @@ async fn startup_saved_key_disappears_when_the_key_expires() {
 }
 
 #[tokio::test]
-async fn key_provider_down_at_startup_stops_auth_with_an_error() {
+async fn key_provider_down_at_startup_auth_still_starts_and_sign_up_returns_unavailable() {
     // Arrange
     let db = fresh_db().await;
     let nothing_listening = free_address();
+    let app = App::start(&db, nothing_listening).await;
+    let request = RegisterRequest {
+        username: ALICE.into(),
+        password: PASSWORD.into(),
+    };
 
     // Act
-    let status = App::exit_status(&db, nothing_listening).await;
+    let result = app.client().register(request).await;
 
     // Assert
-    assert!(!status.success());
+    assert_eq!(code_of(result), Code::Unavailable);
 }
 
 #[tokio::test]
@@ -138,13 +147,15 @@ async fn signing_key_missing_from_redis_is_saved_again_on_the_next_sign_in() {
 async fn signing_key_already_in_redis_is_not_fetched_again() {
     // Arrange
     let auth = Auth::start().await;
-    let calls_at_startup = auth.key_provider.key_list_calls();
+    auth.wait_until_jwks_loaded().await;
+    auth.register(ALICE, PASSWORD).await.unwrap();
+    let calls_before = auth.key_provider.key_list_calls();
 
     // Act
-    auth.register(ALICE, PASSWORD).await.unwrap();
+    auth.register(BOB, PASSWORD).await.unwrap();
 
     // Assert
-    assert_eq!(auth.key_provider.key_list_calls(), calls_at_startup);
+    assert_eq!(auth.key_provider.key_list_calls(), calls_before);
 }
 
 #[tokio::test]
