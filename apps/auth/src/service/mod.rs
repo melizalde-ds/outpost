@@ -14,6 +14,7 @@ use crate::{
 
 mod auth;
 mod errors;
+mod jwks;
 mod refresh_token;
 
 pub use errors::AuthServiceError;

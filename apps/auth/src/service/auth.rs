@@ -82,13 +82,7 @@ impl DefaultAuthService {
             self.jwk_cache.insert(&record).await?;
             self.local_jwks.insert(record);
         } else if !self.jwk_cache.contains(&signed.key_id).await? {
-            let records = self
-                .signer
-                .get_verification_keys()
-                .await?
-                .into_iter()
-                .map(JwkRecord::try_from)
-                .collect::<Result<Vec<_>, _>>()?;
+            let records = self.fetch_jwks().await?;
             self.jwk_cache.insert_many(&records).await?;
             self.local_jwks.replace(records);
         }
