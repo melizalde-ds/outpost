@@ -63,7 +63,6 @@ impl App {
     }
 }
 
-// A connection alone can be a false positive, so require a real answer: auth accepts any logout.
 async fn answering_client(addr: SocketAddr) -> Option<AuthServiceClient<Channel>> {
     let mut client = AuthServiceClient::connect(format!("http://{addr}"))
         .await
@@ -121,7 +120,6 @@ fn forward_output(stream: impl AsyncRead + Unpin + Send + 'static) {
     });
 }
 
-// Each auth gets its own loopback address, so a port picked here can't be taken by another test's server.
 pub fn free_address() -> SocketAddr {
     let [a, b, c, ..] = *Uuid::new_v4().as_bytes();
     std::net::TcpListener::bind((Ipv4Addr::new(127, a, b, c.max(1)), 0))

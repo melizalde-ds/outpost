@@ -1,15 +1,21 @@
 using Grpc.Core;
+
 using KeyProvider.Database;
 using KeyProvider.IntegrationTests.Infrastructure;
 using KeyProvider.KeyRotation;
 using KeyProvider.SigningKeys;
 using KeyProvider.UnitTests;
+
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
+
 using Npgsql;
+
 using Org.BouncyCastle.Crypto.Parameters;
+
 using Outpost.EntityFrameworkCore.AppendOnly;
 using Outpost.Key.V1;
+
 using Shouldly;
 
 namespace KeyProvider.IntegrationTests.SigningKeys;
@@ -121,7 +127,6 @@ public sealed class KeyStorageTests(PostgresFixture postgres)
         }
 
         await using NpgsqlConnection admin = await OpenAdminAsync(databases);
-        // The SQL comes from the test cases above, not from input.
 #pragma warning disable CA2100
         await using NpgsqlCommand change = new(sql, admin);
 #pragma warning restore CA2100

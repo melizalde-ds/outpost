@@ -1,18 +1,22 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
 use redis::Client;
+use sqlx::PgPool;
+use tokio::signal;
+use tokio_util::sync::CancellationToken;
 use tonic::transport::{Channel, Endpoint, Server};
-use tracing::info;
+use tracing::{info, level_filters::LevelFilter};
+use tracing_subscriber::EnvFilter;
 
 use crate::{
-    jwk_cache::{JwkCache, JwkRecord, RedisJwkCache},
+    jwk_cache::RedisJwkCache,
     password::Argon2PasswordHasher,
     proto::auth::v1::auth_service_server::AuthServiceServer,
     refresh_token::RedisRefreshTokenStore,
     repository::{PostgresTokenFamilyRepository, PostgresUserRepository},
     service::DefaultAuthService,
-    settings::{GrpcEndpoint, Settings},
-    signing::{KeySigningService, SigningService},
+    settings::{DatabaseSettings, GrpcEndpoint, RedisSettings, Settings},
+    signing::KeySigningService,
 };
 
 mod clock;
@@ -31,54 +35,61 @@ mod test_support;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    tracing_subscriber::fmt::init();
+    let log_filter = EnvFilter::builder()
+        .with_default_directive(LevelFilter::INFO.into())
+        .from_env_lossy();
+    tracing_subscriber::fmt().with_env_filter(log_filter).init();
 
     let settings = Settings::load()?;
-    let db_pool = settings
-        .database
-        .pool_options()
-        .connect_with(settings.database.connection_options())
-        .await?;
-    info!("connected to database");
+    let auth_service = build_auth_service(&settings).await?;
+    let grpc_shutdown = CancellationToken::new();
+    let grpc = serve_grpc(auth_service, &settings.grpc.server, grpc_shutdown.clone());
+    let shutdown = async {
+        shutdown_signal().await?;
+        info!("shutdown signal received, finishing in-flight requests");
+        grpc_shutdown.cancel();
+        anyhow::Ok(())
+    };
 
-    let redis_client = Client::open(settings.redis.connection_info()?)?;
-    let redis_config = settings.redis.connection_manager_config();
+    tokio::try_join!(grpc, shutdown)?;
+    Ok(())
+}
+
+async fn build_auth_service(settings: &Settings) -> anyhow::Result<DefaultAuthService> {
+    let db_pool = connect_database(&settings.database).await?;
+    let (jwk_cache, refresh_tokens) = connect_redis(&settings.redis).await?;
+    let passwords = Argon2PasswordHasher::new(&settings.password)?;
     let signing_channel = create_channel(&settings.grpc.key_service_client)?;
 
-    let users = Arc::new(PostgresUserRepository::new(db_pool.clone()));
-    info!("user repository initialized");
-    let families = Arc::new(PostgresTokenFamilyRepository::new(db_pool));
-    info!("token family repository initialized");
-    let jwk_cache = Arc::new(RedisJwkCache::new(redis_client.clone(), redis_config.clone()).await?);
-    info!("JWK cache initialized");
-    let refresh_tokens = Arc::new(RedisRefreshTokenStore::new(redis_client, redis_config).await?);
-    info!("refresh token store initialized");
-
-    let passwords = Arc::new(Argon2PasswordHasher::new(&settings.password)?);
-    info!("password hasher initialized");
-    let signer = Arc::new(KeySigningService::new(signing_channel));
-    info!("signing service initialized");
-
-    let cached = warm_jwk_cache(&signer, &jwk_cache).await?;
-    info!(keys = cached, "JWK cache warmed");
-
-    let auth_service = DefaultAuthService::new(
-        users,
-        families,
-        passwords,
-        signer,
-        jwk_cache,
-        refresh_tokens,
+    Ok(DefaultAuthService::new(
+        Arc::new(PostgresUserRepository::new(db_pool.clone())),
+        Arc::new(PostgresTokenFamilyRepository::new(db_pool)),
+        Arc::new(passwords),
+        Arc::new(KeySigningService::new(signing_channel)),
+        Arc::new(jwk_cache),
+        Arc::new(refresh_tokens),
         &settings.refresh_token,
-    );
-    let addr: SocketAddr = settings.grpc.server.grpc_address().parse()?;
-    info!(%addr, "auth service listening");
-    Server::builder()
-        .add_service(AuthServiceServer::new(auth_service))
-        .serve(addr)
-        .await?;
+    ))
+}
 
-    Ok(())
+async fn connect_database(settings: &DatabaseSettings) -> anyhow::Result<PgPool> {
+    let pool = settings
+        .pool_options()
+        .connect_with(settings.connection_options())
+        .await?;
+    info!("connected to Postgres");
+    Ok(pool)
+}
+
+async fn connect_redis(
+    settings: &RedisSettings,
+) -> anyhow::Result<(RedisJwkCache, RedisRefreshTokenStore)> {
+    let client = Client::open(settings.connection_info()?)?;
+    let config = settings.connection_manager_config();
+    let jwk_cache = RedisJwkCache::new(client.clone(), config.clone()).await?;
+    let refresh_tokens = RedisRefreshTokenStore::new(client, config).await?;
+    info!("connected to Redis");
+    Ok((jwk_cache, refresh_tokens))
 }
 
 fn create_channel(endpoint: &GrpcEndpoint) -> anyhow::Result<Channel> {
@@ -92,15 +103,34 @@ fn create_channel(endpoint: &GrpcEndpoint) -> anyhow::Result<Channel> {
     Ok(channel_endpoint.connect_lazy())
 }
 
-async fn warm_jwk_cache(
-    client: &KeySigningService,
-    jwk_cache: &RedisJwkCache,
-) -> anyhow::Result<usize> {
-    let keys = client.get_verification_keys().await?;
-    let records = keys
-        .into_iter()
-        .map(JwkRecord::try_from)
-        .collect::<Result<Vec<_>, _>>()?;
-    jwk_cache.insert_many(&records).await?;
-    Ok(records.len())
+async fn serve_grpc(
+    auth_service: DefaultAuthService,
+    endpoint: &GrpcEndpoint,
+    shutdown: CancellationToken,
+) -> anyhow::Result<()> {
+    let addr: SocketAddr = endpoint.grpc_address().parse()?;
+    info!(%addr, "auth service listening");
+    Server::builder()
+        .add_service(AuthServiceServer::new(auth_service))
+        .serve_with_shutdown(addr, shutdown.cancelled_owned())
+        .await?;
+    info!("auth service stopped");
+    Ok(())
+}
+async fn shutdown_signal() -> anyhow::Result<()> {
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())?
+            .recv()
+            .await;
+        anyhow::Ok(())
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<anyhow::Result<()>>();
+
+    tokio::select! {
+        result = signal::ctrl_c() => Ok(result?),
+        result = terminate => result,
+    }
 }

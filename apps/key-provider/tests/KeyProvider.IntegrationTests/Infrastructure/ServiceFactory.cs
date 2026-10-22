@@ -1,17 +1,20 @@
 using Grpc.Net.Client;
+
 using KeyProvider.KeyRotation;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Time.Testing;
+
 using Outpost.Key.V1;
+
 using Shouldly;
 
 namespace KeyProvider.IntegrationTests.Infrastructure;
 
-/// <summary>The real key provider, in memory, on its own databases and a fake clock.</summary>
 internal sealed class ServiceFactory(
     TestDatabases databases,
     bool keepRotationWorker = false,
@@ -24,7 +27,6 @@ internal sealed class ServiceFactory(
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Not Development, so only appsettings.json applies and user secrets aren't loaded.
         builder.UseEnvironment("IntegrationTest");
         builder.UseSetting("ConnectionStrings:KeyProvider", databases.KeyProvider);
         builder.UseSetting("ConnectionStrings:DataProtection", databases.DataProtection);

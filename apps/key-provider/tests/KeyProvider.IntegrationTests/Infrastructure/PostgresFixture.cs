@@ -1,9 +1,12 @@
 using KeyProvider.Database;
 using KeyProvider.IntegrationTests.Infrastructure;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
 using Npgsql;
+
 using Testcontainers.PostgreSql;
 
 [assembly: AssemblyFixture(typeof(PostgresFixture))]
@@ -67,7 +70,6 @@ public sealed class PostgresFixture : IAsyncLifetime
 
         async Task CopyAsync(string template, string name)
         {
-            // CREATE DATABASE can't take parameters; both names are built above, not from input.
 #pragma warning disable CA2100
             await using NpgsqlCommand create = new(
                 $"""CREATE DATABASE "{name}" TEMPLATE "{template}" """,
@@ -78,7 +80,6 @@ public sealed class PostgresFixture : IAsyncLifetime
         }
     }
 
-    // Migrate as the migrator roles, through the app's own DbContext setup, like `just key-migrate`.
     private async Task MigrateAsync()
     {
         IConfiguration configuration = new ConfigurationBuilder()

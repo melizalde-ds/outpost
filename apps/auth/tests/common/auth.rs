@@ -123,7 +123,6 @@ impl Auth {
             .unwrap();
     }
 
-    /// When the user's only session ends, however busy it is.
     pub async fn session_limit(&self, username: &str) -> DateTime<Utc> {
         sqlx::query_scalar(
             "SELECT w.expires_at FROM token_family_window w
@@ -161,18 +160,15 @@ impl Auth {
     }
 }
 
-/// Where Redis keeps a refresh token's session.
 pub fn session_key(refresh_token: &str) -> String {
     let hash = Sha256::digest(refresh_token.as_bytes());
     format!("refresh_token:{}", URL_SAFE_NO_PAD.encode(hash))
 }
 
-/// Where apps read a public key, as the README says.
 pub fn jwk_key(kid: &str) -> String {
     format!("jwk:{kid}")
 }
 
-/// When a Redis key expires, in Unix milliseconds. Negative if it has no expiry or is missing.
 pub async fn redis_expiry(key: &str) -> i64 {
     ::redis::cmd("PEXPIRETIME")
         .arg(key)
@@ -219,7 +215,6 @@ struct Subject {
     sub: String,
 }
 
-/// The user an access token is for. The signature is checked in `signing_keys.rs`.
 pub fn subject_of(access_token: &str) -> String {
     jsonwebtoken::dangerous::insecure_decode::<Subject>(access_token)
         .unwrap()

@@ -22,8 +22,6 @@ struct OwnRedis {
 }
 
 impl OwnRedis {
-    // A fixed host port, so auth finds Redis again after a restart.
-    // shortcut: the port is free when picked but could be taken before Docker binds it; fine for tests.
     async fn start() -> Self {
         let port = std::net::TcpListener::bind(("127.0.0.1", 0))
             .unwrap()

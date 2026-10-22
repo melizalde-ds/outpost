@@ -13,7 +13,6 @@ use tonic::Code;
 use uuid::Uuid;
 
 const ALICE: &str = "alice";
-/// The stub's public key, base64url without padding, as JWKs carry it.
 const PUBLIC_KEY_X: &str = "NajNmZvoEgf9vfp32oyfeTlb2D8mXB1XloJUarphYZw";
 
 fn config_listing(other_key: Uuid) -> KeyStubConfig {
