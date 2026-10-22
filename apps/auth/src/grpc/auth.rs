@@ -94,6 +94,7 @@ mod tests {
     use chrono::Duration;
     use pretty_assertions::assert_eq;
     use redis::{ErrorKind, RedisError};
+    use rstest::rstest;
     use tonic::Code;
     use uuid::Uuid;
 
@@ -237,9 +238,7 @@ mod tests {
 
     fn families_with_the_session() -> MockTokenFamilyRepository {
         let mut families = MockTokenFamilyRepository::new();
-        families
-            .expect_find_unrevoked_by_user_id()
-            .returning(|_| Ok(vec![FAMILY]));
+        families.expect_is_live().returning(|_, _| Ok(true));
         families
     }
 
@@ -254,7 +253,7 @@ mod tests {
     }
 
     fn database_down() -> RepositoryError {
-        RepositoryError::Database(sqlx::Error::PoolTimedOut)
+        RepositoryError::from(sqlx::Error::PoolTimedOut)
     }
 
     #[test]
@@ -354,6 +353,52 @@ mod tests {
 
             // Act
             let result = register(&auth, ALICE, "").await;
+
+            // Assert
+            expect_code(result, Code::InvalidArgument);
+        }
+
+        #[rstest]
+        #[case::username_at_the_limit(256, 8)]
+        #[case::password_at_the_limit(5, 1024)]
+        #[tokio::test]
+        async fn at_the_length_limit_returns_tokens(
+            #[case] username_chars: usize,
+            #[case] password_bytes: usize,
+        ) {
+            // Arrange
+            let auth = TestAuth::new().build();
+
+            // Act
+            let result = register(
+                &auth,
+                &"é".repeat(username_chars),
+                &"p".repeat(password_bytes),
+            )
+            .await;
+
+            // Assert
+            assert!(result.is_ok());
+        }
+
+        #[rstest]
+        #[case::username_too_long(257, 8)]
+        #[case::password_too_long(5, 1025)]
+        #[tokio::test]
+        async fn over_the_length_limit_returns_invalid_argument(
+            #[case] username_chars: usize,
+            #[case] password_bytes: usize,
+        ) {
+            // Arrange
+            let auth = TestAuth::new().build();
+
+            // Act
+            let result = register(
+                &auth,
+                &"é".repeat(username_chars),
+                &"p".repeat(password_bytes),
+            )
+            .await;
 
             // Assert
             expect_code(result, Code::InvalidArgument);
@@ -471,6 +516,32 @@ mod tests {
 
             // Assert
             drop(auth);
+        }
+
+        #[rstest]
+        #[case::username_too_long(257, 8)]
+        #[case::password_too_long(5, 1025)]
+        #[tokio::test]
+        async fn too_long_returns_unauthenticated_without_checking_a_password(
+            #[case] username_chars: usize,
+            #[case] password_bytes: usize,
+        ) {
+            // Arrange
+            let mut passwords = MockPasswordHasher::new();
+            passwords.expect_verify().never();
+            passwords.expect_verify_dummy().never();
+            let auth = TestAuth::new().with_passwords(passwords).build();
+
+            // Act
+            let result = login(
+                &auth,
+                &"a".repeat(username_chars),
+                &"p".repeat(password_bytes),
+            )
+            .await;
+
+            // Assert
+            expect_code(result, Code::Unauthenticated);
         }
 
         #[tokio::test]
@@ -675,7 +746,7 @@ mod tests {
                     *family_id == FAMILY && matches!(reason, RevocationReason::Reuse)
                 })
                 .times(1)
-                .returning(|_, _| Ok(true));
+                .returning(|_, _| Ok(()));
             let auth = TestAuth::new()
                 .with_users(active_user())
                 .with_families(families)
@@ -1052,7 +1123,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn database_unreachable_on_register_returns_internal() {
+        async fn database_unreachable_on_register_returns_unavailable() {
             // Arrange
             let mut users = MockUserRepository::new();
             users
@@ -1064,7 +1135,7 @@ mod tests {
             let result = register(&auth, ALICE, PASSWORD).await;
 
             // Assert
-            expect_code(result, Code::Internal);
+            expect_code(result, Code::Unavailable);
         }
 
         #[tokio::test]
@@ -1084,7 +1155,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn database_unreachable_when_checking_the_user_on_refresh_returns_internal() {
+        async fn database_unreachable_when_checking_the_user_on_refresh_returns_unavailable() {
             // Arrange
             let mut users = MockUserRepository::new();
             users.expect_is_active().returning(|_| Err(database_down()));
@@ -1098,11 +1169,11 @@ mod tests {
             let result = refresh(&auth, &session_token()).await;
 
             // Assert
-            expect_code(result, Code::Internal);
+            expect_code(result, Code::Unavailable);
         }
 
         #[tokio::test]
-        async fn database_unreachable_when_ending_a_reused_session_returns_internal() {
+        async fn database_unreachable_when_ending_a_reused_session_returns_unavailable() {
             // Arrange
             let mut families = MockTokenFamilyRepository::new();
             families
@@ -1117,7 +1188,7 @@ mod tests {
             let result = refresh(&auth, &session_token()).await;
 
             // Assert
-            expect_code(result, Code::Internal);
+            expect_code(result, Code::Unavailable);
         }
     }
 }

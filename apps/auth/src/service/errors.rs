@@ -18,6 +18,10 @@ pub enum AuthServiceError {
     UserNotActive(UserId),
     #[error("Username or password is empty")]
     MissingCredentials,
+    #[error("Username or password is too long")]
+    CredentialsTooLong,
+    #[error("Login refused: username or password is too long")]
+    LoginTooLong,
     #[error("Username {0} already exists")]
     UserAlreadyExists(String),
     #[error("Invalid refresh token")]

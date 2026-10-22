@@ -2,8 +2,8 @@ use tonic::{Code, Status};
 use tracing::{error, info, warn};
 
 use crate::{
-    password::PasswordError, refresh_token::RefreshTokenStoreError, service::AuthServiceError,
-    signing::SigningError,
+    password::PasswordError, refresh_token::RefreshTokenStoreError, repository::RepositoryError,
+    service::AuthServiceError, signing::SigningError,
 };
 
 impl From<AuthServiceError> for Status {
@@ -12,6 +12,7 @@ impl From<AuthServiceError> for Status {
             e @ (AuthServiceError::UserNotFound(_)
             | AuthServiceError::InvalidCredentials(_)
             | AuthServiceError::UserNotActive(_)
+            | AuthServiceError::LoginTooLong
             | AuthServiceError::InvalidRefreshToken) => {
                 info!(error = %e, "rejecting authentication");
                 Status::unauthenticated("invalid credentials")
@@ -31,6 +32,10 @@ impl From<AuthServiceError> for Status {
             e @ AuthServiceError::MissingCredentials => {
                 info!(error = %e, "rejecting registration");
                 Status::invalid_argument("username and password are required")
+            }
+            e @ AuthServiceError::CredentialsTooLong => {
+                info!(error = %e, "rejecting registration");
+                Status::invalid_argument("username or password is too long")
             }
             e @ AuthServiceError::UserAlreadyExists(_) => {
                 info!(error = %e, "username taken");
@@ -55,6 +60,10 @@ impl From<AuthServiceError> for Status {
             }
             e @ AuthServiceError::RefreshTokenStore(RefreshTokenStoreError::Command(_)) => {
                 warn!(error = %e, "refresh token store unavailable");
+                Status::unavailable("service unavailable, retry later")
+            }
+            e @ AuthServiceError::Repository(RepositoryError::Unavailable(_)) => {
+                warn!(error = %e, "database unavailable");
                 Status::unavailable("service unavailable, retry later")
             }
             e @ (AuthServiceError::Repository(_)

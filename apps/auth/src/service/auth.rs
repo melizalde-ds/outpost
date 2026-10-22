@@ -6,6 +6,14 @@ use crate::{
     service::{AuthServiceError, DefaultAuthService, Tokens},
 };
 
+const MAX_USERNAME_CHARS: usize = 256;
+const MAX_PASSWORD_BYTES: usize = 1024;
+
+fn too_long(username: &str, password: &SecretSlice<u8>) -> bool {
+    username.chars().count() > MAX_USERNAME_CHARS
+        || password.expose_secret().len() > MAX_PASSWORD_BYTES
+}
+
 impl DefaultAuthService {
     pub(crate) async fn register(
         &self,
@@ -15,6 +23,9 @@ impl DefaultAuthService {
         let username = username.trim().to_owned();
         if username.is_empty() || password.expose_secret().is_empty() {
             return Err(AuthServiceError::MissingCredentials);
+        }
+        if too_long(&username, &password) {
+            return Err(AuthServiceError::CredentialsTooLong);
         }
         let password_hash = self.passwords.hash(password).await?;
 
@@ -40,6 +51,9 @@ impl DefaultAuthService {
         password: SecretSlice<u8>,
     ) -> Result<Tokens, AuthServiceError> {
         let username = username.trim().to_owned();
+        if too_long(&username, &password) {
+            return Err(AuthServiceError::LoginTooLong);
+        }
         let Some(credentials) = self.users.get_credentials(&username).await? else {
             self.passwords.verify_dummy(password).await?;
             return Err(AuthServiceError::UserNotFound(username));
