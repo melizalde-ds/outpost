@@ -9,8 +9,9 @@ your app can check on its own, and a refresh token to get a new one.
 
 ## Status
 
-Outpost is early and still changing. It isn't ready for production yet: there
-are no tests, and connections aren't encrypted.
+Outpost is early and still changing. It isn't ready for production yet:
+connections between services aren't encrypted, and the key provider doesn't
+check who is calling it.
 
 ## What auth can do
 
@@ -41,8 +42,8 @@ To try it, see the [Python example](examples/python-client).
 2. Call `Register` or `Login` to get tokens, and `RefreshToken` when the
    access token runs out.
 3. To check an access token, get the public key for its `kid` (in the token
-   header) from `GET /.well-known/jwks.json`, or from Redis at `jwk:<kid>`.
-   Then check the signature and expiry. The JWKS endpoint keeps answering
+   header) from `GET /.well-known/jwks.json`. Then check the signature and
+   expiry. The JWKS endpoint keeps answering
    while the key provider is down.
 
 ### HTTP API
@@ -57,11 +58,19 @@ Every call takes and returns JSON. The fields match `auth.proto`.
 | `POST /v1/auth/logout` | `{"refresh_token"}` | 204 |
 | `POST /v1/auth/logout-all` | `{"refresh_token"}` | 204 |
 | `GET /.well-known/jwks.json` | | `{"keys": [...]}` |
+| `GET /healthz` | | 200 while auth is running |
 
 `tokens` holds `access_token`, `refresh_token` and `refresh_token_expires_at`
-(an RFC 3339 time). Errors come back as
+(an RFC 3339 time). Usernames can be up to 256 characters and passwords up to
+1024 bytes. Errors come back as
 [problem JSON](https://www.rfc-editor.org/rfc/rfc9457) with a `detail`
 message.
+
+### Health checks
+
+Auth serves the standard gRPC health service (`grpc.health.v1.Health`) on the
+gRPC port, and `GET /healthz` on the HTTP port. Both say auth is up while it
+runs. They don't check Postgres, Redis or the key provider.
 
 ## Working on Outpost
 
