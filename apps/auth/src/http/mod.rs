@@ -24,6 +24,7 @@ pub fn router(auth: Arc<DefaultAuthService>) -> Router {
         .route("/v1/auth/logout", post(auth::logout))
         .route("/v1/auth/logout-all", post(auth::logout_all))
         .route("/.well-known/jwks.json", get(jwks::jwks))
+        .route("/healthz", get(|| async { StatusCode::OK }))
         .with_state(auth)
 }
 
@@ -56,6 +57,20 @@ mod tests {
         Router::new()
             .route("/", get(move || tokio::time::sleep(duration)))
             .layer(middleware::from_fn_with_state(LIMIT, time_limit))
+    }
+
+    #[tokio::test]
+    async fn healthz_while_running_returns_200() {
+        // Arrange
+        let app = router(Arc::new(
+            crate::test_support::TestAuth::new().build().service,
+        ));
+
+        // Act
+        let reply = get_path(app, "/healthz").await;
+
+        // Assert
+        assert_eq!(reply.status, StatusCode::OK);
     }
 
     #[tokio::test(start_paused = true)]

@@ -13,7 +13,7 @@ use tonic::transport::Channel;
 use uuid::Uuid;
 
 use super::{
-    APP_PASSWORD, APP_USER, infra,
+    APP_PASSWORD, APP_USER, REDIS_PASSWORD, REDIS_USER, infra,
     proto::auth::v1::{LogoutRequest, auth_service_client::AuthServiceClient},
 };
 
@@ -22,6 +22,7 @@ pub const PEPPER: &str = "test-pepper";
 pub struct App {
     _child: Child,
     client: AuthServiceClient<Channel>,
+    pub grpc_addr: SocketAddr,
     pub http_addr: SocketAddr,
 }
 
@@ -45,6 +46,7 @@ impl App {
                 return Self {
                     _child: child,
                     client,
+                    grpc_addr: addr,
                     http_addr,
                 };
             }
@@ -88,6 +90,8 @@ async fn spawn(
         .env("AUTH__DATABASE__DATABASE_NAME", db)
         .env("AUTH__REDIS__HOST", "127.0.0.1")
         .env("AUTH__REDIS__PORT", infra.redis_port.to_string())
+        .env("AUTH__REDIS__USERNAME", REDIS_USER)
+        .env("AUTH__REDIS__PASSWORD", REDIS_PASSWORD)
         .env("AUTH__PASSWORD__PEPPER", PEPPER)
         .env("AUTH__GRPC__SERVER__HOST", addr.ip().to_string())
         .env("AUTH__GRPC__SERVER__PORT", addr.port().to_string())

@@ -6,6 +6,7 @@ use sqlx::PgPool;
 use tokio::{net::TcpListener, signal};
 use tokio_util::sync::CancellationToken;
 use tonic::transport::{Channel, Endpoint, Server};
+use tonic_health::{ServingStatus, server::health_reporter};
 use tower_http::trace::TraceLayer;
 use tracing::{info, level_filters::LevelFilter};
 use tracing_subscriber::EnvFilter;
@@ -17,7 +18,9 @@ use crate::{
     refresh_token::RedisRefreshTokenStore,
     repository::{PostgresTokenFamilyRepository, PostgresUserRepository},
     service::DefaultAuthService,
-    settings::{DatabaseSettings, GrpcEndpoint, HttpSettings, RedisSettings, Settings},
+    settings::{
+        DatabaseSettings, GrpcEndpoint, GrpcSettings, HttpSettings, RedisSettings, Settings,
+    },
     signing::KeySigningService,
 };
 
@@ -46,11 +49,7 @@ async fn main() -> anyhow::Result<()> {
     let settings = Settings::load()?;
     let auth_service = Arc::new(build_auth_service(&settings).await?);
     let shutdown = CancellationToken::new();
-    let grpc = serve_grpc(
-        auth_service.clone(),
-        &settings.grpc.server,
-        shutdown.clone(),
-    );
+    let grpc = serve_grpc(auth_service.clone(), &settings.grpc, shutdown.clone());
     let http = serve_http(auth_service.clone(), &settings.http, shutdown.clone());
     let jwks = async {
         auth_service
@@ -119,14 +118,29 @@ fn create_channel(endpoint: &GrpcEndpoint) -> anyhow::Result<Channel> {
 
 async fn serve_grpc(
     auth_service: Arc<DefaultAuthService>,
-    endpoint: &GrpcEndpoint,
+    settings: &GrpcSettings,
     shutdown: CancellationToken,
 ) -> anyhow::Result<()> {
-    let addr: SocketAddr = endpoint.grpc_address().parse()?;
+    let addr: SocketAddr = settings.server.grpc_address().parse()?;
+    let (health, health_service) = health_reporter();
+    health
+        .set_serving::<AuthServiceServer<DefaultAuthService>>()
+        .await;
+    let stopping = async move {
+        shutdown.cancelled().await;
+        health
+            .set_service_status("", ServingStatus::NotServing)
+            .await;
+        health
+            .set_not_serving::<AuthServiceServer<DefaultAuthService>>()
+            .await;
+    };
     info!(%addr, "auth service listening");
     Server::builder()
+        .timeout(settings.request_timeout())
+        .add_service(health_service)
         .add_service(AuthServiceServer::from_arc(auth_service))
-        .serve_with_shutdown(addr, shutdown.cancelled_owned())
+        .serve_with_shutdown(addr, stopping)
         .await?;
     info!("auth service stopped");
     Ok(())

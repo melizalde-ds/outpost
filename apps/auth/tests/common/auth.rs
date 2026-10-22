@@ -28,6 +28,7 @@ pub struct Auth {
     pub key_provider: KeyStub,
     admin: PgPool,
     client: AuthServiceClient<Channel>,
+    pub grpc_addr: SocketAddr,
     pub http_addr: SocketAddr,
     _app: App,
 }
@@ -45,6 +46,7 @@ impl Auth {
             key_provider,
             admin: admin(&db).await,
             client: app.client(),
+            grpc_addr: app.grpc_addr,
             http_addr: app.http_addr,
             _app: app,
         }
