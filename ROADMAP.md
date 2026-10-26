@@ -2,12 +2,6 @@
 
 What's planned for each version. Plans can change.
 
-## v0.1.0
-
-- [ ] Publish Postgres and Redis on `127.0.0.1` only in Docker Compose
-- [x] CHANGELOG
-- [ ] Tag the release
-
 ## v0.2.0
 
 - [ ] CI: build and test both services, and check Rust dependencies with `cargo-deny`

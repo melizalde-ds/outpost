@@ -37,3 +37,4 @@ services aren't encrypted, and the key provider doesn't check who is calling it.
 - Passwords and tokens are hidden when gRPC messages are logged.
 - Redis allows a single auth user with only the commands auth needs.
 - Each service uses separate database users for migrations and for the app.
+- Docker Compose publishes Postgres and Redis on `127.0.0.1` only.

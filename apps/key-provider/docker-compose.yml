@@ -12,7 +12,7 @@ services:
       DP_MIGRATION_PASSWORD: ${DP_MIGRATION_PASSWORD}
       DP_APP_PASSWORD: ${DP_APP_PASSWORD}
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - ./db/init:/docker-entrypoint-initdb.d:ro
       - key_data:/var/lib/postgresql
