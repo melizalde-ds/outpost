@@ -28,7 +28,7 @@ and [sqlx-cli](https://crates.io/crates/sqlx-cli).
 
 ```sh
 just env     # create the .env files, then fill in the change-me values
-just setup   # start the databases and Redis, and run the migrations
+just setup   # start the databases and Redis, set up the .NET tools and secrets, and run the migrations
 just run     # start the services
 ```
 
